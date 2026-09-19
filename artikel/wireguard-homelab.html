@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WireGuard VPN: Sicher von überall auf dein Homelab zugreifen — Homelab Vergleich</title>
+<meta name="description" content="WireGuard VPN: Sicher von überall auf dein Homelab zugreifen  WireGuard ist ein modernes VPN-Protokoll, das dir einen verschlüsselten Tunnel von deine">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>WireGuard VPN: Sicher von überall auf dein Homelab zugreifen</h1>
+<p>WireGuard ist ein modernes VPN-Protokoll, das dir einen verschlüsselten Tunnel von deinem Handy oder Laptop direkt in dein Heimnetz legt. Für Homelab-Betreiber ist es der sauberste Weg, Dienste wie Proxmox, Nextcloud oder dein NAS von unterwegs zu erreichen – ohne die Verwaltungsoberflächen ins offene Internet zu stellen. Der Clou: WireGuard ist im Linux-Kernel integriert, unglaublich schlank und trotzdem auf dem Sicherheitsniveau moderner Kryptografie.</p>
+<h2>Was ist WireGuard?</h2>
+<p>WireGuard ist ein VPN, das seit 2020 fest im Linux-Kernel steckt und damit auf praktisch jedem Server ohne zusätzliche Treiber läuft. Statt komplizierter Konfigurationsdateien mit hunderten Optionen besteht eine WireGuard-Einrichtung im Kern aus zwei Dingen: einem Schlüsselpaar (privat/öffentlich) pro Gerät und einer Liste erlaubter Adressen. Die gesamte Codebasis umfasst nur rund 4.000 Zeilen – zum Vergleich: OpenVPN und IPsec bringen es auf mehrere hunderttausend Zeilen. Weniger Code heißt weniger Angriffsfläche und weniger potenzielle Fehler.</p>
+<p>Technisch arbeitet WireGuard auf Netzwerkebene (Layer 3) mit UDP und ist dadurch besonders roaming-freundlich: Beim Wechsel vom WLAN ins Mobilfunknetz bleibt die Verbindung ohne aufwendige Neuverhandlung bestehen.</p>
+<h2>Warum WireGuard schneller und sicherer ist als andere VPNs</h2>
+<p>Drei Punkte unterscheiden WireGuard von klassischen Lösungen:</p>
+<ul>
+<li><strong>Moderne Kryptografie statt Altlasten:</strong> WireGuard nutzt ausschließlich aktuelle Verfahren wie ChaCha20 und Curve25519. Alte, als unsicher geltende Algorithmen sind schlicht nicht vorgesehen – du kannst sie gar nicht erst fehlkonfigurieren.</li>
+<li><strong>Weniger Code, weniger Angriffsfläche:</strong> Die überschaubare Codebasis lässt sich vollständig auditieren und ist deutlich leichter zu warten.</li>
+<li><strong>Geringer Overhead, hohe Durchsatzrate:</strong> Durch den Verzicht auf unnötige Verhandlungsprotokolle erreicht WireGuard auf aktueller Hardware oft nahezu die volle Leitungsgeschwindigkeit – ideal, wenn du große Backups oder Medien über den Tunnel ziehen willst.</li>
+</ul>
+<h2>WireGuard auf dem Server einrichten</h2>
+<p>Die Einrichtung auf einem Linux-Server (Debian/Ubuntu oder Proxmox-Host) dauert kaum fünf Minuten:</p>
+<pre><code>
+sudo apt update &amp;&amp; sudo apt install wireguard
+</code></pre>
+<p>Danach erzeugst du die Schlüssel für den Server:</p>
+<pre><code>
+wg genkey | tee server.key | wg pubkey &gt; server.pub
+</code></pre>
+<p>Die Konfiguration legst du unter <code>/etc/wireguard/wg0.conf</code> ab:</p>
+<pre><code>
+[Interface]
+Address = 10.0.0.1/24
+PrivateKey = INHALT-DEINER-server.key
+ListenPort = 51820
+
+[Peer]
+PublicKey = PUBLIC-KEY-DES-CLIENTS
+AllowedIPs = 10.0.0.2/32
+</code></pre>
+<p>Mit <code>sudo wg-quick up wg0</code> startest du das Interface. Vergiss nicht, den Port in der Firewall freizugeben und den Dienst beim Boot zu aktivieren (<code>sudo systemctl enable wg-quick@wg0</code>).</p>
+<h2>Client auf Handy und PC einrichten</h2>
+<p>Auf dem Smartphone installierst du einfach die offizielle <strong>WireGuard-App</strong> (Android/iOS) und scannst einen QR-Code ein. Dafür generierst du den Code mit <code>qrencode -t ansiutf8 &lt; client.conf</code> auf dem Server. Unter Windows oder macOS nutzt du den WireGuard-Client mit derselben Konfigurationsdatei. Die Client-Konfiguration sieht so aus:</p>
+<pre><code>
+[Interface]
+Address = 10.0.0.2/24
+PrivateKey = INHALT-DEINER-client.key
+DNS = 192.168.1.1
+
+[Peer]
+PublicKey = PUBLIC-KEY-DES-SERVERS
+Endpoint = deine-domain.example:51820
+AllowedIPs = 0.0.0.0/0
+</code></pre>
+<p>Mit <code>AllowedIPs = 0.0.0.0/0</code> läuft der gesamte Verkehr durch den Tunnel; mit <code>AllowedIPs = 192.168.1.0/24</code> nur der Verkehr in dein Heimnetz – die fürs Homelab üblichere Variante.</p>
+<h2>Portfreigabe vs. Reverse Proxy</h2>
+<p>WireGuard braucht genau <strong>eine</strong> UDP-Portfreigabe in deinem Router (Standard: 51820). Das ist bewusst minimal und gut absicherbar.</p>
+<p>Ein Reverse Proxy (Nginx, Traefik) löst dagegen ein anderes Problem: Er stellt einzelne Webdienste über HTTPS nach außen bereit. Beide Ansätze ergänzen sich: <strong>WireGuard schützt den Zugang</strong>, <strong>der Reverse Proxy verteilt den Verkehr</strong>. Verwaltungsoberflächen wie Proxmox oder Router-Webinterfaces sollten nur über den VPN-Tunnel erreichbar sein, niemals direkt im Internet.</p>
+<h2>Sicherheitstipps</h2>
+<ul>
+<li><strong>Private Keys schützen:</strong> Die privaten Schlüssel gehören auf das jeweilige Gerät und nirgendwo sonst hin. In Repositories oder Clouds haben sie nichts verloren.</li>
+<li><strong>Port von 51820 ändern:</strong> Kein Schutz vor gezielten Angriffen, reduziert aber den Scanner-Lärm im Log.</li>
+<li><strong>Nur nötige Adressen routen:</strong> Beschränke <code>AllowedIPs</code> auf dein Heimnetz-Subnetz, wenn du nicht den kompletten Verkehr tunneln willst.</li>
+<li><strong>Peer-Limits nutzen:</strong> Erlaube nur bekannte, feste IP-Adressen pro Client und entferne ungenutzte Peers konsequent.</li>
+<li><strong>Firewall scharf stellen:</strong> Erlaube eingehend nur UDP auf dem WireGuard-Port, sonst nichts.</li>
+</ul>
+<h2>Typische Fehler</h2>
+<ul>
+<li><strong>Falsche Schlüsselzuordnung:</strong> Public Key von Server und Client vertauscht – die häufigste Ursache für einen nicht funktionierenden Tunnel. Prüfe, dass der Server-Peer den Client-Pubkey enthält und umgekehrt.</li>
+<li><strong>Port nicht in der Firewall freigegeben:</strong> Weder die Router-Portfreigabe noch <code>ufw</code> darf den UDP-Port blockieren.</li>
+<li><strong>DNS vergessen:</strong> Ohne DNS-Eintrag im Interface löst dein Client interne Namen wie <code>nas.local</code> nicht auf.</li>
+<li><strong>Endpoint mit wechselnder IP:</strong> Bei dynamischer Heim-IP läuft der Tunnel nach einem Reconnect ins Leere. Abhilfe: DynDNS-Domain als Endpoint verwenden.</li>
+<li><strong>Persistente Keepalive vergessen:</strong> Hinter NAT kann die Verbindung einschlafen; <code>PersistentKeepalive = 25</code> auf dem Client hält sie zuverlässig offen.</li>
+</ul>
+<h2>Fazit</h2>
+<p>WireGuard ist für den sicheren Fernzugriff aufs Homelab die erste Wahl: minimal konfigurierbar, schnell und mit moderner Kryptografie ausgestattet. Wer die wenigen Stolperfallen beim Schlüsselaustausch und der Firewall kennt, hat in unter einer halben Stunde einen stabilen, abhörsicheren Tunnel ins Heimnetz – und lässt die Verwaltungsoberflächen dort, wo sie hingehören: hinter dem VPN.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
