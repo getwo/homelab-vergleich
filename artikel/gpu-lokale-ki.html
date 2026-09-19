@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beste Grafikkarte für lokale KI 2026</title>
+<meta name="description" content="Die beste GPU für lokale LLMs (Ollama/llama.cpp) 2026: RTX 3090 gebraucht vs. 4090 vs. 3060 — VRAM, Tokens/Sekunde und Preise im Vergleich.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Beste Grafikkarte für lokale KI 2026: VRAM schlägt Geschwindigkeit</h1>
+
+<p>Wer ein Sprachmodell wie Llama oder Mistral zu Hause auf der eigenen GPU betreiben will (Ollama oder llama.cpp), steht 2026 vor einer verwirrenden Auswahl. Die entscheidende Frage ist dabei nicht, welche Karte die meisten Frames pro Sekunde in Spielen liefert, sondern: <strong>Wie viel VRAM passt auf die Karte — und wie schnell ist ihr Speicher?</strong> Dieser Artikel ordnet die aktuellen Optionen nach Budget und Einsatzzweck.</p>
+
+<h2>VRAM ist alles</h2>
+<p>Ein LLM muss beim Laden komplett in den Grafikspeicher passen. Ist das Modell größer als der VRAM, muss es teilweise in den (langsamen) Hauptspeicher oder auf die SSD ausgelagert werden — die Inferenz bricht auf wenige Tokens pro Sekunde ein. Deshalb gilt beim lokalen KI-Betrieb eine einfache Regel: <strong>VRAM ist wichtiger als Rechenleistung.</strong> Ein 7B-Modell in 4-Bit-Quantisierung (Q4) braucht rund 4–5 GB, ein 13B-Q4 etwa 8–9 GB, ein 32B-Q4 um die 20 GB. Wer ein 70B-Modell laden will, kommt an 24 GB nicht vorbei.</p>
+<p>Fast genauso wichtig ist die Speicherbandbreite: Die Token-Geschwindigkeit (tok/s) ist bei LLMs meist nicht durch den Chip, sondern durch den Datendurchsatz des Speichers begrenzt. Zwei Karten mit gleich viel VRAM können deshalb sehr unterschiedlich schnell sein — ein 128-Bit-Bus bremst selbst mit viel VRAM.</p>
+
+<h2>Die Empfehlungen nach Budget</h2>
+<h3>Einstieg: GeForce RTX 3060 12GB (gebraucht, ~220 €)</h3>
+<p>Die gebrauchte RTX 3060 mit 12 GB VRAM ist der günstigste sinnvolle Einstieg. Mit 360 GB/s Speicherbandbreite erreicht sie rund 30–35 tok/s bei einem 7B-Q4-Modell — flüssig genug für den Alltag, und die 12 GB reichen sogar für ein 13B-Q4. Der Neupreis von rund 470 € ist 2026 allerdings überzogen; gebraucht kostet sie etwa 200–250 € und ist damit klar die bessere Wahl.</p>
+<h3>Preis-Leistungs-König: GeForce RTX 3090 24GB (gebraucht, ~850 €)</h3>
+<p>Die gebrauchte RTX 3090 ist 2026 der Sweet Spot für lokale KI. 24 GB VRAM und ein 384-Bit-Bus mit 936 GB/s liefern etwa 85–100 tok/s bei 7B-Q4 — und die 24 GB erlauben zusätzlich 32B-Q4 oder sogar 70B-Q3. Für rund 750–950 € gebraucht bekommt man damit mehr nutzbaren VRAM als mit fast jeder neuen Karte unter 1.500 €. Kein Wunder, dass sie auf dem Gebrauchtmarkt als KI-König gehandelt wird.</p>
+<h3>Premium: GeForce RTX 4090 24GB (~3.400 €)</h3>
+<p>Die RTX 4090 ist mit 1.008 GB/s die schnellste Consumer-Karte für LLMs (etwa 90–110 tok/s bei 7B-Q4). Beim Preis-Leistungs-Verhältnis verliert sie jedoch deutlich: Für vierfach so viel Geld wie eine gebrauchte 3090 bekommt man nur marginal mehr Tempo und gleich viel VRAM. Sie lohnt sich nur, wer maximale Geschwindigkeit bei 70B-Modellen braucht und ein tiefes Budget hat.</p>
+
+<h2>Die Kernzahlen im Vergleich</h2>
+<table>
+<thead>
+<tr><th>GPU</th><th>VRAM</th><th>Bandbreite</th><th>tok/s @7B-Q4</th><th>Preis</th></tr>
+</thead>
+<tbody>
+<tr><td>RTX 3060 12GB</td><td>12 GB</td><td>360 GB/s</td><td>~30–35</td><td>~200–250 € (gebraucht)</td></tr>
+<tr><td>RTX 3090 24GB</td><td>24 GB</td><td>936 GB/s</td><td>~85–100</td><td>~750–950 € (gebraucht)</td></tr>
+<tr><td>RTX 4090 24GB</td><td>24 GB</td><td>1.008 GB/s</td><td>~90–110</td><td>~3.400 €</td></tr>
+<tr><td>RTX 4060 Ti 16GB</td><td>16 GB</td><td>288 GB/s</td><td>~28–32</td><td>~600–650 €</td></tr>
+<tr><td>RTX 5060 Ti 16GB</td><td>16 GB</td><td>448 GB/s</td><td>~40–50</td><td>~670–700 €</td></tr>
+</tbody>
+</table>
+
+<h2>Vorsicht vor der 4060-Ti-16GB-Falle</h2>
+<p>Die RTX 4060 Ti mit 16 GB klingt auf dem Papier attraktiv: viel VRAM zum moderaten Preis. In der Praxis ist sie für LLMs ein Fehlkauf. Ihr 128-Bit-Speicherbus liefert nur 288 GB/s — <strong>weniger Bandbreite als die RTX 3060</strong>. Trotz der 16 GB ist sie bei 7B-Modellen kaum schneller (rund 28–32 tok/s) als die deutlich günstigere 3060. Die 16 GB nützen wenig, wenn der Speicher der Flaschenhals ist. Für lokale KI ist diese Karte deshalb nicht zu empfehlen.</p>
+
+<h2>Warum der GPU-Markt 2026 so teuer ist</h2>
+<p>Die Preise sind 2026 aus zwei Gründen hoch. Erstens treibt der anhaltende KI-Boom die Nachfrage nach VRAM-starken Karten: Rechenzentren und Selbstbauer konkurrieren um dieselbe Hardware, und Modelle mit 24 GB VRAM sind begehrt. Zweitens ist GDDR7-Speicher, der in den neuen RTX-50-Karten steckt, weiterhin knapp — das hält selbst Mittelklasse-Karten wie die RTX 5060 Ti bei rund 700 €. Ehemalige Preis-Leistungs-Tipps wie die RTX 4070 Ti Super gibt es 2026 nur noch als überteuerten Restposten (850–1.100 €, vereinzelt Scalper-Preise). In diesem Markt ist der Gebrauchtmarkt oft der einzige vernünftige Weg.</p>
+
+<h2>Fazit</h2>
+<p>Für die meisten Homelab-Betreiber ist die <strong>gebrauchte RTX 3090 mit 24 GB</strong> die klare Kaufempfehlung: maximale Modellvielfalt (bis 70B-Q3), starke Bandbreite und ein Preis um 850 €, den keine Neukarte in diesem Segment schlägt. Wer nur ein kleines Budget hat und mit 7B- bis 13B-Modellen auskommt, greift zur <strong>gebrauchten RTX 3060 12GB</strong> für rund 220 €. Die <strong>RTX 4090</strong> bleibt die Premium-Wahl für alle, die Geschwindigkeit über alles stellen. Von der <strong>RTX 4060 Ti 16GB</strong> solltest du für LLMs die Finger lassen — trotz 16 GB ist ihr 128-Bit-Bus zu langsam.</p>
+
+<p class="disclosure">Einige Links sind Affiliate-Links.</p>
+<p><a href="../vergleich.html">Zur vollständigen GPU-Vergleichstabelle</a></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
