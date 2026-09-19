@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardware-Vergleich — Homelab, GPUs &amp; Server | Homelab Vergleich</title>
+<meta name="description" content="Interaktiver Vergleich von Mini-PCs, Grafikkarten für lokale KI, gebrauchten Servern und NAS-Systemen. Mit Preisen, Stromverbrauch und Benchmarks — Stand 2026.">
+<link rel="stylesheet" href="style.css">
+<style>
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+  .filters button {
+    background:var(--card); color:var(--muted); border:1px solid var(--border);
+    padding:7px 14px; border-radius:20px; cursor:pointer; font-size:0.9rem;
+  }
+  .filters button.active { background:var(--accent); color:#0d1117; border-color:var(--accent); }
+  .tbl-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:8px; }
+  table { width:100%; border-collapse:collapse; font-size:0.88rem; min-width:900px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { background:var(--card); color:var(--muted); font-weight:600; cursor:pointer; white-space:nowrap; user-select:none; }
+  th:hover { color:var(--fg); }
+  th.sorted { color:var(--accent); }
+  tr:hover td { background:rgba(88,166,255,0.04); }
+  .name { font-weight:600; color:var(--fg); }
+  .vendor { color:var(--muted); font-size:0.8rem; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.75rem; background:var(--card); border:1px solid var(--border); color:var(--accent); white-space:nowrap; }
+  .price { font-weight:700; color:var(--fg); white-space:nowrap; }
+  .watt-good { color:#3fb950; } .watt-mid { color:#d29922; } .watt-bad { color:#f85149; }
+  .note { color:var(--muted); font-size:0.82rem; max-width:220px; }
+  .src { color:var(--muted); font-size:0.75rem; }
+  a.ext { color:var(--accent); text-decoration:none; white-space:nowrap; }
+  .count { color:var(--muted); font-size:0.85rem; margin-top:8px; }
+  .disclaimer { font-size:0.8rem; color:var(--muted); border-left:3px solid var(--accent); padding-left:12px; margin-top:24px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+    <nav>
+      <a href="/#homelab">Homelab</a>
+      <a href="/#ki">Lokale KI</a>
+      <a href="vergleich.html">Hardware-Vergleich</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="content" style="max-width:1100px;">
+    <h1>Hardware-Vergleich</h1>
+    <p class="lead" style="font-size:1rem;">Mini-PCs, Grafikkarten für lokale KI, gebrauchte Server und NAS-Systeme — mit Preisen, Idle-Verbrauch und Benchmarks. Klicke auf eine Spalte zum Sortieren.</p>
+
+    <div class="filters" id="filters"></div>
+
+    <div class="tbl-wrap">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th data-key="name">Produkt</th>
+            <th data-key="kategorie">Kategorie</th>
+            <th>Spezifikation</th>
+            <th data-key="vram_gb">VRAM</th>
+            <th data-key="ram_gb">RAM</th>
+            <th data-key="idle_watt">Idle (W)</th>
+            <th data-key="tdp_watt">TDP (W)</th>
+            <th data-key="preis_eur">Preis (€)</th>
+            <th>Benchmark</th>
+            <th>Einschätzung</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="count" id="count"></p>
+
+    <p class="disclaimer">Preise sind Richtwerte (deutscher Markt, Stand September 2026) und können abweichen. Einige Links sind Affiliate-Links — beim Kauf darüber erhalten wir eine Provision, für dich ändert sich der Preis nicht. Stromverbrauch ist der typische Idle-Wert, gemessen je nach Konfiguration.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>© 2026 Homelab Vergleich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  var katOrder = { 'mini-pc':'Mini-PC', 'gpu':'GPU', 'server':'Server', 'nas':'NAS' };
+  var state = { kat:'alle', sort:'preis_eur', dir:1 };
+
+  function wattClass(w){
+    if (w == null) return '';
+    if (w <= 15) return 'watt-good';
+    if (w <= 80) return 'watt-mid';
+    return 'watt-bad';
+  }
+  function fmt(n){ return (n==null||isNaN(n)) ? '–' : n.toLocaleString('de-DE'); }
+
+  function render(){
+    var prods = (window.HARDWARE && window.HARDWARE.produkte) ? window.HARDWARE.produkte : [];
+    // filter
+    var list = prods.slice();
+    if (state.kat !== 'alle') list = list.filter(function(p){ return p.kategorie === state.kat; });
+    // sort
+    var key = state.sort;
+    list.sort(function(a,b){
+      var av = a[key], bv = b[key];
+      if (av == null) av = Infinity; if (bv == null) bv = Infinity;
+      if (typeof av === 'string' && typeof bv === 'string') return av.localeCompare(bv) * state.dir;
+      return (av - bv) * state.dir;
+    });
+
+    var tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    list.forEach(function(p){
+      var tr = document.createElement('tr');
+      var vram = (p.vram_gb!=null) ? p.vram_gb+' GB' : '–';
+      var ram = (p.ram_gb!=null) ? p.ram_gb+' GB' : '–';
+      var idle = (p.idle_watt!=null) ? p.idle_watt : null;
+      var tdp = (p.tdp_watt!=null) ? p.tdp_watt : null;
+      var link = p.link ? '<a class="ext" href="'+p.link+'" target="_blank" rel="noopener nofollow sponsored">Angebot ↗</a>' : '';
+      tr.innerHTML =
+        '<td><div class="name">'+p.name+'</div><div class="vendor">'+(p.hersteller||'')+'</div></td>'+
+        '<td><span class="badge">'+(katOrder[p.kategorie]||p.kategorie)+'</span></td>'+
+        '<td>'+p.spezifikation+'</td>'+
+        '<td>'+vram+'</td>'+
+        '<td>'+ram+'</td>'+
+        '<td class="'+wattClass(idle)+'">'+fmt(idle)+'</td>'+
+        '<td class="'+wattClass(tdp)+'">'+fmt(tdp)+'</td>'+
+        '<td class="price">'+fmt(p.preis_eur)+'</td>'+
+        '<td>'+(p.benchmark||'–')+'</td>'+
+        '<td class="note">'+(p.einschaetzung||'')+'</td>'+
+        '<td>'+link+'</td>';
+      tbody.appendChild(tr);
+    });
+    document.getElementById('count').textContent = list.length + ' von ' + prods.length + ' Einträgen';
+    document.querySelectorAll('#tbl th[data-key]').forEach(function(th){
+      th.classList.toggle('sorted', th.dataset.key === state.sort);
+    });
+  }
+
+  function renderFilters(){
+    var cats = (window.HARDWARE && window.HARDWARE.kategorien) || Object.keys(katOrder);
+    var f = document.getElementById('filters');
+    f.innerHTML = '';
+    var all = document.createElement('button');
+    all.textContent = 'Alle';
+    all.className = state.kat==='alle' ? 'active' : '';
+    all.onclick = function(){ state.kat='alle'; renderFilters(); render(); };
+    f.appendChild(all);
+    cats.forEach(function(c){
+      var b = document.createElement('button');
+      b.textContent = katOrder[c] || c;
+      b.className = state.kat===c ? 'active' : '';
+      b.onclick = function(){ state.kat=c; renderFilters(); render(); };
+      f.appendChild(b);
+    });
+  }
+
+  document.querySelectorAll('#tbl th[data-key]').forEach(function(th){
+    th.addEventListener('click', function(){
+      var k = th.dataset.key;
+      if (state.sort === k) state.dir *= -1; else { state.sort = k; state.dir = 1; }
+      render();
+    });
+  });
+
+  renderFilters();
+  render();
+})();
+</script>
+</body>
+</html>
