@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ollama Tutorial: Lokale LLMs ausführen (Schritt für Schritt)</title>
+<meta name="description" content="Ollama Tutorial: Lokale LLMs wie Llama 3, Qwen und DeepSeek-R1 Schritt für Schritt installieren und ausführen — Installation für Windows, Linux &amp; macOS, Modellgrößen, VRAM-Bedarf und Tipps.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Ollama Tutorial: Lokale LLMs ausführen (Schritt für Schritt)</h1>
+
+<p>Ollama ist der mit Abstand einfachste Weg, um große Sprachmodelle (LLMs) lokal auf dem eigenen Rechner laufen zu lassen — ohne Cloud, ohne Abo, ohne dass deine Daten den Rechner verlassen. Ein einziger Befehl genügt, und schon antwortet dir ein Modell wie Llama 3 oder DeepSeek-R1 auf der eigenen Hardware. Dieses Tutorial führt dich Schritt für Schritt von der Installation bis zu den ersten Modellen und zeigt, was du bei Speicher- und VRAM-Bedarf beachten musst. Falls du ganz neu im Thema bist, lohnt sich vorab unser <a href="../artikel/lokale-llms-einstieg.html">Einstieg in lokale LLMs</a>.</p>
+
+<h2>Was ist Ollama?</h2>
+
+<p>Ollama ist ein Kommandozeilen-Werkzeug, das Modell-Download, Verwaltung und Ausführung in einem vereint. Es kümmert sich automatisch um die passenden Quantisierungen, legt Modelle in einem lokalen Verzeichnis ab und startet im Hintergrund einen kleinen Server, über den die Modelle auch von anderen Programmen angesprochen werden können. Die Bedienung bleibt dabei denkbar simpel: Modelle herunterladen, starten, chatten — fertig. Für typische Homelab-Setups ist Ollama deshalb die erste Wahl, bevor man sich mit komplexeren Inferenz-Frameworks beschäftigt.</p>
+
+<h2>Installation (Windows, Linux, macOS)</h2>
+
+<p>Die Installation ist auf allen drei Plattformen ein Einzeiler. Für <strong>Windows</strong> und <strong>macOS</strong> lädt man den Installer von der offiziellen Website herunter und führt ihn aus — Ollama wird anschließend als Hintergrunddienst gestartet und steht im Terminal als <code>ollama</code>-Befehl bereit. Unter <strong>Linux</strong> genügt das offizielle Skript:</p>
+
+<p><code>curl -fsSL https://ollama.com/install.sh | sh</code></p>
+
+<p>Nach der Installation lässt sich mit <code>ollama --version</code> prüfen, ob alles korrekt läuft. Wer kein Terminal mag, kann alternativ die grafische Desktop-App nutzen, die bei Windows und macOS mitgeliefert wird. Wichtig für GPU-Nutzer: Ollama erkennt NVIDIA- und AMD-GPUs automatisch. Welche Hardware sich für lokale KI tatsächlich lohnt, erklären wir im Artikel <a href="../artikel/gpu-lokale-ki.html">GPU für lokale KI</a>.</p>
+
+<h2>Erste Modelle: llama3, qwen, deepseek-r1</h2>
+
+<p>Ein guter Start sind drei Modell-Familien mit sehr unterschiedlichen Stärken. <strong>Llama 3</strong> (Meta) ist der Allrounder für allgemeine Aufgaben und Textverarbeitung. <strong>Qwen</strong> (Alibaba) punktet vor allem bei mehrsprachigen und technischen Inhalten. <strong>DeepSeek-R1</strong> ist ein sogenanntes Reasoning-Modell, das seine Antworten in mehrere Denkschritte zerlegt — ideal für Mathe, Logik und Coding, aber spürbar langsamer.</p>
+
+<h2>ollama pull, run und list</h2>
+
+<p>Drei Befehle decken den kompletten Alltag ab. <code>ollama pull</code> lädt ein Modell herunter, <code>ollama run</code> startet es direkt im interaktiven Chat, und <code>ollama list</code> zeigt alle lokal gespeicherten Modelle:</p>
+
+<p><code>ollama pull llama3.1<br>
+ollama run llama3.1<br>
+ollama list</code></p>
+
+<p>Ein Modell, das noch nicht lokal vorhanden ist, lädt <code>ollama run</code> beim ersten Aufruf automatisch nach — <code>pull</code> ist also optional, aber praktisch, wenn man Downloads vorab erledigen möchte. Innerhalb des Chats beendet man mit <code>/bye</code>, weitere Befehle zeigt <code>/?</code> an.</p>
+
+<h2>Modellgrößen und VRAM-Bedarf</h2>
+
+<p>Die Modellgröße ist der wichtigste Hebel für Geschwindigkeit und Speicherbedarf. Als Faustregel gilt: Ein Modell mit <em>n</em> Milliarden Parametern braucht in der üblichen 4-Bit-Quantisierung etwa 0,6&nbsp;GB RAM pro Milliarde Parameter. Das 8-Milliarden-Modell von Llama 3 oder Qwen passt damit in rund 6&nbsp;GB VRAM und läuft flüssig auf einer Mittelklasse-GPU. Die 70-Milliarden-Variante benötigt dagegen etwa 40&nbsp;GB und verlangt nach einer Grafikkarte mit viel Speicher oder mehreren GPUs.</p>
+
+<p>Reicht der VRAM nicht, rechnet Ollama teilweise auf der CPU weiter — das funktioniert, wird aber deutlich langsamer. DeepSeek-R1 gibt es als kleine Distillate (1,5 bis 70 Milliarden Parameter), während das vollständige Modell mit 671 Milliarden Parametern für den Heimgebrauch praktisch ausscheidet. Für den Anfang ist die 7- oder 8-Milliarden-Klasse der beste Kompromiss aus Qualität und Tempo.</p>
+
+<h2>Tipps für mehr Leistung</h2>
+
+<p>Über Umgebungsvariablen lässt sich Ollama spürbar beschleunigen. <code>OLLAMA_FLASH_ATTENTION=1</code> aktiviert eine effizientere Attention-Berechnung, die vor allem bei langen Kontexten Speicher und Zeit spart. Weitere nützliche Schalter: <code>OLLAMA_HOST</code> und <code>OLLAMA_PORT</code> legen fest, auf welcher Adresse der Server lauscht — setzt man den Host auf <code>0.0.0.0</code>, ist Ollama aus dem ganzen Netzwerk erreichbar. Mit <code>OLLAMA_KEEP_ALIVE</code> steuert man, wie lange ein Modell nach der letzten Anfrage im Speicher bleibt, und <code>OLLAMA_NUM_PARALLEL</code> begrenzt parallele Anfragen. Wer Modelle mit langem Kontextfenster nutzt, sollte außerdem <code>num_ctx</code> im Chat per <code>/set parameter</code> anheben.</p>
+
+<h2>Fazit</h2>
+
+<p>Ollama macht lokale Sprachmodelle so zugänglich wie nie: installieren, <code>ollama run llama3.1</code> eintippen, loslegen. Wer mit einem 8-Milliarden-Modell startet, bekommt auf moderner Hardware sofort ein Gefühl dafür, was lokale KI kann — und skaliert bei Bedarf zu größeren Modellen oder einer dedizierten GPU. Genau dort lohnt der Blick in unsere <a href="../artikel/gpu-lokale-ki.html">GPU-Empfehlungen für lokale KI</a>.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Angaben zu Modellen, Versionen und Speicherbedarf entsprechen dem Stand September 2026 und können sich durch Updates ändern. Der VRAM-Bedarf ist eine Näherung für die übliche 4-Bit-Quantisierung; tatsächliche Werte hängen von Quantisierung, Kontextlänge und Treibern ab.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
