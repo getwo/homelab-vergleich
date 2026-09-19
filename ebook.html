@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lokale KI & Homelab für Einsteiger — Dein eigener KI-Server zu Hause</title>
+<style>
+:root {
+  --bg: #0d1117; --card: #161b22; --border: #30363d;
+  --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --accent2: #79c0ff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+header { border-bottom: 1px solid var(--border); padding: 18px 0; }
+.brand { font-weight: 700; font-size: 18px; color: var(--fg); }
+.brand span { color: var(--accent); }
+
+.hero { padding: 56px 0 40px; text-align: left; }
+.kicker { color: var(--accent); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 13px; }
+h1 { font-size: 40px; line-height: 1.15; margin: 12px 0 16px; }
+h1 .hl { color: var(--accent); }
+.hero p.lead { font-size: 19px; color: var(--muted); max-width: 640px; }
+
+.cta { display: inline-block; margin-top: 26px; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 17px; padding: 14px 34px; border-radius: 8px; text-decoration: none; transition: .15s; }
+.cta:hover { background: var(--accent2); }
+.price-note { margin-top: 10px; font-size: 14px; color: var(--muted); }
+
+section { padding: 28px 0; }
+h2 { font-size: 26px; margin-bottom: 18px; border-left: 4px solid var(--accent); padding-left: 12px; }
+
+.benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+.benefit { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.benefit .ico { font-size: 26px; }
+.benefit h3 { font-size: 17px; margin: 10px 0 6px; }
+.benefit p { font-size: 14px; color: var(--muted); }
+
+.chapters { list-style: none; }
+.chapters li { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; margin-bottom: 8px; font-size: 15px; }
+.chapters li b { color: var(--accent); }
+
+.pricing { background: var(--card); border: 1px solid var(--accent); border-radius: 14px; padding: 36px; text-align: center; }
+.pricing .old { color: var(--muted); text-decoration: line-through; font-size: 18px; }
+.pricing .now { font-size: 46px; font-weight: 800; color: var(--accent); }
+.pricing .sub { color: var(--muted); font-size: 14px; margin-top: 6px; }
+.pricing .cta { margin-top: 22px; }
+
+footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 22px 0; color: var(--muted); font-size: 13px; }
+footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap"><div class="brand">⚡ BsN<span> · Homelab</span></div></div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="hero">
+      <div class="kicker">E-Book · 33 Seiten · Schritt-für-Schritt</div>
+      <h1>Lokale KI &amp; Homelab für Einsteiger<br><span class="hl">Dein eigener KI-Server zu Hause</span></h1>
+      <p class="lead">ChatGPT, Bilder-KI und Selfhosting komplett auf deiner eigenen Hardware — ohne Cloud-Abo, ohne Datenverkauf, ohne monatliche Kosten.</p>
+      <a class="cta" href="#">Jetzt kaufen — 14,90 €</a>
+      <div class="price-note">Sofort-Download als PDF · Einmalzahlung · kein Abo</div>
+    </section>
+
+    <section>
+      <h2>Was du bekommst</h2>
+      <div class="benefits">
+        <div class="benefit"><div class="ico">🔒</div><h3>100 % privat</h3><p>Deine Daten verlassen nie dein Zuhause. Kein Konzern liest mit.</p></div>
+        <div class="benefit"><div class="ico">💸</div><h3>Keine Abo-Kosten</h3><p>Einmal Hardware kaufen, nie wieder monatlich zahlen.</p></div>
+        <div class="benefit"><div class="ico">🖥️</div><h3>Deine Kontrolle</h3><p>Der Server gehört dir. Keine Nutzungsbedingungen, keine Sperren.</p></div>
+        <div class="benefit"><div class="ico">📶</div><h3>Offline-fähig</h3><p>Funktioniert weiter, wenn das Internet ausfällt.</p></div>
+        <div class="benefit"><div class="ico">🛠️</div><h3>Konkrete Befehle</h3><p>Jeder Schritt mit Befehlen zum Kopieren — kein Vorwissen nötig.</p></div>
+        <div class="benefit"><div class="ico">⚡</div><h3>Stromkosten im Griff</h3><p>Ehrliche Rechnung, was dein Server wirklich kostet.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Das lernst du — Kapitel für Kapitel</h2>
+      <ul class="chapters">
+        <li><b>1.</b> Warum ein eigener KI-Server? — Kosten, Kontrolle, realistische Erwartungen</li>
+        <li><b>2.</b> Hardware-Auswahl — gebrauchte Server, GPU &amp; VRAM, Preis-Leistung</li>
+        <li><b>3.</b> Proxmox VE — das Fundament deines Servers</li>
+        <li><b>4.</b> Ollama — lokale LLMs installieren &amp; testen</li>
+        <li><b>5.</b> OpenWebUI — ein ChatGPT-ähnliches Interface</li>
+        <li><b>6.</b> ComfyUI — Bilder generieren wie Midjourney</li>
+        <li><b>7.</b> Stromkosten — was der Server wirklich kostet</li>
+        <li><b>8.</b> Sicherheit — dein Server, deine Regeln</li>
+        <li><b>9.</b> Backups — damit nichts verloren geht</li>
+        <li><b>10.</b> Ausbau &amp; Automatisierung — dein Server wächst mit</li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="pricing">
+        <div class="old">Regulär 19,90 €</div>
+        <div class="now">14,90 €</div>
+        <div class="sub">Einführungspreis · PDF sofort als Download · inkl. aller Updates</div>
+        <a class="cta" href="#">Jetzt kaufen für 14,90 €</a>
+        <div class="price-note">Sichere Zahlung · 14 Tage Geld-zurück-Garantie</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    © 2026 BsN · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a>
+  </div>
+</footer>
+
+</body>
+</html>
