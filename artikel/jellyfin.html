@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jellyfin vs Plex: Der Media-Server fürs Homelab</title>
+<meta name="description" content="Jellyfin vs Plex im Vergleich: Open Source gegen proprietär, Kosten, Hardware-Transcoding und Docker-Installation — welcher Media-Server passt zu deinem Homelab?">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Jellyfin vs Plex: Der Media-Server fürs Homelab</h1>
+
+<p>Wer Filme, Serien und Musik zentral im Homelab verwaltet, landet früher oder später bei derselben Frage: <strong>Jellyfin oder Plex?</strong> Beide sind Media-Server, beide organisieren deine Bibliothek mit Cover, Metadaten und Beschreibungen, beide streamen auf Fernseher, Smartphone und Tablet. Der Unterschied liegt im Geschäftsmodell — und genau dort beginnt für viele Homelab-Betreiber die eigentliche Entscheidung.</p>
+
+<h2>Open Source vs. proprietär: Der Kernunterschied</h2>
+
+<p>Jellyfin ist ein vollständig quelloffenes Projekt unter GPL-Lizenz, entstanden 2018 als Fork von Emby. Es gehört keiner Firma, verkauft nichts und erhebt keine Nutzerdaten. Plex dagegen ist proprietär: Die Software ist zwar in der Grundversion kostenlos, setzt aber auf ein kostenpflichtiges <strong>Plex Pass</strong>-Abo (rund 5&nbsp;€/Monat oder 40&nbsp;€/Jahr), um Hardware-Transcoding, Intro-Skipping, Downloads für unterwegs und HDR-Tonemapping freizuschalten.</p>
+
+<p>Fürs Homelab heißt das: Jellyfin kostet nichts — nicht beim Start, nicht später, nicht fürs Transcoding. Plex verlangt dort Geld, wo Jellyfin einfach mitliefert. Dafür hängt Plex an einem zentralen Account-System mit externer Authentifizierung, während Jellyfin komplett lokal und ohne Cloud-Anbindung läuft. Wer seine Daten nicht durch fremde Server schleusen will, ist mit Jellyfin klar besser bedient.</p>
+
+<h2>Transcoding: Die eigentliche Kostenfrage</h2>
+
+<p>Beim Abspielen kommt es auf das <strong>Transcoding</strong> an: Muss der Server das Video in Echtzeit in ein Format umwandeln, das der Client versteht, braucht es Rechenleistung — idealerweise Hardware-Beschleunigung. Hier zeigt sich der größte Unterschied: Plex sperrt Hardware-Transcoding hinter den Plex Pass, Jellyfin reicht es auf Intel-, AMD- und Nvidia-GPUs kostenlos frei.</p>
+
+<p>Der Clou bei Intel-CPUs ist <strong>QuickSync</strong>: Die in vielen Celeron-, Pentium- und Core-i-Prozessoren integrierte GPU erledigt 4K-Transcoding bei minimalem Stromverbrauch. Ein <a href="../artikel/nas-2026.html">NAS mit Intel-CPU</a> wie das QNAP TS-464 oder ein Mini-PC mit Pentium Gold reicht damit völlig, um mehrere Streams gleichzeitig zu bedienen. Jellyfin nutzt diese Hardware per VAAPI oder QSV ohne Zusatzkosten.</p>
+
+<h2>Installation per Docker</h2>
+
+<p>Die sauberste Art, Jellyfin im Homelab zu betreiben, ist <a href="../artikel/docker-homelab.html">Docker</a>. Ein <code>docker-compose.yml</code> mit dem offiziellen Image <code>jellyfin/jellyfin</code> reicht aus. Wichtig sind drei Dinge: die Bibliotheks-Ordner als Volumes einbinden, den <code>PUID</code>/<code>PGID</code> für saubere Dateirechte setzen und — fürs Hardware-Transcoding — die Gerätedateien <code>/dev/dri</code> in den Container durchreichen. Wer kein Intel-System hat, kann stattdessen eine Nvidia-GPU per <code>nvidia-container-toolkit</code> freigeben.</p>
+
+<p>Plex lässt sich ebenfalls per Docker installieren, das Prinzip ist identisch. Der Unterschied liegt im Setup danach: Plex zwingt dich durch einen Account-Login, Jellyfin startet direkt mit einem lokalen Setup-Assistenten.</p>
+
+<h2>Hardware-Anforderungen</h2>
+
+<p>Für reines Direct Play — also das Abspielen im Originalformat ohne Umwandlung — genügt fast jede CPU der letzten zehn Jahre, selbst ein Raspberry Pi 4 oder ein einfaches <a href="../artikel/nas-2026.html">NAS</a>. Sobald transkodiert wird, steigen die Anforderungen sprunghaft. Als Faustregel gilt:</p>
+
+<ul>
+<li><strong>Direct Play:</strong> 2&nbsp;GB RAM, beliebige CPU, kein GPU-Bedarf.</li>
+<li><strong>1–2 Transcodes (1080p):</strong> Intel Celeron oder Pentium mit QuickSync, 4&nbsp;GB RAM.</li>
+<li><strong>Mehrere 4K-Streams:</strong> Core-i-CPU mit aktiver iGPU oder eine dedizierte GPU, 8&nbsp;GB RAM.</li>
+</ul>
+
+<p>Genau hier lohnt der Blick auf die Hardware: Viele günstige NAS-Modelle mit ARM-CPU können gar kein sinnvolles Transcoding und sind für Jellyfin nur beim Direct Play brauchbar. Wer plant, unterwegs auf schwache Clients zu streamen, sollte von Anfang an auf QuickSync setzen.</p>
+
+<h2>Client-Apps</h2>
+
+<p>Beide Server glänzen mit breiter Client-Unterstützung. Plex bietet polierte Apps für nahezu jede Plattform — Smart-TVs, Android, iOS, Spielkonsolen — und ist beim Onboarding oft eine Spur komfortabler. Jellyfin hat inzwischen ebenfalls Apps für Android, iOS, Android TV, Roku und Web-Player, zusätzlich Community-Clients wie Jellyfin MPV oder Swiftfin für Apple-Geräte. Der Nachteil: Auf manchen Smart-TVs ist die Jellyfin-App nicht im Store und muss über Umwege installiert werden. Dafür gibt es keinen Zwang, einen Account zu registrieren.</p>
+
+<h2>Fazit: Jellyfin oder Plex?</h2>
+
+<p>Wer maximale Kontrolle, keine laufenden Kosten und volle Transcoding-Funktion ohne Abo will, ist mit <strong>Jellyfin</strong> im Homelab besser aufgehoben — besonders wenn ohnehin alles lokal und ohne Cloud läuft. Plex rechtfertigt seinen Preis vor allem durch die polierten Apps, das einfachere Setup für Familie und Freunde sowie Features wie Intro-Skipping aus einer Hand. Wer die fehlende Konto-Anbindung und den gelegentlichen Bastelaufwand nicht scheut, bekommt mit Jellyfin einen vollwertigen Media-Server, der technisch fast alles kann — kostenlos und ohne Daten nach außen zu geben.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Software-Lizenzen und Abo-Preise beziehen sich auf die offiziellen Angaben der jeweiligen Projekte. Weiterführende Hardware-Empfehlungen findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
