@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lokale LLMs auf eigener Hardware: Der komplette Einstieg</title>
+<meta name="description" content="Lokale KI selbst hosten: Ollama, llama.cpp, VRAM-Bedarf nach Modellgröße und die richtige Hardware für 7B bis 70B Modelle.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Lokale LLMs auf eigener Hardware: Der komplette Einstieg</h1>
+
+<p>Sprachmodelle wie ChatGPT laufen in der Cloud – deine Eingaben verlassen dabei dein Zuhause. Wer Wert auf Datenschutz legt, keine laufenden Abokosten will oder einfach offline arbeiten möchte, kann ein Large Language Model (LLM) auch komplett lokal betreiben. Dieser Guide zeigt, wie viel VRAM du für welches Modell brauchst, welche Tools es gibt und welche Hardware sich für welches Budget lohnt.</p>
+
+<h2>Warum lokal?</h2>
+<p>Drei Gründe sprechen für das eigene LLM. Erstens <strong>Datenschutz</strong>: Keine Prompts werden an fremde Server geschickt, alles bleibt auf deiner Maschine – ideal für sensible Dokumente, interne Notizen oder Kundendaten. Zweitens <strong>Kosten</strong>: Einmal Hardware kaufen, dann dauerhaft ohne Nutzungsgebühren – bei intensiver Nutzung schnell günstiger als ein Abo. Drittens <strong>Offline-Fähigkeit</strong>: Kein Internet, kein Ausfall, keine API-Limits. Dafür gilt: Lokale Modelle sind kleiner und weniger leistungsfähig als GPT-4-Klasse-Modelle – für viele Aufgaben wie Zusammenfassen, Schreiben, Übersetzen oder Code-Hilfe reichen sie aber völlig.</p>
+
+<h2>VRAM-Bedarf nach Modellgröße</h2>
+<p>Der wichtigste Faktor ist der Grafikspeicher (VRAM). Die Modellgröße wird in Milliarden Parametern (B) angegeben. Mit <strong>Q4-Quantisierung</strong> – dem Standardkompromiss zwischen Qualität und Größe – ergibt sich folgender grober Bedarf:</p>
+
+<table>
+<thead>
+<tr><th>Modellgröße</th><th>VRAM (Q4)</th><th>Beispiele</th></tr>
+</thead>
+<tbody>
+<tr><td>7B</td><td>≈ 6 GB</td><td>Llama 3.1 8B, Mistral 7B, Qwen 2.5 7B</td></tr>
+<tr><td>13B</td><td>≈ 10 GB</td><td>Llama 3.1 13B, Qwen 2.5 14B</td></tr>
+<tr><td>32B</td><td>≈ 20 GB</td><td>Qwen 2.5 32B, Llama 3.3 30B</td></tr>
+<tr><td>70B</td><td>≈ 40 GB</td><td>Llama 3.3 70B, Qwen 2.5 72B</td></tr>
+</tbody>
+</table>
+
+<p>Faustregel: Läuft das Modell vollständig im VRAM, antwortet es schnell. Passt es nicht hinein, wird ein Teil in den Arbeitsspeicher (RAM) ausgelagert und es wird spürbar langsamer – laufen lassen kann man es trotzdem.</p>
+
+<h2>Die Tools</h2>
+<p><strong>Ollama</strong> ist der einfachste Einstieg: ein Befehl installiert, ein Befehl lädt ein Modell, fertig. Es verwaltet Modelle, Quantisierungen und die Ausführung automatisch – ideal für Anfänger. <strong>llama.cpp</strong> ist das zugrunde liegende C++-Projekt, das Modelle effizient auf CPU und GPU ausführt; es ist flexibler, aber technischer. <strong>Open WebUI</strong> setzt eine chatGPT-ähnliche Oberfläche auf Ollama (oder llama.cpp) und macht die lokale KI komfortabel im Browser nutzbar – inklusive Chat-Verlauf, System-Prompts und optionaler Anbindung eigener Dokumente.</p>
+
+<h2>Hardware nach Budget</h2>
+<p><strong>Einstieg:</strong> Ein <a href="../artikel/minipc-homelab.html">Mini-PC-Vergleich</a> mit 16–32 GB RAM reicht für 7B-Modelle komplett ohne GPU (langsam, aber funktionsfähig). Alternativ eine gebrauchte AMD-RX-GPU mit 8–12 GB VRAM für flüssige 7B- bis 13B-Modelle. <strong>Mittelklasse:</strong> Eine gebrauchte RTX 3060 (12 GB) oder RTX 3090 (24 GB) ist das Preis-Leistungs-Optimum – die 3090 packt sogar 32B-Modelle. <strong>High-End:</strong> Eine RTX 4090 (24 GB) liefert maximale Geschwindigkeit für 32B- und kleinere 70B-Modelle. Detaillierte Benchmarks und Alternativen findest du im <a href="../artikel/gpu-lokale-ki.html">GPU-Vergleich</a>.</p>
+
+<h2>Erste Schritte</h2>
+<p>So startest du in fünf Minuten:</p>
+<ol>
+<li><strong>Installieren:</strong> Auf <code>ollama.com</code> das Installationspaket für dein Betriebssystem herunterladen und ausführen. Unter Windows, macOS und Linux läuft die Installation ohne Vorkenntnisse.</li>
+<li><strong>Modell laden:</strong> Im Terminal <code>ollama pull llama3.1</code> eingeben – das lädt ein 8B-Modell (~5 GB). Alternativ stehen Modelle wie <code>mistral</code>, <code>qwen2.5</code> oder <code>llama3.3:70b</code> bereit.</li>
+<li><strong>Loslegen:</strong> Mit <code>ollama run llama3.1</code> direkt im Terminal chatten, oder Open WebUI für die Browser-Oberfläche einrichten.</li>
+</ol>
+<p>Das war's – dein erstes lokales LLM läuft bereits. Tipp: Beginne klein, teste mit einem 7B-Modell und wechsle erst dann auf größere Modelle, wenn deine Hardware es hergibt.</p>
+
+<h2>Fazit</h2>
+<p>Lokale LLMs sind längst kein Nischenprojekt mehr. Mit einer vorhandenen Mittelklasse-GPU oder einem kleinen Budget holst du dir ein datenschutzfreundliches, kostenloses und offline verfügbares Sprachmodell ins eigene Homelab. Der Einstieg über Ollama dauert Minuten, der Ausbau auf größere Modelle folgt dann ganz nach Hardware-Budget.</p>
+
+<p><em>Hinweis (Disclosure): Dieser Artikel enthält Affiliate-Links zu Hardware-Produkten. Wenn du über einen dieser Links kaufst, erhalten wir unter Umständen eine Provision – für dich entstehen keine Mehrkosten. Alle Angaben zu VRAM-Bedarf und Modellen dienen der Orientierung und können je nach Quantisierung und Kontextlänge abweichen. Die vollständige Hardware-Übersicht findest du in unserem <a href="../vergleich.html">Hardware-Vergleich</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap">
+<p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p>
+</div>
+</footer>
+</body>
+</html>
