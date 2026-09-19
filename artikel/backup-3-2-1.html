@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backup-Strategie 3-2-1 fürs Homelab: So sicherst du richtig</title>
+<meta name="description" content="Backup-Strategie 3-2-1 fürs Homelab erklärt: 3 Kopien, 2 Medien, 1 Offsite — mit restic, Borg, Proxmox Backup Server und Duplicati inklusive Test-Restores.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Backup-Strategie 3-2-1 fürs Homelab: So sicherst du richtig</h1>
+
+<p>Ein Homelab ist nur so wertvoll wie das Backup, das dahintersteht. Ob Familienfotos, Konfigurationen oder die gesamte Docker-Umgebung: Ohne durchdachte Datensicherung ist alles nur eine defekte Festplatte oder ein fehlgeschlagenes Update vom Totalverlust entfernt. Die 3-2-1-Regel ist dabei der Goldstandard, an dem sich seit Jahrzehnten jede ernsthafte Backup-Strategie misst. Dieser Artikel erklärt, wie du sie in deinem Homelab konkret umsetzt — welche Tools sich eignen, wie du automatisierst und warum ein Backup, das du nie getestet hast, streng genommen gar kein Backup ist.</p>
+
+<h2>Die 3-2-1-Regel verständlich erklärt</h2>
+
+<p>Die Regel besteht aus drei einfachen Zahlen, die zusammen den Kern jeder robusten Datensicherung bilden:</p>
+
+<ul>
+<li><strong>3 Kopien</strong>: Dein Original plus zwei zusätzliche Sicherungen. Das Original zählt dabei mit — insgesamt existieren deine Daten also dreimal.</li>
+<li><strong>2 Medien</strong>: Die Kopien liegen auf mindestens zwei unterschiedlichen Speichertypen, etwa eine interne Festplatte und ein NAS, eine externe USB-Platte oder LTO-Tape. Damit ein einzelner Ausfall nicht beide Sicherungen gleichzeitig erwischt.</li>
+<li><strong>1 Offsite</strong>: Mindestens eine Kopie liegt an einem anderen Ort — außer Haus, in der Cloud oder bei Familie und Freunden. So übersteht dein Backup auch Feuer, Diebstahl oder Wasserschaden.</li>
+</ul>
+
+<p>Der Gedanke dahinter: Kein einzelnes Ereignis — weder ein Plattencrash noch ein Einbruch noch ein Blitzeinschlag — darf alle Kopien gleichzeitig zerstören können. Wer nur auf eine einzige externe Festplatte sichert, die direkt neben dem Rechner liegt, hat faktisch gar kein Backup. Mehr zur passenden Hardware, etwa einem NAS als Backup-Ziel, findest du in unserem <a href="../artikel/nas-2026.html">NAS-Vergleich 2026</a>.</p>
+
+<h2>Die richtigen Tools: restic, Borg, Proxmox Backup Server, Duplicati</h2>
+
+<p>Für die Umsetzung stehen dir im Homelab mehrere bewährte Werkzeuge zur Verfügung, jedes mit eigenem Profil:</p>
+
+<ul>
+<li><strong>restic</strong>: Schlank, schnell und ideal für die Cloud. restic verschlüsselt standardmäßig, dedupliziert stark und unterstützt Backends wie S3, Backblaze B2 oder einen simplen SFTP-Server. Perfekt für das Offsite-Backup per Kommandozeile.</li>
+<li><strong>BorgBackup (Borg)</strong>: Der Klassiker für Linux-Server. Borg komprimiert und dedupliziert hervorragend, arbeitet mit einem eigenen Repository-Format und eignet sich ideal für lokale und entfernte Sicherungen über SSH.</li>
+<li><strong>Proxmox Backup Server (PBS)</strong>: Wer seine VMs und Container unter Proxmox betreibt, kommt an PBS kaum vorbei. Es sichert ganze Maschinen inkrementell, dedupliziert über alle Backups hinweg und erlaubt schnelle Einzeldatei-Wiederherstellung.</li>
+<li><strong>Duplicati</strong>: Die benutzerfreundliche Variante mit grafischer Oberfläche. Duplicati richtet sich an alle, die keine Kommandozeile mögen, und bietet Verschlüsselung, Planung und viele Cloud-Ziele direkt aus dem Browser heraus.</li>
+</ul>
+
+<p>Eine bewährte Kombination im Homelab: restic oder Borg für Daten und Konfigurationen, PBS für die Virtualisierungsebene — und ein Cloud-Ziel für die Offsite-Kopie.</p>
+
+<h2>Automatisierung: Backups, die von selbst laufen</h2>
+
+<p>Ein Backup, das manuell angestoßen werden muss, wird früher oder später vergessen. Genau deshalb gehört Automatisierung in jede Strategie. Die meisten Tools bringen dafür alles mit: restic und Borg laufen sauber per systemd-Timer oder Cron, Duplicati und PBS bringen eigene Zeitpläne mit. Sinnvoll ist ein täglicher Lauf für häufig genutzte Daten und ein wöchentlicher für große, selten veränderte Bestände. Wichtig: Die Automatisierung muss sich selbst überwachen. Ein Skript, das stillschweigend scheitert, ist wertlos — lass dir den Erfolg per E-Mail oder Push-Benachrichtigung bestätigen, damit ein Fehler auffällt, bevor du das Backup brauchst.</p>
+
+<h2>Test-Restores: Der wichtigste Schritt, den alle überspringen</h2>
+
+<p>Hier liegt der häufigste und gefährlichste Fehler: Ein Backup, das nie wiederhergestellt wurde, ist eine Hoffnung und kein Sicherheitsnetz. Viele merken erst im Ernstfall, dass ihr Skript zwar lief, aber leere oder unbrauchbare Daten produzierte — etwa weil ein Verzeichnis falsch ausgeschlossen war oder die Verschlüsselung den Schlüssel verschluckt hat. Plane daher regelmäßige Test-Restores ein: Wiederhole mindestens einmal im Quartal eine vollständige Wiederherstellung eines kleinen, aber kritischen Datensatzes und prüfe, ob die Dateien wirklich lesbar sind. Nur ein getestetes Backup verdient den Namen.</p>
+
+<h2>Typische Fehler vermeiden</h2>
+
+<ul>
+<li><strong>Nur eine Kopie</strong>: Eine einzelne externe Platte ist kein Backup, sondern nur eine zweite Festplatte.</li>
+<li><strong>Kein Offsite-Anteil</strong>: Alle Kopien im selben Haushalt überstehen keinen Brand und keinen Einbruch.</li>
+<li><strong>Schlüssel verlieren</strong>: Verschlüsselst du deine Backups, bewahre Passwort und Schlüssel getrennt und an mehreren Orten auf.</li>
+<li><strong>Ausnahmen falsch gesetzt</strong>: Prüfe, ob du versehentlich wichtige Verzeichnisse ausgeschlossen hast — Stichwort Docker-Volumes und Datenbanken.</li>
+<li><strong>Nur Dateien, keine Systeme</strong>: Wer nur Ordner sichert, verliert bei einem Ausfall die komplette Konfiguration seiner Dienste. Sichere auch die Einrichtung selbst.</li>
+</ul>
+
+<h2>Fazit</h2>
+
+<p>Die 3-2-1-Regel ist kein Selbstzweck, sondern die einfachste Antwort auf die Frage, wie deine Daten einen echten Ausfall überleben. Drei Kopien auf zwei Medien, eine davon außer Haus — kombiniert mit einem passenden Tool wie restic, Borg, Proxmox Backup Server oder Duplicati, sauberer Automatisierung und vor allem regelmäßigen Test-Restores. Wer diese Grundlagen beherzigt, verwandelt sein Homelab von einem Risiko in ein System, auf das man sich im Ernstfall wirklich verlassen kann. Den passenden Speicher dafür findest du im <a href="../artikel/nas-2026.html">NAS-Vergleich 2026</a>.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Weiterführende Hardware-Empfehlungen findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
