@@ -15,6 +15,11 @@
   <url><loc>https://homelab.brillianze.de/artikel/backup-3-2-1.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/server-vs-cloud.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/stromkosten.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/home-assistant.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/nextcloud.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/jellyfin.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/wireguard.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/pfsense-opnsense.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/impressum.html</loc><priority>0.3</priority></url>
   <url><loc>https://homelab.brillianze.de/datenschutz.html</loc><priority>0.3</priority></url>
 </urlset>
