@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homelab einrichten: Der komplette Guide 2026 — Homelab Vergleich</title>
+<meta name="description" content="Homelab einrichten: Der komplette Guide 2026  Ein Homelab ist ein privates Server-Setup, das zu Hause läuft und dir die Kontrolle über deine eigenen D">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Homelab einrichten: Der komplette Guide 2026</h1>
+<p>Ein Homelab ist ein privates Server-Setup, das zu Hause läuft und dir die Kontrolle über deine eigenen Daten, Dienste und Rechenleistung zurückgibt. Statt alles in die Cloud auszulagern, betreibst du einen kleinen – oder auch größeren – Server in deinem Heimnetz: für Datenspeicher, Smart Home, Medienstreaming, Netzwerk-Filter und lokale KI. Dieser Leitfaden führt dich einmal durch alle Grundlagen, von der Hardware-Wahl über das Betriebssystem bis zu den wichtigsten Diensten, Sicherheit und Stromkosten. Am Ende findest du die passenden Teil-Artikel für jedes Thema.</p>
+<h2>Was ist ein Homelab?</h2>
+<p>Ein Homelab bezeichnet im Kern jede Art von Server-Infrastruktur, die privat zu Hause betrieben wird. Das Spektrum reicht vom gebrauchten Mini-PC, der still in der Ecke steht, bis zum ausgewachsenen Rack mit mehreren Servern, Switches und USV. Der gemeinsame Nenner: Du bestimmst, was läuft, welche Daten wo liegen und wer Zugriff bekommt.</p>
+<p>Typische Aufgaben eines Homelabs:</p>
+<ul>
+<li><strong>Datenspeicherung:</strong> eine eigene Cloud statt fremder Anbieter.</li>
+<li><strong>Smart Home:</strong> zentrale Steuerung unabhängig vom Hersteller.</li>
+<li><strong>Medien:</strong> eine eigene Streaming-Bibliothek für Filme, Serien und Musik.</li>
+<li><strong>Netzwerk:</strong> Werbeblocker, DNS und VPN im eigenen Netz.</li>
+<li><strong>Lernen &amp; Experimentieren:</strong> neue Technologien ausprobieren, ohne Produktivsysteme zu gefährden.</li>
+<li><strong>Lokale KI:</strong> Sprachmodelle wie Ollama auf eigener Hardware betreiben.</li>
+</ul>
+<h2>Warum ein Homelab aufbauen?</h2>
+<p>Die Gründe für ein eigenes Homelab sind so vielfältig wie die Betreiber selbst. Die wichtigsten im Überblick:</p>
+<ul>
+<li><strong>Datensouveränität:</strong> Deine Fotos, Dokumente und Backups liegen auf deiner Hardware, nicht auf Servern Dritter. Du entscheidest, wer sie sehen darf.</li>
+<li><strong>Unabhängigkeit:</strong> Keine Abhängigkeit von Preiserhöhungen, AGB-Änderungen oder Abschaltungen großer Cloud-Anbieter.</li>
+<li><strong>Kostenkontrolle:</strong> Abos für Cloud-Speicher, Streaming oder KI-Dienste summieren sich. Ein Homelab amortisiert sich oft nach ein bis zwei Jahren.</li>
+<li><strong>Lerneffekt:</strong> Virtualisierung, Netzwerke, Linux und Container – kaum ein Projekt vermittelt IT-Grundlagen so praxisnah wie der eigene Server.</li>
+<li><strong>Spaß und Neugier:</strong> Viele betreiben ein Homelab schlicht, weil sie verstehen wollen, wie die Systeme hinter dem Alltag funktionieren.</li>
+</ul>
+<p>Wichtig ist eine ehrliche Erwartung: Ein Homelab ist ein Hobby mit Wartungsaufwand. Wer maximale Einfachheit will, bleibt besser in der Cloud. Wer Kontrolle und Lerneffekt schätzt, ist hier richtig.</p>
+<h2>Hardware: Mini-PC, Desktop oder gebrauchter Server?</h2>
+<p>Die Wahl der Hardware entscheidet über Stromverbrauch, Lautstärke und Zukunftsfähigkeit. Drei Wege haben sich etabliert:</p>
+<p><strong>Mini-PC (empfohlen für den Einstieg).</strong> Geräte wie gebrauchte Thin Clients oder kompakte Mini-Rechner mit Intel-CPU sind günstig, nahezu lautlos und verbrauchen im Leerlauf oft nur 5 bis 15 Watt. Sie eignen sich ideal für die ersten Dienste wie Pi-hole, WireGuard, Nextcloud oder Home Assistant. Grenzen zeigen sie bei vielen parallelen VMs oder anspruchsvoller KI.</p>
+<p><strong>Desktop-PC (für mehr Leistung).</strong> Ein ausgedienter Desktop-Rechner mit ordentlichem Prozessor und der Möglichkeit, RAM und Festplatten nachzurüsten, ist die flexible Mittelklasse. Hier laufen mehrere virtuelle Maschinen parallel und – mit passender Grafikkarte – auch lokale KI-Modelle. Der Stromverbrauch liegt allerdings deutlich über dem eines Mini-PCs.</p>
+<p><strong>Gebrauchter Server (für Enthusiasten).</strong> Ausrangierte Enterprise-Server sind leistungsstark und spottbillig, aber laut, stromhungrig und groß. Sie lohnen sich nur, wenn du wirklich viele Ressourcen brauchst oder den Betrieb als Lernprojekt siehst. Für die meisten Einsteiger sind sie Overkill.</p>
+<p>Faustregel: Starte klein und skaliere nach Bedarf. Ein einzelner, energiesparender Rechner trägt die ersten sechs Dienste problemlos.</p>
+<h2>Betriebssystem: Proxmox als Fundament</h2>
+<p>Als Betriebssystem hat sich <strong>Proxmox VE</strong> in der Homelab-Community als Standard durchgesetzt. Es ist ein quelloffener Hypervisor auf Debian-Basis, der virtuelle Maschinen (KVM) und leichtgewichtige LXC-Container in einer übersichtlichen Weboberfläche vereint. Damit betreibst du alle Dienste getrennt voneinander auf einem einzigen Rechner, machst Backups per Klick und kannst einzelne Instanzen ohne Auswirkung auf den Rest neu aufsetzen.</p>
+<p>Die Einrichtung ist in unter einer Stunde erledigt und erfordert nur einen USB-Stick und einen Rechner mit aktivierter Hardware-Virtualisierung. Alles Weitere – von der Installation bis zur Wahl zwischen VM und Container – behandelt der [Proxmox-Einsteiger-Guide](proxmox-einsteiger-guide.md).</p>
+<h2>Die wichtigsten Dienste im Überblick</h2>
+<p>Ein Homelab wächst mit seinen Diensten. Diese sechs bilden für die meisten ein sinnvolles Fundament:</p>
+<ul>
+<li><strong>Ollama:</strong> Eine Laufzeitumgebung für lokale Sprachmodelle (LLMs). Damit führst du Modelle wie Llama oder Gemma direkt auf deiner eigenen Hardware aus – ohne Daten an einen Cloud-Anbieter zu senden. Mehr zur Einordnung liefert der Vergleich [Lokale KI vs. Cloud](lokale-ki-vs-cloud.md).</li>
+<li><strong>OpenWebUI:</strong> Eine webbasierte Oberfläche für Ollama und andere Backends, die ChatGPT-ähnlichen Komfort ins lokale Netz bringt. Zusammen mit Ollama ist sie das Herzstück einer privaten KI-Assistenz.</li>
+<li><strong>Home Assistant:</strong> Die zentrale Plattform für Smart Home. Sie bündelt Geräte verschiedener Hersteller unter einer Oberfläche und läuft stabil als VM oder Container – wie genau, zeigt der Artikel [Home Assistant auf Proxmox](home-assistant-proxmox.md).</li>
+<li><strong>Nextcloud:</strong> Deine private Cloud für Dateien, Kalender, Kontakte und Fotos. Der Open-Source-Klassiker ersetzt viele Funktionen von Google Drive oder Dropbox.</li>
+<li><strong>Jellyfin:</strong> Ein selbst gehosteter Medienserver, der Filme, Serien und Musik an TV, Handy und Browser streamt – werbefrei und ohne Abo.</li>
+<li><strong>Pi-hole:</strong> Ein DNS-basierter Werbeblocker für das gesamte Netzwerk. Er filtert Werbung und Tracker, bevor sie überhaupt dein Gerät erreichen.</li>
+<li><strong>WireGuard:</strong> Ein modernes VPN, das dir von unterwegs einen verschlüsselten Zugang ins Heimnetz verschafft. So erreichst du Proxmox, Nextcloud und Co., ohne deren Oberflächen ins offene Internet zu stellen. Die vollständige Anleitung findest du im Artikel [WireGuard VPN](wireguard-homelab.md).</li>
+</ul>
+<h2>Sicherheit und Backup</h2>
+<p>Ein Homelab trägt schnell deine wichtigsten Daten. Zwei Disziplinen sind deshalb Pflicht, keine Kür:</p>
+<p><strong>Sicherheit.</strong> Stelle Verwaltungsoberflächen wie Proxmox oder Router-Interfaces niemals direkt ins Internet. Der Zugriff von außen läuft ausschließlich über WireGuard oder einen sauber konfigurierten Reverse Proxy. Halte Systeme und Container aktuell, verwende starke, einzigartige Passwörter und trenne Dienste in eigene Container, damit eine Schwachstelle nicht gleich alles kompromittiert.</p>
+<p><strong>Backup.</strong> Proxmox bringt integrierte Backup-Funktionen mit, die komplette VMs und Container auf einen zweiten Datenträger oder ein NAS sichern. Ergänze das um eine externe Kopie außerhalb des Hauses – idealerweise nach der 3-2-1-Regel: drei Kopien, zwei verschiedene Medien, eine davon extern. Ein Backup, das nur auf demselben Rechner liegt, ist keins.</p>
+<h2>Stromkosten im Blick</h2>
+<p>Ein Homelab läuft in der Regel rund um die Uhr – und verbraucht entsprechend Strom. Ein sparsamer Mini-PC mit 10 Watt Dauerlast kostet bei einem Strompreis von rund 35 Cent pro Kilowattstunde geschätzt etwa 30 Euro im Jahr. Ein Desktop mit 40 Watt liegt bereits bei rund 120 Euro, ein gebrauchter Enterprise-Server mit über 100 Watt schnell bei 300 Euro und mehr.</p>
+<p>Die Rechnung zeigt: Die Hardware-Wahl ist auch eine Stromkosten-Entscheidung. Gerade im Dauerbetrieb schlägt ein effizienter Rechner die vermeintlich günstige, aber durstige Alt-Hardware. Eine detaillierte Beispielrechnung mit Tipps zum Messen und Senken findest du im Artikel [Stromkosten im Homelab](stromkosten-homelab.md).</p>
+<h2>Empfohlene Reihenfolge für Einsteiger</h2>
+<p>Wer bei null startet, sollte nicht alles gleichzeitig angehen. Diese Reihenfolge hat sich bewährt:</p>
+<p>1. <strong>Hardware besorgen:</strong> Ein sparsamer Mini-PC mit mindestens 16 GB RAM und einer SSD genügt für den Anfang.</p>
+<p>2. <strong>Proxmox installieren:</strong> Basis für alle weiteren Schritte, inklusive fester IP-Adresse im Heimnetz.</p>
+<p>3. <strong>Pi-hole aufsetzen:</strong> Schnell eingerichtet, sofort spürbarer Nutzen – der ideale erste Dienst zum Lernen.</p>
+<p>4. <strong>WireGuard einrichten:</strong> Sobald etwas läuft, willst du auch von unterwegs sicher darauf zugreifen.</p>
+<p>5. <strong>Nextcloud und Jellyfin:</strong> Die Alltags-Dienste für Dateien und Medien.</p>
+<p>6. <strong>Home Assistant:</strong> Smart Home zentralisieren, sobald die Grundlagen sitzen.</p>
+<p>7. <strong>Ollama und OpenWebUI:</strong> Lokale KI als Krönung – vorausgesetzt, die Hardware spielt mit. Ob eine GPU nötig ist, klärt der Artikel [GPU für lokale KI 2026](gpu-lokale-ki-2026.md).</p>
+<p>8. <strong>Backups automatisieren:</strong> Sobald echte Daten auf dem Server liegen, wird die Sicherung zum Pflichtprogramm.</p>
+<h2>Fazit</h2>
+<p>Ein Homelab ist der Weg zu digitaler Selbstbestimmung: eigene Cloud, eigenes Smart Home, eigene Medienbibliothek und eigene KI – alles auf deiner Hardware, unter deiner Kontrolle. Der Einstieg ist mit einem sparsamen Mini-PC und Proxmox günstiger und einfacher, als viele vermuten. Wer klein beginnt, Sicherheit und Backup von Anfang an ernst nimmt und die Stromkosten im Blick behält, baut sich Schritt für Schritt eine Infrastruktur auf, die ihn unabhängig macht und dabei eine Menge lehrt.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
