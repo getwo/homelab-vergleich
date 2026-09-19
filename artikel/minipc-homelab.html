@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini-PC fürs Homelab 2026: Die besten Modelle</title>
+<meta name="description" content="Die besten Mini-PCs fürs Homelab 2026 im Vergleich: Beelink, Minisforum, Intel NUC, GMKtec — Idle-Verbrauch, Preise und klare Empfehlungen.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Mini-PC fürs Homelab 2026: Die besten Modelle im Vergleich</h1>
+
+<p>Wer ein Homelab 24/7 betreibt, zahlt jeden Monat Strom — und genau da liegt der entscheidende Vorteil eines Mini-PCs gegenüber einem ausrangierten Tower oder Rack-Server. Ein klassischer Server schluckt im Leerlauf schnell 60–120 Watt, ein moderner Mini-PC begnügt sich mit 6–15 Watt. Auf ein Jahr gerechnet sind das bei 40 Cent/kWh schnell 150–400 Euro Unterschied — genug, um den Mini-PC gleich beim Stromtarif mitzufinanzieren. Gleichzeitig liefern aktuelle Modelle mit AMD Ryzen 7/9 oder Intel Core Ultra genug Kerne für Proxmox, mehrere VMs und Container-Dienste wie Router, Firewall, NAS oder Home Assistant.</p>
+
+<h2>Worauf es beim Homelab-Mini-PC ankommt</h2>
+
+<p><strong>Idle-Verbrauch:</strong> Da der Rechner die meiste Zeit nichts tut, zählt fast nur der Leerlauf. Unter 10 Watt ist exzellent, 10–15 Watt sind gut, alles darüber lohnt einen zweiten Blick — gerade bei angeblichen Effizienz-Königen.</p>
+
+<p><strong>2.5GbE (am besten doppelt):</strong> Zwei 2,5-Gbit-Ports erlauben ein sauberes Setup als Router/Firewall (WAN + LAN) oder ein NAS mit Link-Aggregation. Nur ein Port schränkt die Rolle als zentraler Netzwerk-Knoten ein.</p>
+
+<p><strong>RAM:</strong> Für mehrere VMs sollten 32 GB das Ziel sein. Achtet auf zwei SO-DIMM-Slots — 64 oder gar 96 GB lassen sich günstig nachrüsten, wenn der Hersteller sie freigibt.</p>
+
+<p><strong>M.2-Slots:</strong> Zwei NVMe-Slots (idealerweise PCIe 4.0) ermöglichen ein gespiegeltes Boot-Laufwerk oder die Trennung von System und Daten, ohne auf USB-Gehäuse ausweichen zu müssen.</p>
+
+<h2>Empfehlungen nach Budget</h2>
+
+<h3>Einstieg &amp; Sparsamster (~200 €): Beelink Mini S12 Pro (N100)</h3>
+<p>Der Intel N100 mit typisch rund 7 Watt Idle ist der Klassiker für alles, was dauerhaft läuft: OPNsense/pfSense, Pi-hole, Home Assistant oder ein kleines NAS. 16 GB RAM und 2.5GbE reichen dafür völlig. Für schwere Virtualisierung fehlen ihm Kerne, aber als leiser, günstiger Dauerläufer ist er unschlagbar.</p>
+
+<h3>Allrounder (~550–680 €): Beelink SER7 oder Minisforum UM780 XTX</h3>
+<p>Beide setzen auf den bewährten AMD Ryzen 7 7840HS (8C/16T) mit zwei 2.5GbE-Ports — ideal für Proxmox mit mehreren VMs plus NAS-Aufgaben. Der SER7 ist der etablierte Preis-Leistungs-Tipp (8–12 W Idle, ab ca. 679 €), der UM780 XTX punktet mit OCuLink für eine externe GPU und ist oft günstiger (ab ca. 550 €). Eine starke, sehr effiziente Alternative ist der Minisforum UM890 Pro (Ryzen 9 8945HS, 7–9 W Idle, barebone ab ca. 479 €).</p>
+
+<h3>Premium (~260–900 €): ASUS NUC 14 Pro (vPro)</h3>
+<p>Wer Marken-Support, Fernwartung per vPro/AMT und einen sehr niedrigen Idle von 6–9 W will, greift zum NUC 14 Pro mit Intel Core Ultra. Barebones gibt es ab ca. 260 €; voll ausgestattet mit Ultra 7/9 wird es teurer. Schwäche: nur ein 2.5GbE-Port. Die Business-Klasse gibt es auch als Lenovo ThinkCentre M90q Gen 5 oder M75q Gen 5 (AMD) — top Verarbeitung, aber deutlich teurer.</p>
+
+<h2>Vergleichstabelle</h2>
+
+<table>
+<thead>
+<tr><th>Modell</th><th>CPU</th><th>Idle</th><th>2.5GbE</th><th>Preis ab</th></tr>
+</thead>
+<tbody>
+<tr><td>Beelink Mini S12 Pro</td><td>Intel N100</td><td>5–10 W (~7 W)</td><td>1×</td><td>~200 €</td></tr>
+<tr><td>Beelink SER7</td><td>Ryzen 7 7840HS</td><td>8–12 W</td><td>2×</td><td>~679 €</td></tr>
+<tr><td>Minisforum UM780 XTX</td><td>Ryzen 7 7840HS</td><td>~12 W</td><td>2×</td><td>~550 €</td></tr>
+<tr><td>Minisforum UM890 Pro</td><td>Ryzen 9 8945HS</td><td>7–9 W</td><td>2×</td><td>~479 €</td></tr>
+<tr><td>Beelink SER8</td><td>Ryzen 7 8745HS</td><td>10–18 W</td><td>1×</td><td>~899 €</td></tr>
+<tr><td>GMKtec K8 Plus</td><td>Ryzen 7 8845HS</td><td>13–15 W</td><td>2×</td><td>~520 €</td></tr>
+<tr><td>ASUS NUC 14 Pro</td><td>Core Ultra 5/7/9</td><td>6–9 W</td><td>1×</td><td>~260 € (barebone)</td></tr>
+<tr><td>Lenovo ThinkCentre M75q Gen 5</td><td>Ryzen 5/7 PRO</td><td>6–15 W</td><td>1×</td><td>~580 €</td></tr>
+</tbody>
+</table>
+
+<p><strong>Achtung beim Beelink SER8:</strong> Trotz 8-Kern-CPU und USB4 fällt er durch teils gemessene ~18 W Idle auf — ein bekanntes Boost/Idle-Problem des 8745HS. Wer Effizienz will, bekommt mit UM890 Pro oder NUC 14 Pro deutlich mehr Sparsamkeit fürs Geld.</p>
+
+<h2>Fazit</h2>
+<p>Für die meisten Homelabs ist der Sweet Spot klar: ein N100 für die 24/7-Dienste, oder — wenn Virtualisierung gefragt ist — ein 7840HS/8945HS-Modell mit zwei 2.5GbE-Ports. Minisforum und Beelink liefern hier die beste Ausstattung pro Euro, während ASUS und Lenovo mit vPro/AMT und niedrigstem Idle die Business-Option abdecken. Entscheidend ist weniger die Spitzenleistung als der Leerlauf: Jedes Watt Idle kostet über ein Jahr rund 3,50 € — das summiert sich schneller, als man denkt.</p>
+
+<p><em>Hinweis: Preise und Idle-Werte basieren auf Recherchen (Geizhals, idealo, Amazon.de, ServeTheHome, TechPowerUp, igor'sLAB, StarryHope) mit Stand September 2026 und können abweichen. Affiliate-/Partner-Links sind möglich. Für den vollständigen Überblick aller Hardware-Kategorien siehe unseren <a href="../vergleich.html">Hardware-Vergleich</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
