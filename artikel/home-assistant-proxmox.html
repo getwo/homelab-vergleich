@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Assistant auf Proxmox: Dein Smart-Home selbst gehostet — Homelab Vergleich</title>
+<meta name="description" content="Home Assistant auf Proxmox: Dein Smart-Home selbst gehostet  Home Assistant (HA) ist die beliebteste quelloffene Smart-Home-Plattform und die zentrale">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Home Assistant auf Proxmox: Dein Smart-Home selbst gehostet</h1>
+<p>Home Assistant (HA) ist die beliebteste quelloffene Smart-Home-Plattform und die zentrale Schaltstelle für alle deine Geräte – vom Lichtschalter über die Überwachungskamera bis zum Temperatursensor. Anders als kommerzielle Lösungen läuft Home Assistant lokal auf deiner eigenen Hardware und verbindet über 3.000 Geräte und Dienste, ohne dass deine Daten durch eine fremde Cloud müssen. Kombiniert mit Proxmox bekommst du eine stabile, wartbare Basis, die du vollständig selbst kontrollierst.</p>
+<h2>Was ist Home Assistant?</h2>
+<p>Home Assistant ist eine Python-basierte Software, die als „Gehirn&quot; deines Smart Homes arbeitet: Sie sammelt Zustände aller angebundenen Geräte, wertet sie aus und steuert sie über Automatisierungen. Über die Oberfläche „Lovelace&quot; behältst du dein Zuhause per Browser oder App im Blick. Entscheidend ist der lokale Ansatz: Alles läuft bei dir, unabhängig von Internet oder Hersteller-Clouds.</p>
+<h2>Warum Proxmox?</h2>
+<p>Proxmox VE ist der ideale Unterbau, weil er dir volle Flexibilität gibt:</p>
+<ul>
+<li><strong>Snapshots &amp; Backups:</strong> Vor jedem Update legst du einen Snapshot an und rollst bei Problemen in Sekunden zurück – am Raspberry Pi undenkbar.</li>
+<li><strong>Ressourcen flexibel:</strong> Mehr RAM oder CPU-Kerne lassen sich im laufenden Betrieb zuweisen.</li>
+<li><strong>Ein Host, viele Dienste:</strong> Neben Home Assistant laufen Pi-hole, Nextcloud oder lokale KI-Dienste parallel auf derselben Maschine.</li>
+<li><strong>Hohe Verfügbarkeit:</strong> Im Proxmox-Cluster übernimmt bei Ausfall automatisch ein anderer Knoten.</li>
+</ul>
+<h2>Installation als virtuelle Maschine (VM)</h2>
+<p>Die offiziell empfohlene Variante ist die Installation als vollwertige VM über das Home Assistant OS-Image (HAOS). Damit bekommst du ein rundum gewartetes System inklusive Supervisor, der Updates und Add-ons verwaltet.</p>
+<p><strong>Voraussetzungen:</strong> Ein funktionierender Proxmox-Host mit mindestens 2 CPU-Kernen, 2 GB RAM und 32 GB freiem Speicher.</p>
+<p>So gehst du vor:</p>
+<p>1. Lade das Home Assistant OS-Image (<code>.qcow2</code>) von der offiziellen Website herunter.</p>
+<p>2. Übertrage die Datei per SCP oder Proxmox-Shell auf den Host, etwa nach <code>/root</code>.</p>
+<p>3. Lege in Proxmox eine neue VM an (<strong>VM erstellen</strong>) ohne Installationsmedium und Betriebssystem – am Ende <strong>nicht automatisch starten</strong>.</p>
+<p>4. Öffne die Proxmox-Shell und importiere das Image als Festplatte:</p>
+<pre><code>
+qm importdisk 100 /root/haos.qcow2 local-lvm
+</code></pre>
+<p>(Ersetze <code>100</code> durch deine VM-ID und passe den Speichernamen an.)</p>
+<p>5. Die importierte Festplatte erscheint unter <strong>Hardware</strong>. Stelle den <strong>Bus-Typ auf SATA</strong> und die <strong>Boot-Reihenfolge auf diese Platte</strong>.</p>
+<p>6. Aktiviere unter <strong>Optionen → QEMU Agent</strong> den Agent für saubere Shutdowns.</p>
+<p>7. Starte die VM. Nach kurzer Zeit erreichst du Home Assistant über <code>http://DEINE-VM-IP:8123</code>.</p>
+<h2>Installation als LXC-Container</h2>
+<p>Wer Ressourcen sparen will, kann Home Assistant Core in einem LXC-Container betreiben. Vorteil: minimaler Overhead. Nachteil: Du verzichtest auf den Supervisor und damit auf Add-on-Store und Ein-Klick-Updates – Home Assistant Core musst du manuell per Python installieren und pflegen.</p>
+<p>Für Einsteiger ist die <strong>VM-Variante klar zu empfehlen</strong>; den LXC-Weg wählst du nur mit Linux-Administrationserfahrung.</p>
+<h2>Erste Schritte nach der Installation</h2>
+<p>1. <strong>Benutzer anlegen:</strong> Beim ersten Aufruf erstellst du dein Administrator-Konto und gibst Standort sowie Zeitzone an.</p>
+<p>2. <strong>Backup einrichten:</strong> Installiere das Add-on „Home Assistant Google Drive Backup&quot; oder sichere regelmäßig per Proxmox-Backup die komplette VM.</p>
+<p>3. <strong>Mobile App verbinden:</strong> Die offizielle App für Android oder iOS verbindet sich per QR-Code und dient als Standort-Tracker.</p>
+<p>4. <strong>Fernzugriff absichern:</strong> Für den Zugriff von unterwegs nutzt du ein VPN wie WireGuard oder den HA-Dienst Nabu Casa – keine Ports ungeschützt öffnen.</p>
+<h2>Integrationen: Licht, Kamera, Sensoren</h2>
+<p>Unter <strong>Einstellungen → Geräte &amp; Dienste → Integration hinzufügen</strong> bindest du Geräte ein:</p>
+<ul>
+<li><strong>Licht:</strong> Philips Hue, IKEA TRÅDFRI oder Zigbee-Geräte über einen USB-Stick (z. B. ConBee II oder SONOFF Zigbee 3.0) mit der Integration „ZHA&quot; oder „Zigbee2MQTT&quot;.</li>
+<li><strong>Kameras:</strong> IP-Kameras via ONVIF oder RTSP – Aufnahmen laufen lokal, etwa über das Add-on „Frigate&quot; mit KI-gestützter Personenerkennung.</li>
+<li><strong>Sensoren:</strong> Temperatur-, Luftfeuchte- und Tür-/Fenstersensoren über Zigbee, Z-Wave oder WLAN (z. B. Aqara, Shelly).</li>
+<li><strong>Dienste:</strong> Wetter, Kalender, Musik-Streaming und Sprachassistenten lassen sich ebenfalls einbinden.</li>
+</ul>
+<p>Aus diesen Bausteinen baust du <strong>Automatisierungen</strong>: „Wenn nach Sonnenuntergang im Flur Bewegung erkannt wird, schalte das Licht ein&quot; oder „Wenn niemand zu Hause ist, senke die Heizung&quot;.</p>
+<h2>Vorteile der lokalen Lösung</h2>
+<ul>
+<li><strong>Datenschutz:</strong> Bewegungsdaten, Kamerabilder und Nutzungsprofile bleiben in deinem Netz.</li>
+<li><strong>Keine Cloud-Pflicht:</strong> Dein Smart Home funktioniert auch bei Internetausfall weiter.</li>
+<li><strong>Kein Lock-in:</strong> Du bist nicht an einen Hersteller gebunden und wechselst Geräte ohne Systemumbau.</li>
+<li><strong>Volle Kontrolle:</strong> Du bestimmst Update-Zeitpunkte und Datenverarbeitung selbst.</li>
+</ul>
+<h2>Tipps für den stabilen Betrieb</h2>
+<ul>
+<li><strong>Snapshots vor Updates:</strong> Lege vor jedem HA-Update einen Proxmox-Snapshot an.</li>
+<li><strong>Backups automatisieren:</strong> Kombiniere Proxmox-Backup-Jobs mit HA-internen Backups.</li>
+<li><strong>Statische IP vergeben:</strong> Verankere die VM-IP per DHCP-Reservierung im Router.</li>
+<li><strong>Ressourcen großzügig:</strong> Gib der VM lieber 4 GB RAM und 2–4 Kerne, wenn Kameras oder Frigate laufen.</li>
+<li><strong>Langsam wachsen:</strong> Starte mit wenigen Geräten und erweitere schrittweise.</li>
+</ul>
+<h2>Fazit</h2>
+<p>Home Assistant auf Proxmox verbindet die leistungsfähigste Smart-Home-Plattform mit einer flexiblen Virtualisierungsbasis: lokal, datenschutzfreundlich und per Snapshots sicher betreibbar. Der Einstieg über die HAOS-VM gelingt in unter einer halben Stunde – danach gehört dein Smart Home dir allein.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
