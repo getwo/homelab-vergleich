@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pi-hole einrichten: Werbeblocker fürs ganze Netzwerk</title>
+<meta name="description" content="Pi-hole einrichten: Werbeblocker fürs ganze Netzwerk per Docker installieren, DNS auf der FritzBox umstellen, Blocklisten und Statistik erklärt — inklusive Vor- und Nachteilen.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Pi-hole einrichten: Werbeblocker fürs ganze Netzwerk</h1>
+
+<p>Werbung nervt — auf dem Handy, dem Tablet, dem Smart-TV und dem Laptop. Wer einzelne Browser-Erweiterungen satt hat und die Werbung gleich für alle Geräte im Haushalt stoppen will, kommt um <strong>Pi-hole</strong> kaum herum. Der Netzwerk-weite Werbeblocker arbeitet als eigener DNS-Server: Statt jede einzelne App zu konfigurieren, leitest du den gesamten Datenverkehr einmal zentral daran vorbei. Das Ergebnis sind sauberere Webseiten, weniger Tracking und spürbar weniger Datenvolumen — auf jedem Gerät gleichzeitig.</p>
+
+<h2>Was ist Pi-hole?</h2>
+
+<p>Pi-hole ist eine quelloffene Software, die als lokaler DNS-Server läuft und Anfragen zu bekannten Werbe- und Tracking-Domains einfach ins Leere laufen lässt. Der Clou: Da die Blockierung auf DNS-Ebene passiert, greift sie für alle Geräte, die deinen Pi-hole als DNS-Server nutzen — ohne dass auf jedem Gerät etwas installiert werden muss. Die Software ist schlank, läuft problemlos auf einem <a href="../artikel/minipc-homelab.html">Mini-PC</a>, einem Raspberry Pi oder im Docker-Container auf dem bestehenden Server und braucht kaum Ressourcen.</p>
+
+<h2>Installation per Docker</h2>
+
+<p>Am einfachsten bringst du Pi-hole mit Docker zum Laufen. Ein einzelner Container genügt, vorausgesetzt die Ports 53 (DNS), 80 (Web-Oberfläche) und 443 sind frei. Ein typisches Compose-Snippet sieht so aus:</p>
+
+<pre><code>services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    environment:
+      TZ: "Europe/Berlin"
+      WEBPASSWORD: "dein-sicheres-passwort"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+    volumes:
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+    restart: unless-stopped</code></pre>
+
+<p>Wichtig ist das <code>network_mode: host</code>, wenn Port 53 auf dem Host bereits durch einen anderen Dienst belegt ist — unter Docker Desktop auf Windows und macOS kann der Host-Modus jedoch fehlen, dann musst du Port 53 im Router-Umfeld umplanen. Wer ohnehin ein größeres Homelab betreibt, bindet Pi-hole einfach in sein bestehendes <a href="../artikel/docker-homelab.html">Docker-Setup</a> ein. Nach dem Start erreichst du die Web-Oberfläche unter <code>http://IP-des-Servers/admin</code>.</p>
+
+<h2>DNS im Router einstellen</h2>
+
+<p>Damit Pi-hole wirklich für alle Geräte greift, trägst du seine IP-Adresse als DNS-Server im Router ein. Auf einer FritzBox geht das unter <em>Heimnetz → Netzwerk → Netzwerkeinstellungen → IPv4-Adressen</em>, wo du unter „Lokaler DNS-Server" die IP deines Pi-hole einträgst. Anschließend holen sich alle Clients ihre DNS-Antworten automatisch von Pi-hole. Ein Hinweis: Manche FritzBox-Modelle erzwingen bei aktivem DNS-Rebind-Schutz eine Ausnahme für die Pi-hole-Weboberfläche — du erkennst das an einem „Hostname wurde nicht gefunden"-Fehler beim Aufruf von <code>pi.hole</code>. Eine kurze Ausnahmeregel in der FritzBox löst das.</p>
+
+<h2>Blocklisten pflegen</h2>
+
+<p>Standardmäßig bringt Pi-hole eine Grundausstattung an Blocklisten mit. Unter <em>Group Management → Adlists</em> kannst du weitere hinzufügen — beliebt sind etwa die Listen von <em>Firebog</em> oder <em>OISD</em>, die neben Werbung auch Malware- und Tracking-Domains abdecken. Nach jeder Änderung ist ein <em>Update Gravity</em> nötig, damit die neuen Listen geladen werden. Der Tipp: Starte konservativ und ergänze erst dann weitere Listen, wenn du merkst, dass bestimmte Werbung noch durchkommt. Zu viele Listen erhöhen die Fehlalarm-Rate, ohne spürbar mehr zu blockieren.</p>
+
+<h2>Statistik auswerten</h2>
+
+<p>Ein großer Pluspunkt von Pi-hole ist das eingebaute Dashboard. Es zeigt dir live, wie viele Anfragen geblockt wurden, welche Clients am aktivsten sind und welche Domains am häufigsten angefragt werden. Die Grafik macht sichtbar, wie viel Prozent deines Traffics allein aus Werbung und Tracking besteht — oft 10 bis 20 Prozent. Über die Query-Logs lässt sich außerdem nachvollziehen, welche Domains ein bestimmtes Gerät ansteuert, und bei Bedarf gezielt freischalten (Whitelist) oder blockieren (Blacklist).</p>
+
+<h2>Vor- und Nachteile</h2>
+
+<p>Die Vorteile liegen auf der Hand: netzwerkweite Blockierung ohne Einzel-Installationen, minimaler Ressourcenverbrauch, volle Kontrolle über die eigenen Daten und ein aufschlussreiches Dashboard. Dazu ist die Lösung kostenlos und quelloffen. Es gibt aber auch Nachteile. Das größte praktische Problem ist <strong>DNS over HTTPS (DoH)</strong>: Browser wie Firefox oder Chrome verschlüsseln DNS-Anfragen zunehmend standardmäßig und umgehen damit den Pi-hole komplett — die Werbung kommt trotzdem durch. Wer das unterbinden will, muss DoH in den Browsern deaktivieren oder im Router ausgehende DNS-Anfragen auf Port 853 blockieren. Zudem gilt: Wenn der Pi-hole ausfällt, steht das gesamte Heimnetz ohne DNS da. Ein zweiter Pi-hole als Redundanz oder ein dokumentierter Fallback auf den Router-DNS ist daher ratsam.</p>
+
+<h2>Fazit</h2>
+
+<p>Pi-hole ist einer der dankbarsten Dienste, die du in dein Homelab aufnehmen kannst: schnell installiert, kaum Wartungsaufwand und sofort spürbarer Effekt auf jedem Gerät im Netz. Zusammen mit einem Docker-Setup und einer kleinen Mini-PC-Basis bekommst du einen Werbeblocker, der dauerhaft und unabhängig von Browser-Erweiterungen arbeitet. Wer das DoH-Problem im Blick behält und einen Fallback einplant, erhält ein Stück Infrastruktur, das sich vom ersten Tag an bezahlt macht.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Die Angaben entsprechen dem Stand September 2026 und können sich ändern. Alle genannten Kommandos und Einstellungen sind exemplarisch; prüfe die aktuelle Dokumentation der jeweiligen Projekte und deines Routers, bevor du Änderungen am Netzwerk vornimmst. Weiterführende Hardware-Vergleiche findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
