@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stromkosten Homelab: Was ein Server wirklich kostet — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Stromkosten Homelab: Was ein Server wirklich kostet" description: "Homelab Stromkosten realistisch berechnen: Idle- vs. Lastverbrauch, Rec">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Stromkosten Homelab: Was ein Server wirklich kostet&quot;</p>
+<p>description: &quot;Homelab Stromkosten realistisch berechnen: Idle- vs. Lastverbrauch, Rechenbeispiele für Mini-PC, Desktop und Server bei 0,40 €/kWh – plus Energiespartipps und Cloud-Vergleich.&quot;</p>
+<hr>
+<h1>Stromkosten Homelab: Was ein Server wirklich kostet</h1>
+<p>Ein eigenes Homelab klingt verlockend: volle Kontrolle, eigene Daten, lokale KI. Doch bevor der erste Server im Keller brummt, stellt sich die Frage, was der Dauerbetrieb eigentlich kostet. Bei einem Strompreis von 0,40 €/kWh summieren sich die Stromkosten fürs Homelab schnell – wir rechnen das hier konkret durch.</p>
+<h2>Leistungsaufnahme: Idle vs. Last</h2>
+<p>Der wichtigste Faktor für die Stromkosten eines Homelabs ist nicht die Nennleistung des Netzteils, sondern der tatsächliche Verbrauch. Ein Server läuft selten permanent unter Volllast. Die meiste Zeit verbringt er im Leerlauf (Idle), wo moderne Hardware nur einen Bruchteil der Maximalleistung zieht.</p>
+<ul>
+<li><strong>Mini-PC</strong> (z. B. Intel N100): 6–12 W im Idle, 25–60 W unter Last</li>
+<li><strong>Desktop-PC</strong> (gebrauchter Office-Rechner): 30–50 W im Idle, 100–180 W unter Last</li>
+<li><strong>Server</strong> (ältere Xeon-Plattform): 100–150 W im Idle, 300–600 W unter Last</li>
+</ul>
+<p>Die Rechnung dahinter ist simpel: Ein Gerät, das rund um die Uhr läuft, verbraucht bei 60 W Dauerlast exakt 0,06 kW × 24 h = 1,44 kWh pro Tag. Genau diese Zahl entscheidet, ob das Homelab am Monatsende 17 € oder 115 € kostet.</p>
+<h2>Rechenbeispiele: Drei Geräteklassen im Vergleich</h2>
+<p>Bei 0,40 €/kWh ergeben sich für den 24/7-Betrieb folgende Werte:</p>
+<p>| Gerät | Leistung | Tagesverbrauch | Monatskosten | Jahreskosten |</p>
+<p>|---|---|---|---|---|</p>
+<p>| Mini-PC | 60 W | 1,44 kWh | 17,28 € | 210,24 € |</p>
+<p>| Desktop | 150 W | 3,60 kWh | 43,20 € | 525,60 € |</p>
+<p>| Server | 400 W | 9,60 kWh | 115,20 € | 1.401,60 € |</p>
+<p>Die Formel: Leistung (kW) × 24 h × 30 Tage × 0,40 € = Monatskosten. Ein 400-Watt-Server schlägt also mit rund 115 € im Monat zu Buche – pro Jahr über 1.400 € nur für Strom. Der Mini-PC kostet im Jahr mit rund 210 € dagegen nur etwa 15 Prozent davon.</p>
+<h2>Homelab vs. Cloud-Abos: Was ist günstiger?</h2>
+<p>Oft lohnt der direkte Vergleich mit einem gemieteten Server. Ein leistungsfähiger VPS kostet je nach Anbieter zwischen 5 und 20 € im Monat, ein dedizierter Server mit echter Hardware ab 40–60 € monatlich.</p>
+<p>Das Homelab liegt mit einem Mini-PC bei rund 17 € Stromkosten im Monat – preislich auf VPS-Niveau, dafür mit unbegrenztem Speicher, voller CPU-Leistung und ohne Datenlimit. Der 400-Watt-Server ist mit über 115 € dagegen fast immer teurer als ein vergleichbarer Dedicated-Server im Rechenzentrum.</p>
+<p>Entscheidend ist der zweite Blick: Wer mehrere Dienste bündelt – NAS, Media-Server, Home Assistant, lokale LLMs – ersetzt schnell drei bis vier Cloud-Abos à 10–15 €. Ein Mini-PC, der 17 € Strom kostet, amortisiert sich damit rasch – von den Vorteilen bei Datenschutz und lokaler KI ganz abgesehen.</p>
+<h2>Energiespartipps: Stromkosten Homelab senken</h2>
+<p>Der größte Hebel ist die Wahl der Hardware. Ein energieeffizienter Mini-PC statt eines alten Servers spart oft 80 Prozent Strom. Weitere Tipps:</p>
+<ul>
+<li><strong>Auto-Shutdown &amp; Wake-on-LAN:</strong> Server nachts oder bei Abwesenheit herunterfahren und bei Bedarf automatisch per WOL starten.</li>
+<li><strong>Idle-Optimierung:</strong> C-States, ASPM und Powertop aktivieren, damit die CPU im Leerlauf wirklich heruntertaktet.</li>
+<li><strong>Effizientes Netzteil:</strong> Ein 80-Plus-Gold-Netzteil senkt den Verbrauch gerade im Teillastbereich.</li>
+<li><strong>SSD statt HDD:</strong> Eine SSD braucht im Leerlauf 0,5–2 W, eine Festplatte 5–10 W – bei mehreren Platten macht das einen Unterschied.</li>
+<li><strong>Zeitpläne:</strong> Nicht benötigte Dienste nur auf Abruf starten, statt sie dauerhaft laufen zu lassen.</li>
+</ul>
+<p>Schon ein Auto-Shutdown von acht Stunden pro Nacht reduziert die Stromkosten um ein Drittel – beim 400-Watt-Server wären das rund 38 € Ersparnis im Monat.</p>
+<h2>Fazit: Wann lohnt sich ein Homelab?</h2>
+<p>Ein Homelab lohnt sich dann, wenn Sie volle Kontrolle, eigene Daten und Dienste rund um die Uhr wollen – und bereit sind, die Hardware passend zu wählen. Mit einem sparsamen Mini-PC (60 W) bleiben die Stromkosten bei rund 17 € im Monat, das ist konkurrenzfähig zu Cloud-Abos und deutlich günstiger als jeder Server. Ein 400-Watt-Server rechnet sich dagegen nur, wenn Sie die Leistung wirklich auslasten – etwa für lokale KI, Virtualisierung oder Video-Transcoding – oder wenn günstiger Strom verfügbar ist. Die Faustregel: Je näher der Verbrauch an der Idle-Last liegt und je kleiner die Hardware, desto eher schlägt das Homelab die Cloud.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
