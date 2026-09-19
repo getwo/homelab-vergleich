@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAS 2026 im Vergleich: Synology vs QNAP vs Ugreen</title>
+<meta name="description" content="NAS kaufen 2026: Synology DS923+, QNAP TS-464 und Ugreen DXP4800 Plus im Vergleich — Preise, Stromverbrauch, Docker-Support.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>NAS 2026 im Vergleich: Synology vs. QNAP vs. Ugreen</h1>
+
+<p>Ein NAS ist das Herzstück fast jedes Homelabs. Es liefert zentralen Speicher für Backups, Fotos und Dokumente — und übernimmt gleichzeitig die Rolle des kleinen Servers, auf dem Docker-Container für Plex, Home Assistant, Pi-hole oder Nextcloud laufen. Die entscheidende Frage beim Kauf ist daher nicht nur die Zahl der Bays, sondern: Lässt sich auf dem Gerät überhaupt Docker ausführen? Denn genau dort trennt sich 2026 die Spreu vom Weizen. Dieser Vergleich zeigt, was die großen Drei — Synology, QNAP und Ugreen — in der Mittelklasse zu bieten haben.</p>
+
+<h2>Die Kandidaten</h2>
+
+<p>Synology tritt mit vier Geräten an. Das <strong>DS223</strong> (279&nbsp;€) ist ein günstiges 2-Bay-Einstiegsmodell mit ARM-CPU und 2&nbsp;GB RAM — reicht für reines Datei- und Foto-Backup. Das <strong>DS224+</strong> (369&nbsp;€) bringt als Plus-Modell einen Intel Celeron und damit Docker-Support, bleibt aber bei 2 Bays und 6&nbsp;GB RAM. Das <strong>DS423+</strong> (540&nbsp;€) erweitert auf 4 Bays und zwei NVMe-Cache-Slots, bleibt jedoch bei 1GbE und 6&nbsp;GB RAM. Das Flaggschiff <strong>DS923+</strong> (799&nbsp;€) setzt auf einen AMD Ryzen mit ECC-RAM und ist bis 32&nbsp;GB ausbaubar.</p>
+
+<p>QNAP ist mit zwei Geräten vertreten: dem kompakten 2-Bay-Modell <strong>TS-262</strong> (372&nbsp;€) und dem 4-Bay-Allrounder <strong>TS-464</strong> (699&nbsp;€). Beide punkten mit Intel-QuickSync-Hardware-Transcoding und 2.5GbE ab Werk. Ugreen schickt mit dem <strong>DXP4800 Plus</strong> (539&nbsp;€) den Newcomer ins Rennen, der auf dem Papier die stärkste Hardware mitbringt.</p>
+
+<h2>Preis-Leistungs-Tipp: Ugreen DXP4800 Plus</h2>
+
+<p>Wer 2026 das meiste für sein Geld will, kommt am <strong>Ugreen NASync DXP4800 Plus</strong> kaum vorbei. Für 539&nbsp;€ liefert das 4-Bay-Gerät einen Intel Pentium Gold 8505 (x86, 5 Kerne), der auf 64&nbsp;GB DDR5 aufgerüstet werden kann — ein Wert, den in dieser Preisklasse niemand sonst erreicht. Dazu kommen 1x&nbsp;10GbE plus 1x&nbsp;2.5GbE direkt ab Werk, zwei M.2-NVMe-Slots (PCIe Gen4) und voller Docker- und VM-Support. Zum Vergleich: Ein Synology DS923+ kostet 260&nbsp;€ mehr und muss für 10GbE erst nachgerüstet werden. Der Preis dafür ist ein höherer Leerlauf-Verbrauch von rund 30&nbsp;W und das noch junge Betriebssystem UGOS Pro, das bei Langzeit-Pflege und App-Ökosystem hinter Synology und QNAP zurückliegt.</p>
+
+<h2>Synology für Zuverlässigkeit</h2>
+
+<p>Wer Wert auf ein ausgereiftes System und langfristige Stabilität legt, ist bei Synology richtig. Das <strong>DS923+</strong> ist mit ECC-Speicher ausgestattet, auf 32&nbsp;GB erweiterbar und über den PCIe-Slot auf 10GbE nachrüstbar — die beste Wahl für ein ernsthaftes Homelab. Zwei NVMe-Slots lassen sich hier sogar als Storage-Pool statt nur als Cache nutzen. Der Haken: Die AMD-CPU hat keine integrierte GPU, Hardware-Transcoding für Plex &amp; Co. entfällt also. Für Transcoding-Fans ist das QNAP TS-464 mit Intel QuickSync die bessere Wahl — es bietet 2.5GbE ab Werk und sehr guten Docker-Support über die Container Station, kostet aber mit 699&nbsp;€ deutlich mehr als der Ugreen.</p>
+
+<h2>Vergleichstabelle</h2>
+
+<table>
+<thead>
+<tr><th>Modell</th><th>Bays</th><th>CPU</th><th>RAM (max.)</th><th>Netzwerk</th><th>Idle</th><th>Preis</th><th>Docker</th></tr>
+</thead>
+<tbody>
+<tr><td>Synology DS223</td><td>2</td><td>ARM (RTD1619B)</td><td>2&nbsp;GB (fix)</td><td>1x&nbsp;1GbE</td><td>~8&nbsp;W</td><td>279&nbsp;€</td><td>❌</td></tr>
+<tr><td>Synology DS224+</td><td>2</td><td>Celeron J4125</td><td>6&nbsp;GB</td><td>2x&nbsp;1GbE</td><td>~11&nbsp;W</td><td>369&nbsp;€</td><td>✅</td></tr>
+<tr><td>Synology DS423+</td><td>4</td><td>Celeron J4125</td><td>6&nbsp;GB</td><td>2x&nbsp;1GbE</td><td>~11&nbsp;W</td><td>540&nbsp;€</td><td>✅</td></tr>
+<tr><td>Synology DS923+</td><td>4</td><td>Ryzen R1600</td><td>32&nbsp;GB (ECC)</td><td>2x&nbsp;1GbE + PCIe</td><td>~15&nbsp;W</td><td>799&nbsp;€</td><td>✅</td></tr>
+<tr><td>QNAP TS-262</td><td>2</td><td>Celeron N4505</td><td>4&nbsp;GB (fix)</td><td>1x&nbsp;2.5GbE + PCIe</td><td>~16&nbsp;W</td><td>372&nbsp;€</td><td>✅</td></tr>
+<tr><td>QNAP TS-464</td><td>4</td><td>Celeron N5095</td><td>16&nbsp;GB</td><td>2x&nbsp;2.5GbE + PCIe</td><td>~20&nbsp;W</td><td>699&nbsp;€</td><td>✅</td></tr>
+<tr><td>Ugreen DXP4800 Plus</td><td>4</td><td>Pentium Gold 8505</td><td>64&nbsp;GB</td><td>1x&nbsp;10GbE + 1x&nbsp;2.5GbE</td><td>~30&nbsp;W</td><td>539&nbsp;€</td><td>✅</td></tr>
+</tbody>
+</table>
+
+<p>Ein wichtiger Hinweis zum Docker-Support: Nicht jedes NAS kann Container ausführen. Das günstige Synology DS223 (und das nicht in der Tabelle geführte DS423) basieren auf ARM-CPUs ohne Docker-Unterstützung. Wer plant, Plex, Home Assistant oder andere Container zu hosten, sollte daher zu einem Plus-Modell von Synology, einem QNAP oder dem Ugreen greifen — und einen Blick auf die RAM-Ausstattung werfen, denn Docker lebt von ausreichend Speicher.</p>
+
+<h2>Fazit</h2>
+
+<p>Für reines Backup ohne Container reicht das sparsame DS223 mit 8&nbsp;W. Wer ein kleines Homelab mit wenigen Containern startet, fährt mit dem DS224+ oder dem QNAP TS-262 gut. Die beste Hardware pro Euro liefert 2026 der <strong>Ugreen DXP4800 Plus</strong>: 10GbE, 64&nbsp;GB RAM und starke x86-CPU für 539&nbsp;€ sind unschlagbar — wer mit dem jungen UGOS Pro leben kann, bekommt hier am meisten NAS fürs Geld. Für maximale Zuverlässigkeit, ECC-Speicher und ein ausgereiftes Ökosystem bleibt das Synology DS923+ die Referenz, auch wenn Transcoding-Fans zum QNAP TS-464 greifen sollten. Die Entscheidung hängt am Ende davon ab, ob dir pure Hardware oder ein erprobtes System wichtiger ist.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält Affiliate-/Partner-Links. Preise und Angaben entsprechen dem Stand September 2026 und können sich ändern. Alle Preise verstehen sich ohne Festplatten (Leergehäuse); die Idle-Werte sind typische Leerlauf-Näherungen inklusive HDDs im Ruhezustand. Weiterführende Hardware-Vergleiche findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
