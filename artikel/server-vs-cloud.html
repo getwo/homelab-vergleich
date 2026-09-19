@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eigener Server vs. Cloud: Wann lohnt sich Self-Hosting?</title>
+<meta name="description" content="Eigener Server oder Cloud? Kostenrechnung mit Strompreis 0,40 €/kWh, Break-even-Beispiele und klare Kriterien: Wann sich Self-Hosting lohnt und wann ein VPS besser ist.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Eigener Server vs. Cloud: Wann lohnt sich Self-Hosting?</h1>
+
+<p>Die Frage „eigener Server oder Cloud?" ist eine der häufigsten beim Start eines Homelabs — und zugleich eine der am falschesten gestellten. Denn sie hat keine allgemeingültige Antwort, sondern nur eine wirtschaftliche und eine persönliche Seite. Wer Self-Hosting nur als Sparmaßnahme sieht, rechnet sich schnell reich; wer es als Hobby und Lernprojekt betreibt, bekommt die Hardware-Kosten in Form von Wissen und Kontrolle zurück. Dieser Artikel legt die Zahlen offen und zeigt, wann sich der eigene Server wirklich lohnt.</p>
+
+<h2>Die Kostenrechnung: Anschaffung und Strom gegen Miete</h2>
+
+<p>Ein eigener Server kostet zunächst Geld in der Anschaffung, danach vor allem Strom. Bei einem Strompreis von <strong>0,40&nbsp;€/kWh</strong> ist der Dauerbetrieb die entscheidende Größe — und der wird oft unterschätzt. Ein sparsamer Mini-PC mit 12&nbsp;W im Leerlauf verbraucht rund 105&nbsp;kWh im Jahr, also etwa <strong>42&nbsp;€ Stromkosten jährlich</strong>. Ein größerer gebrauchter Server oder ein Tower mit mehreren Festplatten liegt schnell bei 40&nbsp;W und mehr — das sind rund 350&nbsp;kWh und <strong>140&nbsp;€ pro Jahr</strong>, noch vor jeder Hardware-Erweiterung.</p>
+
+<p>Auf der anderen Seite steht die Miete. Ein kleiner VPS kostet typischerweise 5 bis 10&nbsp;€ im Monat, ein leistungsfähigerer mit mehreren Kernen und größerem Speicher 20 bis 40&nbsp;€. Cloud-Dienste rechnen nach Verbrauch ab: Wer wenig Last erzeugt, zahlt wenig; wer stark skaliert, zahlt entsprechend mehr. Der Unterschied zum eigenen Server liegt darin, dass die Cloud die Fixkosten in variable Kosten verwandelt — und dass Anschaffung, Austausch defekter Teile und der Betrieb von jemand anderem übernommen werden.</p>
+
+<h2>Wann sich ein eigenes Homelab lohnt</h2>
+
+<p>Drei Argumente sprechen für Self-Hosting, und nur eines davon ist finanziell. Erstens das <strong>Lernen</strong>: Wer Docker, Netzwerktechnik, Backups oder Virtualisierung wirklich verstehen will, lernt das nirgendwo so gut wie auf eigener Hardware, auf der Fehler nichts kosten. Zweitens die <strong>Datenhoheit</strong>: Wer Fotos, Dokumente oder Smart-Home-Daten bei sich behält, ist unabhängig von Anbieter-AGBs, Preiserhöhungen und Datenlecks Dritter. Drittens die <strong>Fixkosten</strong>: Einmal angeschafft, kostet der Server jeden Monat dasselbe — egal ob zehn Dienste laufen oder hundert. Die Grenzkosten eines zusätzlichen Containers liegen praktisch bei null, solange RAM und CPU reichen.</p>
+
+<p>Genau dieses Modell ist ideal für dauerhafte, planbare Lasten: ein Medien-Server, der täglich läuft, ein Pi-hole, eine Nextcloud für die Familie. Wer solche Dienste über Jahre betreibt, für den rechnet sich die eigene Hardware gegenüber mehreren gemieteten Instanzen fast immer — dazu mehr in unserem Artikel zum <a href="../artikel/server-homelab.html">Aufbau eines eigenen Homelab-Servers</a>.</p>
+
+<h2>Wann Cloud oder VPS die bessere Wahl sind</h2>
+
+<p>Die Cloud gewinnt überall dort, wo es um <strong>Verfügbarkeit und Uptime</strong> geht. Ein Rechenzentrum hat redundante Stromversorgung, mehrere Internet-Anbindungen und bezahltes Personal, das nachts eingreift. Der eigene Server im Keller hängt an einer einzigen Hausstrom-Sicherung und einer Heim-Internetleitung — fällt der Strom aus oder bricht die Leitung, ist der Dienst offline. Wer etwas öffentlich betreiben will, das wirklich erreichbar sein muss, fährt mit einem VPS besser.</p>
+
+<p>Das zweite Argument ist die <strong>Skalierung</strong>: Ein VPS lässt sich in Minuten vergrößern, klonen oder in eine andere Region verschieben. Der eigene Server hat eine feste Obergrenze aus CPU, RAM und Speicher — wer sie erreicht, kauft neue Hardware. Kurzfristige Lastspitzen, Testumgebungen oder Projekte mit ungewissem Wachstum gehören daher in die Cloud. Eine ausführliche Gegenüberstellung gängiger Anbieter findest du in unserem <a href="../artikel/vps-vergleich.html">VPS-Vergleich</a>.</p>
+
+<h2>Break-even: Wann sich die Hardware amortisiert</h2>
+
+<p>Zwei Beispiele machen die Rechnung konkret. <strong>Beispiel eins, der sparsame Einstieg:</strong> Ein Mini-PC für 350&nbsp;€ mit 12&nbsp;W im Leerlauf kostet rund 42&nbsp;€ Strom im Jahr. Er ersetzt einen VPS für 8&nbsp;€ im Monat, also 96&nbsp;€ im Jahr. Die jährliche Ersparnis beträgt 54&nbsp;€, die Anschaffung amortisiert sich nach knapp <strong>sechseinhalb Jahren</strong> — zu lang, um allein aus Spargründen zu überzeugen, aber völlig okay für ein Hobby, das nebenbei 96&nbsp;€ Miete im Jahr einspart.</p>
+
+<p><strong>Beispiel zwei, der größere Server:</strong> Ein gebrauchter Server für 600&nbsp;€ mit 40&nbsp;W kostet rund 140&nbsp;€ Strom im Jahr. Er ersetzt mehrere VPS und einen Speicherdienst für zusammen 30&nbsp;€ im Monat, also 360&nbsp;€ im Jahr. Die Ersparnis von 220&nbsp;€ im Jahr amortisiert die Anschaffung in unter <strong>drei Jahren</strong> — ab dann läuft der Server deutlich günstiger als die Cloud. Die Regel dahinter: Je mehr Dauerlast du konsolidierst und je länger du betreibst, desto klarer gewinnt die eigene Hardware.</p>
+
+<h2>Fazit</h2>
+
+<p>Self-Hosting lohnt sich für alle, die lernen wollen, Datenhoheit schätzen und dauerhafte, planbare Lasten betreiben — die Amortisation wird umso schneller, je mehr Dienste auf einer Maschine gebündelt werden. Cloud und VPS sind die richtige Wahl, wenn Verfügbarkeit, Uptime und flexible Skalierung wichtiger sind als der Preis pro Terabyte oder die volle Kontrolle. Viele Homelabs fahren deshalb hybrid: kritische, öffentlich erreichbare Dienste in der Cloud, alles Persönliche und Experimentelle zu Hause. Die Entscheidung ist am Ende keine zwischen gut und schlecht, sondern zwischen zwei Werkzeugen, die sich hervorragend ergänzen.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Preise und Angaben entsprechen dem Stand September 2026 und können sich ändern. Die Beispielrechnungen basieren auf einem Strompreis von 0,40&nbsp;€/kWh und typischen Leerlauf-Werten; dein tatsächlicher Verbrauch hängt von Hardware und Last ab. Weiterführend: <a href="../artikel/server-homelab.html">Eigenes Homelab aufbauen</a> · <a href="../artikel/vps-vergleich.html">VPS im Vergleich</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
