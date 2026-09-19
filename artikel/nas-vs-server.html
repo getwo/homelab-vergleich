@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAS vs Server: Was brauchst du wirklich? — Homelab Vergleich</title>
+<meta name="description" content="NAS vs Server: Was brauchst du wirklich?  Reicht ein fertiges NAS, oder muss ein richtiger Server her? Beide Geräte speichern Daten und laufen rund um">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>NAS vs Server: Was brauchst du wirklich?</h1>
+<p>Reicht ein fertiges NAS, oder muss ein richtiger Server her? Beide Geräte speichern Daten und laufen rund um die Uhr — doch in Einsatzgebiet, Flexibilität und Preis liegen Welten dazwischen. Dieser Artikel zeigt ehrlich, welches Gerät zu deinem Vorhaben passt und wann du Geld für etwas ausgibst, das du gar nicht brauchst.</p>
+<h2>Was ist ein NAS?</h2>
+<p>Ein NAS (Network Attached Storage, also netzgebundener Speicher) ist ein fertiges Gerät für genau eine Aufgabe: Daten im Netzwerk bereitstellen. Marken wie Synology, QNAP oder ASUSTOR liefern eine fertige Box mit Betriebssystem, Apps und einem übersichtlichen Web-Interface. Du steckst Festplatten ein, richtest Benutzer und Freigaben ein — fertig.</p>
+<p>Die großen Vorteile liegen auf der Hand:</p>
+<ul>
+<li><strong>Einfachheit:</strong> Einrichtung in unter einer Stunde, keine Linux-Kenntnisse nötig.</li>
+<li><strong>Wartungsarm:</strong> Updates, RAID-Verwaltung und Backups laufen automatisch.</li>
+<li><strong>Energieeffizient:</strong> Viele Modelle verbrauchen im Leerlauf nur 10 bis 30 Watt.</li>
+<li><strong>Zuverlässig:</strong> Die Hersteller testen ihre Pakete aufeinander abgestimmt.</li>
+</ul>
+<p>Der Preis für diese Bequemlichkeit ist die Flexibilität: Du bleibst auf das beschränkt, was der Hersteller anbietet.</p>
+<h2>Was ist ein Server?</h2>
+<p>Ein Server ist dagegen ein Allzweck-Rechner, den du selbst aufsetzt. Meist läuft darauf ein Hypervisor wie Proxmox, ein Linux-System oder eine Container-Plattform wie Docker. Du entscheidest frei über Betriebssystem, Software und Ressourcen.</p>
+<p>Dafür bekommst du:</p>
+<ul>
+<li><strong>Volle Freiheit:</strong> Jede Software, jede Konfiguration, kein Hersteller-Zwang.</li>
+<li><strong>Mehr Leistung:</strong> Aktuelle Desktop- oder Server-CPUs mit deutlich mehr Kernen und RAM.</li>
+<li><strong>Virtualisierung:</strong> Viele Dienste isoliert nebeneinander auf einer Maschine.</li>
+<li><strong>Erweiterbar:</strong> Grafikkarten für KI, mehr RAM, weitere Netzkarten — alles nachrüstbar.</li>
+</ul>
+<p>Die Kehrseite: Ein Server will eingerichtet, gepflegt und verstanden werden. Das kostet Zeit und Energie.</p>
+<h2>Typische Use-Cases im Vergleich</h2>
+<p>| Anwendung | NAS | Server |</p>
+<p>|---|---|---|</p>
+<p>| Backups (PC, Handy, VMs) | Ideal, dafür gemacht | Möglich, mehr Aufwand |</p>
+<p>| Medienstreaming (Plex, Jellyfin) | Gut, oft mit Hardware-Transcoding | Gut, flexibler |</p>
+<p>| Dateifreigaben &amp; Cloud-Ersatz | Ideal | Möglich |</p>
+<p>| Lokale KI (LLM, Bildgenerierung) | Meist zu schwach | Besser, mit GPU |</p>
+<p>| Virtualisierung (VMs, Container) | Nur begrenzt | Ideal |</p>
+<p>| Homeserver-Dienste (Nextcloud, Home Assistant) | Teilweise als App | Volle Kontrolle |</p>
+<p>Backup und Medien sind die klassischen NAS-Disziplinen. Für lokale KI und ernsthafte Virtualisierung führt dagegen kaum ein Weg am Server vorbei.</p>
+<h2>Was kostet was?</h2>
+<p>Die Preisbereiche überschneiden sich stärker, als viele denken:</p>
+<ul>
+<li><strong>Einsteiger-NAS (2 Bays):</strong> rund 200 bis 400 Euro, dazu Festplatten.</li>
+<li><strong>Solides NAS (4 Bays):</strong> etwa 500 bis 900 Euro.</li>
+<li><strong>Gebrauchter Mini-PC als Server:</strong> schon ab 150 bis 300 Euro.</li>
+<li><strong>Selbstgebauter oder gebrauchter Server:</strong> grob 400 bis 1.200 Euro, je nach Ausstattung.</li>
+</ul>
+<p>Wichtig: Beim Server kommen Stromkosten und Einrichtungszeit oben drauf. Dafür bekommst du oft mehr Rechenleistung pro Euro als bei einem fertigen NAS.</p>
+<h2>Wann reicht ein NAS?</h2>
+<p>Ein NAS ist die richtige Wahl, wenn du in erster Linie Daten sicher speichern und teilen willst — und keine Lust auf Bastelei hast. Typische Fälle:</p>
+<ul>
+<li>Du willst Backups für Familie, PCs und Handys zentral ablegen.</li>
+<li>Du streamst Filme und Musik über Plex oder Jellyfin.</li>
+<li>Du ersetzt Dropbox &amp; Co. durch eine eigene, private Cloud.</li>
+<li>Du willst ein Gerät, das einfach läuft und dich nicht beschäftigt.</li>
+</ul>
+<p>In all diesen Fällen ist ein NAS die klar bessere Entscheidung: schneller eingerichtet, sparsamer im Betrieb und zuverlässiger.</p>
+<h2>Wann ist ein Server besser?</h2>
+<p>Ein Server lohnt sich, sobald du mehr willst als Datenspeicher:</p>
+<ul>
+<li>Du willst lokale KI-Modelle mit einer Grafikkarte betreiben.</li>
+<li>Du möchtest mehrere virtuelle Maschinen oder Container verwalten.</li>
+<li>Du planst Dienste wie Home Assistant, Firewalls oder eigene Webanwendungen.</li>
+<li>Du hast Spaß am Einrichten, Lernen und Optimieren.</li>
+</ul>
+<p>Wer ohnehin ein Homelab aufbauen will, sollte von Anfang an über einen Server nachdenken — ein NAS lässt sich später nur schwer zu einem leistungsfähigen Server aufrüsten.</p>
+<h2>Ehrliche Empfehlung für Einsteiger</h2>
+<p>Für die meisten Einsteiger lautet die ehrliche Antwort: <strong>Fang mit einem NAS an.</strong> Es löst deine Kernprobleme — Backup und Medien — zuverlässig und ohne Frust. Hast du bereits einen alten PC herumliegen, ist Proxmox darauf ein kostenloser Weg, in die Server-Welt hineinzuschnuppern.</p>
+<p>Die goldene Mitte: ein NAS für die Daten und ein kleiner, günstiger Server (oder Mini-PC) für alles, was mehr Rechenleistung braucht. So trennst du Speicher sauber von Anwendungen.</p>
+<h2>Fazit</h2>
+<p>NAS und Server sind keine Konkurrenten, sondern Werkzeuge für unterschiedliche Aufgaben. Das NAS gewinnt bei Einfachheit, Effizienz und Wartungsarmut — der Server bei Flexibilität, Leistung und Virtualisierung. Frag dich also nicht, welches Gerät „besser&quot; ist, sondern was du in den nächsten zwei Jahren wirklich betreiben willst. Wer nur speichert, fährt mit einem NAS bestens; wer experimentieren und wachsen will, greift zum Server.</p>
+<p><em>Hinweis: Alle Preise sind Richtwerte (Stand Anfang 2026) und können je nach Marktlage schwanken. Affiliate-Links sind in diesem Artikel nicht enthalten.</em></p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
