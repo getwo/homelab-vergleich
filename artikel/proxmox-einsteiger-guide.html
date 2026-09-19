@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxmox VE Einsteiger-Guide: Virtualisierung für dein Homelab — Homelab Vergleich</title>
+<meta name="description" content="Proxmox VE Einsteiger-Guide: Virtualisierung für dein Homelab  Proxmox Virtual Environment (kurz Proxmox VE oder PVE) ist eine quelloffene Virtualisie">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Proxmox VE Einsteiger-Guide: Virtualisierung für dein Homelab</h1>
+<p>Proxmox Virtual Environment (kurz Proxmox VE oder PVE) ist eine quelloffene Virtualisierungsplattform, die auf Debian Linux basiert. Sie vereint zwei Welten in einer Oberfläche: klassische virtuelle Maschinen (KVM) und leichtgewichtige LXC-Container. Für Homelab-Betreiber ist Proxmox damit die ideale Basis, um Server, Dienste und lokale KI-Anwendungen auf einem einzigen Rechner zu betreiben – ohne Lizenzkosten, aber mit Funktionen auf Enterprise-Niveau.</p>
+<h2>Was ist Proxmox VE?</h2>
+<p>Proxmox VE ist ein Hypervisor, der direkt auf der Hardware installiert wird. Über ein übersichtliches Web-Interface verwaltest du alle deine virtuellen Maschinen, Container, Speicher und Netzwerke zentral. Im Gegensatz zu reinen Container-Plattformen wie Docker bekommst du volle Kontrolle über CPU, Arbeitsspeicher, Festplatten und Netzwerk jeder einzelnen Instanz. Zusatzfunktionen wie Backups, Snapshots, Live-Migration und Hochverfügbarkeit (Clustering) machen Proxmox auch für anspruchsvollere Setups interessant.</p>
+<h2>Voraussetzungen</h2>
+<p>Für den Einstieg reicht überraschend wenig Hardware:</p>
+<ul>
+<li><strong>Prozessor:</strong> Ein x86-64-Prozessor mit Hardware-Virtualisierung (Intel VT-x oder AMD-V/SVM), aktiviert im BIOS/UEFI.</li>
+<li><strong>Arbeitsspeicher:</strong> Mindestens 4 GB RAM, empfohlen 16 GB oder mehr für mehrere VMs.</li>
+<li><strong>Festplatte:</strong> 32 GB SSD als Minimum; eine SSD für das System und eine größere Platte für VM-Speicher sind ideal.</li>
+<li><strong>Netzwerk:</strong> Eine kabelgebundene Netzwerkkarte (Ethernet) ist Pflicht, WLAN wird nicht unterstützt.</li>
+<li><strong>USB-Stick:</strong> Ein leerer Stick mit mindestens 4 GB für das Installationsmedium.</li>
+</ul>
+<h2>Installation per USB-Stick</h2>
+<p>Die Installation ist in wenigen Schritten erledigt:</p>
+<p>1. Lade das aktuelle Proxmox-VE-ISO-Image von der offiziellen Website herunter.</p>
+<p>2. Erstelle mit einem Tool wie <strong>Rufus</strong> (Windows) oder <strong>balenaEtcher</strong> einen bootfähigen USB-Stick.</p>
+<p>3. Boote deinen Server vom USB-Stick und starte die grafische Installation.</p>
+<p>4. Wähle die Ziel-Festplatte aus und lege ein sicheres Root-Passwort fest.</p>
+<p>5. Vergib eine statische IP-Adresse, ein Gateway und einen DNS-Server für das Management-Netzwerk.</p>
+<p>Nach dem Neustart erreichst du das Web-Interface über die vergebene IP-Adresse:</p>
+<pre><code>
+https://DEINE-SERVER-IP:8006
+</code></pre>
+<p>Der erste Zugriff erfolgt mit dem Benutzer <code>root</code> und deinem gesetzten Passwort. Die Zertifikatswarnung des Browsers kannst du anfangs getrost ignorieren.</p>
+<h2>Das Web-Interface kennenlernen</h2>
+<p>Die Oberfläche ist in drei Bereiche gegliedert:</p>
+<ul>
+<li><strong>Datacenter:</strong> Globale Einstellungen wie Benutzer, Speicher, Backup-Jobs und Cluster.</li>
+<li><strong>Node:</strong> Dein physischer Server mit Zusammenfassung, Shell, Netzwerk und System-Logs.</li>
+<li><strong>VMs &amp; Container:</strong> Die Liste aller virtuellen Instanzen mit Ressourcen-Anzeige.</li>
+</ul>
+<p>Über die eingebaute Shell (Konsole) erreichst du jederzeit die Linux-Kommandozeile deines Proxmox-Hosts – praktisch für Updates und Diagnose.</p>
+<h2>VM vs. LXC-Container</h2>
+<p>Proxmox bietet zwei Wege, Dienste zu betreiben. Die Wahl hängt vom Einsatzzweck ab:</p>
+<ul>
+<li><strong>Virtuelle Maschine (KVM):</strong> Vollständig isolierte Hardware-Emulation mit eigenem Kernel und eigenem Betriebssystem. Ideal für Windows-Gäste, andere Betriebssysteme oder wenn maximale Isolation gefragt ist. Benötigt mehr Ressourcen.</li>
+<li><strong>LXC-Container:</strong> Teilt sich den Kernel des Hosts und startet dadurch in Sekunden bei minimalem Ressourcenverbrauch. Perfekt für Linux-Dienste wie Datenbanken, Webserver oder lokale KI-Tools.</li>
+</ul>
+<p>Faustregel: <strong>Linux-Dienst ohne besondere Anforderungen? LXC. Anderes Betriebssystem oder volle Isolation? VM.</strong></p>
+<h2>Netzwerk-Bridge einrichten</h2>
+<p>Standardmäßig richtet Proxmox eine Bridge <code>vmbr0</code> ein, die deine physische Netzwerkkarte mit den virtuellen Instanzen verbindet. Über diese Bridge bekommen alle VMs und Container eigene IP-Adressen aus deinem lokalen Netzwerk und sind damit wie normale Geräte im Heimnetz erreichbar.</p>
+<p>Für fortgeschrittene Setups – etwa ein separates Netz für lokale KI-Dienste – kannst du zusätzliche Bridges anlegen:</p>
+<p>1. Gehe zu <strong>Node → Netzwerk → Erstellen → Linux Bridge</strong>.</p>
+<p>2. Benenne sie zum Beispiel <code>vmbr1</code> und weise ihr bei Bedarf ein eigenes Subnetz zu.</p>
+<p>3. Ordne die Bridge später in den Netzwerk-Einstellungen deiner VM oder deines Containers zu.</p>
+<h2>Die erste virtuelle Maschine erstellen</h2>
+<p>So startest du deine erste VM in unter zehn Minuten:</p>
+<p>1. Lade ein ISO-Image des gewünschten Betriebssystems auf den Proxmox-Speicher (Node → lokaler Speicher → ISO Images).</p>
+<p>2. Klicke auf <strong>VM erstellen</strong> und folge dem Assistenten.</p>
+<p>3. Wähle das ISO als Installationsmedium und lege CPU-Kerne sowie RAM fest.</p>
+<p>4. Erstelle eine virtuelle Festplatte (z. B. 32 GB) und verbinde die VM mit der Bridge <code>vmbr0</code>.</p>
+<p>5. Starte die VM und öffne die Konsole, um das Betriebssystem zu installieren.</p>
+<p>Nach der Installation solltest du die <strong>QEMU Guest Agent</strong>-Tools im Gast installieren, damit Proxmox korrekte Auslastungswerte und saubere Shutdowns ermöglicht.</p>
+<h2>Konkrete Tipps für den Alltag</h2>
+<ul>
+<li><strong>Regelmäßige Backups:</strong> Richte unter Datacenter → Backups automatische Jobs ein, die deine VMs und Container regelmäßig sichern.</li>
+<li><strong>Updates nicht vergessen:</strong> Aktualisiere den Host per Shell mit <code>apt update &amp;&amp; apt dist-upgrade</code>.</li>
+<li><strong>Ressourcen beobachten:</strong> Behalte CPU- und RAM-Auslastung im Blick, bevor du neue Instanzen hinzufügst.</li>
+<li><strong>Namen konsequent vergeben:</strong> Klare Bezeichnungen wie <code>pihole-lxc</code> oder <code>nextcloud-vm</code> sparen später viel Sucherei.</li>
+<li><strong>Snapshots vor Änderungen:</strong> Erstelle vor größeren Updates oder Konfigurationsänderungen immer einen Snapshot, um schnell zurückrollen zu können.</li>
+</ul>
+<h2>Fazit</h2>
+<p>Proxmox VE ist der ideale Einstieg in die Welt der Server-Virtualisierung: kostenlos, leistungsfähig und durch das Web-Interface auch für Einsteiger gut beherrschbar. Ob du einen Medienserver, eine Firewall oder lokale KI-Modelle betreiben willst – mit Proxmox schaffst du dir eine flexible Basis, die mit deinem Homelab wachsen kann.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
