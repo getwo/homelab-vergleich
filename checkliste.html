@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kostenlose Homelab-Starter-Checkliste — 30 Schritte zu deinem KI-Server</title>
+<meta name="description" content="Kostenlose Checkliste: 30 Schritte zu deinem eigenen Homelab & KI-Server. Hardware, Proxmox, Ollama, Sicherheit, Backups — abhakbar.">
+<style>
+:root { --bg:#0d1117; --card:#161b22; --border:#30363d; --fg:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --accent2:#79c0ff; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,Arial,sans-serif; background:var(--bg); color:var(--fg); line-height:1.6; }
+.wrap { max-width:640px; margin:0 auto; padding:0 24px; }
+header { border-bottom:1px solid var(--border); padding:18px 0; }
+.brand { font-weight:700; font-size:18px; } .brand span { color:var(--accent); }
+main { padding:44px 0; }
+.kicker { color:var(--accent); font-weight:600; letter-spacing:1px; text-transform:uppercase; font-size:13px; }
+h1 { font-size:34px; line-height:1.2; margin:12px 0 14px; }
+h1 .hl { color:var(--accent); }
+.lead { font-size:17px; color:var(--muted); margin-bottom:24px; }
+ul.points { list-style:none; margin:18px 0 26px; }
+ul.points li { padding:8px 0 8px 28px; position:relative; font-size:15px; }
+ul.points li::before { content:"✓"; position:absolute; left:0; color:var(--accent); font-weight:700; }
+.form { background:var(--card); border:1px solid var(--accent); border-radius:12px; padding:26px; }
+.form label { font-size:14px; color:var(--muted); display:block; margin-bottom:8px; }
+.form input[type=email] { width:100%; padding:13px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--fg); font-size:15px; }
+.form button { width:100%; margin-top:14px; background:var(--accent); color:#0d1117; font-weight:700; font-size:16px; padding:14px; border:none; border-radius:8px; cursor:pointer; }
+.form button:hover { background:var(--accent2); }
+.form .hint { font-size:12px; color:var(--muted); margin-top:10px; }
+#success { display:none; margin-top:18px; background:#12261e; border:1px solid #2ea043; border-radius:8px; padding:16px; }
+#success a { color:var(--accent2); font-weight:700; }
+footer { border-top:1px solid var(--border); margin-top:30px; padding:20px 0; color:var(--muted); font-size:13px; }
+footer a { color:var(--accent); text-decoration:none; }
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">⚡ BsN<span> · Homelab</span></div></div></header>
+<main>
+  <div class="wrap">
+    <div class="kicker">Kostenloser Download</div>
+    <h1>Die <span class="hl">Homelab-Starter-Checkliste</span><br>30 Schritte zu deinem eigenen KI-Server</h1>
+    <p class="lead">Kein Rat, kein Bla-bla — eine abhakbare Liste. Genau die Schritte, die du brauchst, um aus einem gebrauchten Rechner einen vollwertigen KI-Server zu machen.</p>
+
+    <ul class="points">
+      <li>Hardware-Kauf: was du wirklich brauchst (und was nicht)</li>
+      <li>Proxmox-Setup in 10 Schritten</li>
+      <li>Ollama &amp; LLMs: dein erstes lokales Modell</li>
+      <li>Sicherheit &amp; Backups: damit nichts schiefgeht</li>
+    </ul>
+
+    <div class="form" id="form">
+      <label for="email">E-Mail eintragen — Checkliste kommt sofort:</label>
+      <input type="email" id="email" placeholder="deine@email.de" required>
+      <button id="btn" onclick="submitEmail()">Checkliste kostenlos laden</button>
+      <div class="hint">Kein Spam. Nur die Checkliste + gelegentlich nützliche Homelab-Tipps. Jederzeit abmeldbar.</div>
+    </div>
+
+    <div id="success">
+      <strong>Fast geschafft!</strong> Deine Checkliste ist bereit:<br>
+      <a href="checkliste-homelab.pdf" download>📥 Checkliste herunterladen (PDF)</a>
+      <p style="margin-top:8px;font-size:13px;color:var(--muted)">Du bist auf der Liste — willkommen im Homelab-Club.</p>
+    </div>
+  </div>
+</main>
+<footer>
+  <div class="wrap">© 2026 BsN · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></div>
+</footer>
+<script>
+function submitEmail() {
+  var e = document.getElementById('email').value.trim();
+  if (!e || e.indexOf('@') < 0) { alert('Bitte eine gültige E-Mail eingeben.'); return; }
+  try { localStorage.setItem('bsn_lead_email', e); } catch(err) {}
+  document.getElementById('form').style.display = 'none';
+  document.getElementById('success').style.display = 'block';
+}
+</script>
+</body>
+</html>
