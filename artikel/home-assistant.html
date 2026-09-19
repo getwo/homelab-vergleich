@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Assistant fürs Homelab: Der komplette Einstieg</title>
+<meta name="description" content="Home Assistant fürs Homelab: Installation per VM oder Docker, die wichtigsten Integrations, Dashboards und Automationen sowie die passende Hardware — der komplette Einstieg.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Home Assistant fürs Homelab: Der komplette Einstieg</h1>
+
+<p>Home Assistant ist das Schweizer Taschenmesser der Smart-Home-Welt: eine quelloffene Plattform, die hunderte Geräte verschiedenster Hersteller unter einer einzigen Oberfläche vereint. Statt dich an eine Cloud oder ein Ökosystem zu binden, läuft die Software bei dir zu Hause — auf einem Mini-PC, einem NAS oder einer VM in deinem Homelab. Das bedeutet volle Kontrolle über deine Daten, keine monatlichen Abos und Automationen, die auch dann funktionieren, wenn das Internet mal ausfällt. Dieser Artikel zeigt, was Home Assistant kann, wie du es installierst und welche Hardware dafür die richtige ist.</p>
+
+<h2>Was ist Home Assistant?</h2>
+
+<p>Home Assistant (kurz HA) ist eine lokale Smart-Home-Zentrale. Der Kern ist ein Broker, der Geräte über Protokolle wie Zigbee, Z-Wave, Matter oder WLAN anbindet und ihren Zustand zentral verwaltet. Jedes Gerät wird als Entität abgebildet — ein Licht, ein Sensor, ein Schalter — und lässt sich über Dashboards steuern oder in Automationen verknüpfen. Das Besondere: Die Logik läuft lokal, unabhängig von Hersteller-Clouds. Eine Zigbee-Lampe reagiert dadurch in Millisekunden, nicht erst nach einem Umweg über einen Server in Übersee. Gleichzeitig bleibt das System durch die riesige Community flexibel: Was es als fertige Integration nicht gibt, lässt sich fast immer per REST-API, MQTT oder einem Add-on ergänzen.</p>
+
+<h2>Installation: VM, Docker oder Container</h2>
+
+<p>Es gibt drei gängige Wege, Home Assistant zu betreiben — und die Wahl hängt davon ab, wie viel du vom System verwalten willst. Die <strong>VM-Variante</strong> (HAOS, Home Assistant Operating System) ist der offizielle Standard: ein komplettes Betriebssystem inklusive Supervisor, Add-on-Store und automatischen Updates. Sie läuft etwa unter Proxmox als fertiges Image und ist der bequemste Weg, wenn du auch Add-ons wie den Node-RED-Editor oder einen MQTT-Broker installieren willst.</p>
+
+<p>Wer sein Homelab bereits mit <a href="../artikel/docker-homelab.html">Docker</a> betreibt, kann Home Assistant als Container starten. Der Vorteil: Ein Dienst mehr in der bestehenden Compose-Struktur, verwaltet wie alle anderen. Der Nachteil: Der Add-on-Store und der Supervisor fehlen, Erweiterungen musst du als eigene Container danebenstellen. Für fortgeschrittene Nutzer, die ihre Infrastruktur ohnehin selbst orchestrieren, ist das oft der sauberste Weg.</p>
+
+<p>Als dritte Option gibt es den Core-Betrieb direkt per Python — eine Lösung nur für Spezialisten, die volle Kontrolle über jede Abhängigkeit wollen. Für den Einstieg gilt: VM (HAOS), wenn du es einfach willst, Docker, wenn dein Homelab schon eine Container-Plattform hat.</p>
+
+<h2>Integrations: Geräte anbinden</h2>
+
+<p>Integrations sind die Bausteine, die deine Geräte mit Home Assistant verbinden. Es gibt sie für fast alles: Philips Hue, Shelly, Sonoff, Fritz!Box, Wetterdienste, Saugroboter, Wallboxen, PV-Wechselrichter und hunderte mehr. Besonders wertvoll im Homelab ist die direkte Anbindung über Zigbee oder Z-Wave — hier kommuniziert Home Assistant über einen USB-Stick (etwa einen ConBee oder Sonoff-Dongle) direkt mit den Geräten, ganz ohne Hersteller-Cloud. Auch Matter wird zunehmend wichtig, da es Geräte verschiedener Ökosysteme unter einem Standard bündelt. Die Faustregel: Alles, was lokal per Zigbee, Z-Wave, MQTT oder einer offenen API läuft, gehört in Home Assistant — proprietäre Clouds nur dort, wo es keine Alternative gibt.</p>
+
+<h2>Dashboards: Die eigene Steuerzentrale</h2>
+
+<p>Dashboards machen aus den gesammelten Entitäten eine bedienbare Oberfläche. Du baust sie aus Karten zusammen: Licht-Steuerungen, Thermostat-Regler, Sensorkurven, Kamera-Bilder oder eine komplette Grundriss-Ansicht. Home Assistant bringt dafür ein flexibles Grid-System mit, das ohne Programmierung auskommt; wer mehr will, kann mit YAML oder dem Community-Tool HACS zusätzliche Karten und Themes nachladen. Ein gutes Dashboard zeigt nicht alles, sondern nur das, was du im Alltag wirklich brauchst — ein Licht-Panel fürs Wohnzimmer, ein Energie-Dashboard mit Verbrauch und PV-Ertrag, eine Status-Seite für dein Homelab.</p>
+
+<h2>Automationen: Das Herzstück</h2>
+
+<p>Automationen sind der eigentliche Grund, Home Assistant zu betreiben. Sie folgen einem einfachen Muster: Auslöser, Bedingung, Aktion. „Wenn der Bewegungsmelder im Flur Bewegung erkennt (Auslöser), und es dunkel ist (Bedingung), schalte das Licht ein (Aktion)“. Damit lassen sich Heizung und Rollläden nach Zeitplänen steuern, Benachrichtigungen bei offenen Fenstern senden oder Geräte in den Standby versetzen, wenn niemand zu Hause ist. Wer komplexere Logik möchte, kann Node-RED als Add-on ergänzen und Automatisierungen grafisch als Flussdiagramm bauen. Wichtig beim Start: lieber wenige, sauber benannte Automationen als viele unübersichtliche — und jede neue Regel erst testen, bevor sie dauerhaft läuft.</p>
+
+<h2>Hardware-Empfehlung</h2>
+
+<p>Home Assistant ist genügsam: Auf einem Raspberry Pi 4 oder 5 läuft es für kleine Setups problemlos. Wer aber bereits ein Homelab betreibt, braucht keinen extra Rechner. Ein <a href="../artikel/minipc-homelab.html">Mini-PC</a> mit Intel N100 oder einem AMD Ryzen bietet genug Leistung für Home Assistant plus weitere Dienste und bleibt mit 5–15 Watt im Leerlauf stromsparend — ideal, da die Zentrale 24/7 läuft. Auch ein NAS mit Docker-Support eignet sich, solange genug RAM vorhanden ist. Für die Wahl der Installation gilt: Wer nur Home Assistant betreibt, nimmt die VM; wer es in eine bestehende Container-Umgebung einbettet, den Docker-Weg. Entscheidend ist vor allem eines: ein fester, stromsparender Standort, an dem die Hardware dauerhaft und per LAN angebunden laufen kann.</p>
+
+<h2>Fazit</h2>
+
+<p>Home Assistant ist die leistungsfähigste Art, ein Smart Home selbst zu betreiben — lokal, herstellerunabhängig und ohne Abo. Der Einstieg über die VM-Variante gelingt in wenigen Minuten, Integrations und Automationen wachsen mit der Zeit. Wer bereits Docker oder einen Mini-PC betreibt, findet hier den nächsten logischen Dienst. Der Lohn: eine Steuerzentrale, die genau das tut, was du willst — und deine Daten bei dir lässt.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Die Angaben entsprechen dem Stand September 2026 und können sich ändern. Alle genannten Methoden und Kommandos sind exemplarisch; prüfe die aktuelle Dokumentation des Home-Assistant-Projekts, bevor du Updates einspielst oder neue Geräte anbindest. Weiterführende Hardware-Vergleiche findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
