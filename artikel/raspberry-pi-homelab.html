@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raspberry Pi als Homelab: Mini-Server für Einsteiger — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Raspberry Pi als Homelab: Mini-Server für Einsteiger" description: "Raspberry Pi als Homelab nutzen: Pi-hole, kleine Dienste und Media-Ser">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Raspberry Pi als Homelab: Mini-Server für Einsteiger&quot;</p>
+<p>description: &quot;Raspberry Pi als Homelab nutzen: Pi-hole, kleine Dienste und Media-Server mit wenigen Watt betreiben. Grenzen, Stromverbrauch, erste Projekte und wann ein Mini-PC besser ist.&quot;</p>
+<hr>
+<h1>Raspberry Pi als Homelab: Mini-Server für Einsteiger</h1>
+<p>Ein Homelab muss kein großer Server sein. Ein Raspberry Pi für rund 60 bis 90 Euro läuft leise, verbraucht kaum Strom und reicht für viele Aufgaben völlig aus. Dieser Artikel zeigt ehrlich, was der kleine Rechner kann, wo seine Grenzen liegen und wann du besser zu einem Mini-PC greifst.</p>
+<h2>Was kann ein Raspberry Pi?</h2>
+<p>Der Pi ist ein vollwertiger Linux-Rechner im Scheckkartenformat. Mit einem aktuellen Modell (Raspberry Pi 4 oder 5) bekommst du vier bis acht GB RAM und genug Leistung für eine Reihe klassischer Homelab-Dienste:</p>
+<ul>
+<li><strong>Pi-hole:</strong> Netzwerkweiter Werbe- und Tracker-Blocker. Das Parade-Projekt schlechthin — der Pi blockiert Anfragen, bevor sie dein Netzwerk verlassen, und beschleunigt so jedes Gerät im Haus.</li>
+<li><strong>Kleine Dienste:</strong> VPN (WireGuard), DNS, Nextcloud für Dateien, Home Assistant fürs Smart Home, ein Git-Server oder ein Dashboard wie Homepage laufen problemlos.</li>
+<li><strong>Media:</strong> Ein Media-Server wie Jellyfin streamt Musik und Videos. Direktes Transcoding von 4K-Material überfordert den Pi zwar, aber Direct-Play — also das Abspielen im Originalformat — funktioniert zuverlässig.</li>
+<li><strong>Docker &amp; Co.:</strong> Mit Docker Compose verwaltest du mehrere Dienste sauber nebeneinander und lernst dabei die Grundlagen, die später auch auf einem großen Server gelten.</li>
+</ul>
+<p>Der größte Vorteil: Alles läuft auf einem Gerät, das du in die Schublade legst und vergisst.</p>
+<h2>Grenzen: Was der Pi nicht kann</h2>
+<p>Ehrlich bleiben lohnt sich. Der Raspberry Pi ist ein ARM-Rechner mit begrenztem RAM und ohne leistungsfähige Grafikkarte. Daraus ergeben sich klare Grenzen:</p>
+<ul>
+<li><strong>Kein großes LLM:</strong> Ein Sprachmodell mit 7 bis 70 Milliarden Parametern passt weder in den Speicher noch reicht die Rechenleistung. Kleine, quantisierte Modelle laufen zwar — flüssige Unterhaltungen mit einem großen Modell wie einem aktuellen Llama oder DeepSeek sind aber nicht drin.</li>
+<li><strong>Kein 4K-Transcoding:</strong> Beim Umladen von Videostreams in Echtzeit geht dem Pi schnell die Puste aus.</li>
+<li><strong>Begrenzte I/O:</strong> Die USB-Anbindung teilt sich Bandbreite, und ein NAS mit mehreren schnellen Festplatten ist mit dem Pi eher Notlösung als Empfehlung.</li>
+<li><strong>SD-Karten-Verschleiß:</strong> Dauerbetrieb mit vielen Schreibzugriffen kann SD-Karten vorzeitig altern lassen — eine SSD über USB ist die nachhaltigere Wahl.</li>
+</ul>
+<p>Wer diese Grenzen kennt, wird selten enttäuscht. Wer sie ignoriert, kauft zweimal.</p>
+<h2>Stromverbrauch: Der große Trumpf</h2>
+<p>Der Stromverbrauch ist das stärkste Argument für den Pi. Ein Raspberry Pi 5 zieht im Leerlauf rund 3 bis 5 Watt, unter Last selten mehr als 8 bis 10 Watt. Rechnet man mit 5 Watt Dauerbetrieb, ergibt das:</p>
+<p>5 W × 24 h = 0,12 kWh pro Tag — also rund 3,6 kWh im Monat. Bei einem Strompreis von 0,40 €/kWh kostet der Dauerbetrieb damit <strong>unter 1,50 Euro im Monat</strong> beziehungsweise rund 17 Euro im Jahr. Ein Mini-PC liegt mit 6 bis 12 Watt bereits beim Zwei- bis Dreifachen, ein Desktop-Rechner schnell beim Zehnfachen. Für einen Dienst, der 24/7 läuft, ist der Pi damit praktisch unschlagbar günstig.</p>
+<h2>Sinnvolle erste Projekte</h2>
+<p>Der beste Einstieg ist klein und konkret. Bewährte erste Schritte:</p>
+<p>1. <strong>Pi-hole einrichten</strong> — du erlebst sofort einen spürbaren Nutzen im ganzen Netzwerk.</p>
+<p>2. <strong>WireGuard-VPN</strong> — sicherer Zugriff aufs Heimnetz von unterwegs.</p>
+<p>3. <strong>Docker Compose lernen</strong> — damit ziehst du weitere Dienste in Minuten hoch.</p>
+<p>4. <strong>Media-Server mit Jellyfin</strong> — eigene Filme und Musik zentral streamen.</p>
+<p>5. <strong>Home Assistant</strong> — Smart-Home-Geräte verschiedener Hersteller unter einem Dach bündeln.</p>
+<p>Jedes dieser Projekte ist in einem Nachmittag machbar und baut aufeinander auf.</p>
+<h2>Wann ein Mini-PC oder Server besser ist</h2>
+<p>Der Pi ist ein Einstieg, keine Endstation. Du solltest zu einem Mini-PC (etwa mit Intel N100) oder einem richtigen Server greifen, wenn:</p>
+<ul>
+<li>du <strong>lokale KI</strong> mit größeren Modellen oder einer GPU betreiben willst,</li>
+<li>du <strong>mehrere virtuelle Maschinen</strong> oder viele Container gleichzeitig brauchst,</li>
+<li><strong>schneller Speicher</strong> und mehrere Festplatten eine Rolle spielen,</li>
+<li>du <strong>x86-Software</strong> nutzen möchtest, die nicht für ARM verfügbar ist.</li>
+</ul>
+<p>Ein Mini-PC kostet ab etwa 150 Euro, verbraucht nur wenig mehr Strom und bietet deutlich mehr Reserven. Die goldene Mitte: Der Pi bleibt als energiesparender Dauerläufer für Pi-hole, DNS und VPN im Einsatz, während der Mini-PC die rechenintensiven Aufgaben übernimmt.</p>
+<h2>Fazit</h2>
+<p>Der Raspberry Pi ist der ideale Einstieg ins Homelab: günstig in der Anschaffung, sparsam im Betrieb und stark genug für die meisten Alltagsdienste. Wer mit Pi-hole, VPN und kleinen Diensten startet, lernt die Grundlagen ohne großes Risiko — und merkt selbst, wann der Umstieg auf einen Mini-PC oder Server ansteht. Die ehrliche Einordnung: Als Dauerläufer für leichte Aufgaben ist der Pi kaum zu schlagen, als Allzweck-Server für KI und Virtualisierung stößt er schnell an seine Grenzen.</p>
+<p><em>Hinweis: Alle Preise und Verbrauchswerte sind Richtwerte (Stand Anfang 2026) und können je nach Modell und Marktlage abweichen. Affiliate-Links sind in diesem Artikel nicht enthalten.</em></p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
