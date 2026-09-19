@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stable Diffusion lokal: ComfyUI auf eigener GPU</title>
+<meta name="description" content="Stable Diffusion lokal betreiben mit ComfyUI: Installation, GPU- und VRAM-Anforderungen sowie die ersten Workflows für txt2img, img2img und Inpainting.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Stable Diffusion lokal: ComfyUI auf eigener GPU</h1>
+
+<p>Bilder per Texteingabe generieren — dafür braucht es längst keinen Cloud-Dienst mehr. Stable Diffusion läuft vollständig auf der eigenen Grafikkarte, kostenlos und ohne dass ein einziges Bild deinen Rechner verlässt. Die eleganteste Art, das Modell zu steuern, heißt ComfyUI: eine knotenbasierte Oberfläche, die aus simplen Ein-Klick-Workflows ein mächtiges, beliebig erweiterbares Werkzeug macht. Dieser Artikel zeigt, warum sich der lokale Betrieb lohnt, wie ComfyUI im Vergleich zum Platzhirsch Automatic1111 abschneidet und wie du in wenigen Minuten dein erstes Bild erzeugst.</p>
+
+<h2>Warum Stable Diffusion lokal betreiben?</h2>
+
+<p>Der wichtigste Grund ist der Datenschutz. Bei Cloud-Anbietern wandern deine Prompts, Referenzbilder und Ergebnisse über fremde Server — bei einem lokalen Setup bleibt alles auf deiner Hardware. Das ist vor allem dann entscheidend, wenn du mit privaten Fotos arbeitest, etwa beim Inpainting von Gesichtern oder beim Restaurieren alter Familienbilder. Niemand protokolliert, was du generierst, und kein Anbieter kann morgen seine Preise oder Nutzungsbedingungen ändern.</p>
+
+<p>Der zweite Grund ist der Preis. Nach der einmaligen Anschaffung einer passenden GPU kostet jede Generation exakt nichts — keine Credits, kein Abo, keine Limits. Wer regelmäßig viele Bilder erzeugt oder lange Experimentier-Sessions fährt, spart gegenüber Abo-Modellen schnell spürbar Geld. Dazu kommt die volle Kontrolle: eigene Modelle, LoRAs und Checkpoints lassen sich frei kombinieren, ohne auf das zuzugreifen, was ein Anbieter gerade im Katalog hat. Wie du deine GPU generell für lokale KI-Arbeit nutzt, zeigt unser Artikel zu <a href="../artikel/gpu-lokale-ki.html">lokaler KI auf der eigenen GPU</a>.</p>
+
+<h2>ComfyUI vs. Automatic1111</h2>
+
+<p>Lange war Automatic1111 (A1111) mit seiner Web-UI der Standard für Stable Diffusion. Es ist übersichtlich, gut dokumentiert und für Einsteiger sofort verständlich. ComfyUI verfolgt einen anderen Ansatz: Statt fester Bedienelemente baust du deinen Ablauf als Graphen aus Knoten, die du per Linien verbindest. Das wirkt anfangs abschreckend, zahlt sich aber schnell aus.</p>
+
+<p>Der größte Vorteil von ComfyUI ist die Performance. Es lädt Modelle deutlich schneller, verwaltet den VRAM effizienter und erzeugt Bilder auf derselben Hardware oft spürbar schneller als A1111 — gerade bei hohen Auflösungen oder komplexen Pipelines. Dazu kommen vollständig reproduzierbare Workflows: Ein gespeicherter Graph lässt sich exakt nachladen, teilen und wiederverwenden. Wer heute mit Stable Diffusion startet, fährt mit ComfyUI zukunftssicherer, auch wenn die Einarbeitung ein paar Stunden mehr kostet.</p>
+
+<h2>ComfyUI installieren</h2>
+
+<p>Die Installation ist unkompliziert. Für Windows gibt es das offizielle <strong>portable Paket</strong>: ein Archiv, das ComfyUI samt Python-Laufzeitumgebung bündelt. Du entpackst es, startest die mitgelieferte <code>run_nvidia_gpu.bat</code> — und nach wenigen Sekunden öffnet sich die Oberfläche im Browser unter <code>localhost:8188</code>. Ein Installer, der dich durch Treiber- und CUDA-Fragen führt, ist nicht nötig; Voraussetzung ist nur ein aktueller NVIDIA-Treiber.</p>
+
+<p>Unter Linux nutzt du am einfachsten den <strong>ComfyUI Desktop</strong> oder klonst das Repository und installierst die Abhängigkeiten per <code>pip</code>. In beiden Fällen gilt: Beim ersten Start lädt ComfyUI ein Standard-Checkpoint herunter, sofern du keines hinterlegst. Eigene Modelle legst du anschließend in den Ordner <code>models/checkpoints</code>, LoRAs nach <code>models/loras</code>.</p>
+
+<h2>GPU-Anforderungen und VRAM</h2>
+
+<p>Die wichtigste Komponente ist der Grafikspeicher. Faustregel: Mit <strong>6&nbsp;GB VRAM</strong> kommst du für 512×512-Bilder und kleinere Modelle zurecht, musst aber mit Tricks wie <code>--lowvram</code> oder geteilten Offload-Optionen arbeiten. Komfortabel wird es ab <strong>8–12&nbsp;GB VRAM</strong>: Damit laufen die gängigen SD-1.5- und SDXL-Checkpoints flüssig, auch bei Auflösungen um 1024×1024. Für große Modelle, High-Resolution-Upscaling oder Video-Generierung sind <strong>16&nbsp;GB und mehr</strong> sinnvoll.</p>
+
+<p>Stable Diffusion profitiert dabei enorm von CUDA. NVIDIA-Karten wie eine RTX 3060 (12&nbsp;GB), RTX 4070 oder 4080 sind die unkomplizierteste Wahl, weil die gesamte Toolchain — PyTorch, xFormers, Treiber — darauf abgestimmt ist. AMD-Karten funktionieren über ROCm inzwischen ebenfalls, erfordern aber mehr Fingerspitzengefühl bei Setup und Kompatibilität.</p>
+
+<h2>Die ersten Workflows: txt2img, img2img, Inpainting</h2>
+
+<p>Der Standard-Workflow, den ComfyUI beim ersten Start lädt, ist <strong>txt2img</strong>: Du gibst einen positiven Prompt, optional einen negativen Prompt, dazu Auflösung, Sampler und Schrittanzahl — und der Graph aus CLIP-Encoder, KSampler und VAE-Decoder erzeugt das Bild. Hier lohnt es sich, mit wenigen Knoten zu experimentieren, um ein Gefühl für den Aufbau zu bekommen.</p>
+
+<p><strong>img2img</strong> fügt ein Eingabebild hinzu: Der <code>Load Image</code>-Knoten lädt dein Referenzbild, das über einen Encoder in den Sampler eingespeist wird. So verwandelst du Skizzen in ausgearbeitete Motive oder variierst ein bestehendes Bild in Stil und Detailgrad. <strong>Inpainting</strong> geht einen Schritt weiter: Mit einer Maske markierst du einen Bildbereich, den Stable Diffusion gezielt neu füllt — ideal, um störende Objekte zu entfernen, Gesichter zu korrigieren oder fehlende Bildteile zu ergänzen. ComfyUI bringt dafür eigene Inpainting-Checkpoints mit, die deutlich bessere Übergänge liefern als der generische Ansatz.</p>
+
+<p>Diese drei Workflows sind der Einstieg in ein riesiges Ökosystem: ControlNet für Pose- und Kantensteuerung, LoRAs für Stile und Charaktere, Upscaling-Modelle für hohe Auflösungen. Wer von Bildgenerierung auf Textmodelle umsteigen möchte, findet den passenden Einstieg in unserem Artikel zu <a href="../artikel/lokale-llms-einstieg.html">lokalen LLMs für Einsteiger</a>.</p>
+
+<h2>Fazit</h2>
+
+<p>Stable Diffusion lokal mit ComfyUI zu betreiben, ist 2026 der beste Weg, Bilder kostenlos, privat und ohne Limits zu generieren. Die knotenbasierte Oberfläche verlangt etwas Einarbeitung, belohnt aber mit Geschwindigkeit, Kontrolle und reproduzierbaren Workflows. Mit einer Mittelklasse-GPU ab 8&nbsp;GB VRAM und den drei Grund-Workflows txt2img, img2img und Inpainting hast du alles, um produktiv loszulegen — und eine solide Basis für alles, was danach kommt.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Alle Angaben — insbesondere zu VRAM-Anforderungen und Modellgrößen — entsprechen dem Stand September 2026 und können sich mit neuen Modellversionen und Treibern ändern. Weiterführende Artikel zum lokalen KI-Betrieb findest du unter <a href="../artikel/gpu-lokale-ki.html">GPU für lokale KI</a> und <a href="../artikel/lokale-llms-einstieg.html">Lokale LLMs</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
