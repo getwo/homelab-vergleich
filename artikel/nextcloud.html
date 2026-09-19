@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nextcloud selbst hosten: Deine eigene Cloud (Anleitung)</title>
+<meta name="description" content="Nextcloud selbst hosten: Schritt-für-Schritt-Anleitung mit Docker — Installation, Ersteinrichtung, Apps wie Files, Calendar und Talk, Sicherheit und Backup.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Nextcloud selbst hosten: Deine eigene Cloud (Anleitung)</h1>
+
+<p>Du willst deine Daten nicht länger Google, Dropbox oder Microsoft anvertrauen? Dann ist Nextcloud die Antwort. Die Open-Source-Software verwandelt einen beliebigen Server — vom Raspberry Pi bis zum vollwertigen <a href="../artikel/nas-2026.html">NAS</a> — in deine private Cloud mit Dateien, Kalender, Kontakten und Videotelefonie. Das Beste daran: Die Daten bleiben komplett in deiner Hand. Diese Anleitung zeigt dir, wie du Nextcloud selbst hostest, von der Installation über die Ersteinrichtung bis hin zu Sicherheit und Backup.</p>
+
+<h2>Was ist Nextcloud?</h2>
+
+<p>Nextcloud ist eine freie Software-Suite, die dir ähnliche Funktionen wie Dropbox oder Google Drive bietet — nur eben auf deiner eigenen Hardware. Im Kern verwaltet sie Dateien, synchronisiert sie über Desktop- und Mobile-Clients und teilt sie per Link. Darüber hinaus lässt sich Nextcloud über Apps erweitern: Kalender, Kontakte, Aufgaben, Notizen, ein Webmailer und die Videokonferenz-Lösung Talk. Weil der Quellcode offen ist, kannst du jede Komponente selbst prüfen und weißt genau, wo deine Daten liegen. Das macht Nextcloud zur ersten Wahl für alle, die ihre Datenhoheit ernst nehmen.</p>
+
+<h2>Installation mit Docker</h2>
+
+<p>Der einfachste Weg, Nextcloud zu betreiben, führt über Docker. Du brauchst lediglich einen Rechner mit Docker und Docker Compose — ein NAS mit Docker-Support oder ein kleiner Linux-Server genügt. Erstelle eine Datei <code>docker-compose.yml</code> mit folgendem Inhalt:</p>
+
+<pre><code>services:
+  db:
+    image: mariadb:11
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: starkes_root_passwort
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: starkes_db_passwort
+    volumes:
+      - ./db:/var/lib/mysql
+
+  nextcloud:
+    image: nextcloud:stable
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: starkes_db_passwort
+    volumes:
+      - ./nextcloud:/var/www/html</code></pre>
+
+<p>Starte den Stack mit <code>docker compose up -d</code>. Nach wenigen Sekunden erreichst du Nextcloud unter <code>http://deine-ip:8080</code>. Für den produktiven Betrieb setzt du zusätzlich einen Reverse Proxy mit HTTPS (etwa Traefik oder Caddy) davor und ersetzt die Passwörter durch sichere Werte. Soll Docker für dich Neuland sein, lohnt vorab ein Blick auf die Hardware-Voraussetzungen in unserem <a href="../artikel/nas-2026.html">NAS-Vergleich 2026</a>.</p>
+
+<h2>Ersteinrichtung</h2>
+
+<p>Beim ersten Aufruf legst du ein Administratorkonto an und gibst die Zugangsdaten zur MariaDB-Datenbank ein. Nach der Einrichtung empfiehlt sich ein kurzer Gesundheitscheck: Unter <em>Verwaltung → Übersicht</em> listet Nextcloud eventuelle Warnungen auf — etwa fehlende PHP-Module, einen nicht konfigurierten Cache oder eine nicht vertrauenswürdige Domain. Arbeite diese Hinweise der Reihe nach ab; sie betreffen meist Leistung und Sicherheit. Danach richtest du den Standard-Speicherpfad für Daten ein und konfigurierst die E-Mail-Einstellungen, damit Benachrichtigungen und Passwort-Resets funktionieren.</p>
+
+<h2>Die wichtigsten Apps: Files, Calendar, Talk</h2>
+
+<p>Nextcloud bringt einige Apps direkt mit, weitere installierst du im App-Store unter <em>Verwaltung → Apps</em>. Die drei wichtigsten im Überblick:</p>
+
+<ul>
+<li><strong>Files:</strong> Das Herzstück. Verwalte Ordner, lade Dateien hoch, teile sie per Link mit Ablaufdatum und Passwortschutz und synchronisiere sie über die Desktop- und Mobile-Clients.</li>
+<li><strong>Calendar:</strong> Verwalte Termine im CalDAV-Format und synchronisiere sie mit deinem Handy oder Thunderbird. Mehrere Kalender lassen sich getrennt teilen.</li>
+<li><strong>Talk:</strong> Videokonferenzen, Bildschirmfreigabe und Chat direkt in Nextcloud — ganz ohne externe Dienste wie Zoom oder Teams.</li>
+</ul>
+
+<h2>Sicherheit</h2>
+
+<p>Da deine Nextcloud direkt am Internet hängt, ist Sicherheit kein optionales Extra. Die wichtigsten Maßnahmen: Erzwinge HTTPS über den Reverse Proxy, aktiviere Zwei-Faktor-Authentifizierung (2FA) für alle Konten, halte die Docker-Images regelmäßig aktuell (<code>docker compose pull</code>) und richte eine Brute-Force-Schutz-App ein, die fehlgeschlagene Anmeldeversuche blockiert. Zusätzlich solltest du den Zugriff per Firewall auf vertrauenswürdige Netze beschränken oder den Dienst hinter ein VPN legen, wenn er nicht öffentlich erreichbar sein muss. Vergiss auch nicht, die Admin-Warnungen aus der Ersteinrichtung dauerhaft im Blick zu behalten.</p>
+
+<h2>Backup-Anbindung</h2>
+
+<p>Eine eigene Cloud nützt wenig, wenn ein Festplattendefekt alles löscht. Ein belastbares Backup umfasst drei Teile: die Datenbank (per <code>mysqldump</code>), den Nextcloud-Datenordner und die Konfigurationsdatei <code>config.php</code>. Automatisiere alle drei über einen Cronjob und lagere die Sicherung außerhalb des Servers aus. Als Grundregel gilt die bewährte <a href="../artikel/backup-3-2-1.html">3-2-1-Backup-Strategie</a>: drei Kopien deiner Daten, auf zwei verschiedenen Medien, eine davon an einem anderen Ort. Nur so übersteht deine Cloud auch Hardware-Ausfälle, Diebstahl oder Ransomware.</p>
+
+<h2>Fazit</h2>
+
+<p>Nextcloud selbst zu hosten ist mit Docker keine Hexerei — und der Gewinn an Datenhoheit ist enorm. Mit Dateien, Kalender und Videotelefonie ersetzt die Suite viele kommerzielle Dienste, ohne dass deine Daten das Haus verlassen. Plane von Anfang an HTTPS, Zwei-Faktor-Authentifizierung und ein sauberes Backup ein, dann läuft deine private Cloud stabil und sicher. Wer noch auf der Suche nach passender Hardware ist, findet in unserem <a href="../artikel/nas-2026.html">NAS-Vergleich</a> geeignete Geräte mit Docker-Support.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Weiterführende Informationen findest du in unserem <a href="../artikel/backup-3-2-1.html">Backup-3-2-1-Ratgeber</a> und im <a href="../artikel/nas-2026.html">NAS-Vergleich 2026</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
