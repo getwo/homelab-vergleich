@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIY-NAS bauen: Eigene Hardware statt Fertig-NAS (Anleitung)</title>
+<meta name="description" content="DIY-NAS selber bauen: Mini-PC, gebrauchter PC oder Gehäuse als Basis — TrueNAS Scale, Unraid und OMV im Vergleich, Kostenrechnung gegen Synology und QNAP.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>DIY-NAS bauen: Eigene Hardware statt Fertig-NAS</h1>
+
+<p>Ein Fertig-NAS von Synology oder QNAP ist bequem, aber nicht billig. Wer Zeit und etwas Bastellust mitbringt, kann sich ein DIY-NAS selbst zusammenstellen — mit mehr Leistung, freier Software-Wahl und oft zum halben Preis. Diese Anleitung zeigt, welche Hardware sich als Basis eignet, welche Software du installieren kannst und ob sich der Eigenbau im Vergleich zu einem Fertig-NAS wirklich rechnet.</p>
+
+<h2>Warum ein DIY-NAS?</h2>
+
+<p>Der größte Vorteil des Selbstbaus ist die Flexibilität. Du entscheidest frei über CPU, Arbeitsspeicher, Netzwerk und Festplatten — bei Fertiggeräten bist du an das gebunden, was der Hersteller einbaut. Ein gebrauchter Mini-PC oder alter Desktop bringt häufig mehr Rechenleistung mit als ein NAS der 300- bis 500-Euro-Klasse und lässt sich später unkompliziert aufrüsten. Hinzu kommt die Software-Freiheit: Statt an ein proprietäres System wie DSM oder QTS gebunden zu sein, wählst du zwischen offenen Plattformen wie TrueNAS Scale, Unraid oder OpenMediaVault. Der Preis dafür ist Eigenverantwortung — Support, Updates und Fehlersuche liegen bei dir.</p>
+
+<h2>Hardware-Auswahl: Mini-PC, gebrauchter PC oder Gehäuse</h2>
+
+<p>Der einfachste Einstieg ist ein <strong>Mini-PC</strong>. Modelle mit Intel N100 oder N305 kosten neu oft unter 250&nbsp;€, verbrauchen im Leerlauf nur 5 bis 15&nbsp;W und haben genug Leistung für Dateifreigaben, Backups und mehrere Docker-Container. Der Nachteil: Meist gibt es nur einen M.2- oder 2,5-Zoll-Slot, echte RAID-Arrays mit mehreren Laufwerken sind kaum möglich. Für ein reines Backup- oder Medien-NAS mit externer USB-Festplatte reicht das aber vollkommen.</p>
+
+<p>Mehr Flexibilität bringt ein <strong>gebrauchter PC</strong>. Ein alter Büro-Rechner oder ein ehemaliger Gaming-PC mit Intel-CPU der 8. Generation oder neuer liefert vier bis sechs SATA-Anschlüsse, Platz für mehrere 3,5-Zoll-Festplatten und oft 16&nbsp;GB RAM oder mehr. Der Stromverbrauch liegt mit 20 bis 40&nbsp;W im Leerlauf höher als beim Mini-PC, bleibt aber günstig — wie viel ein Dauerbetrieb tatsächlich kostet, rechnest du mit unserem <a href="../artikel/stromkosten.html">Stromkosten-Rechner</a> durch.</p>
+
+<p>Wer es klassisch mag, setzt auf ein <strong>dediziertes Gehäuse</strong> mit vielen Hot-Swap-Bays und einem sparsamen Mainboard. Das ist der Weg zum „richtigen“ NAS, erfordert aber die meiste Planung bei Netzteil, Kühlung und Festplattenkäfigen. Für die meisten Einsteiger ist der gebrauchte PC der beste Kompromiss aus Preis, Ausbaubarkeit und Aufwand.</p>
+
+<h2>Software: TrueNAS Scale, Unraid oder OMV</h2>
+
+<p><strong>TrueNAS Scale</strong> ist die erste Wahl für alle, die Wert auf Datenintegrität legen. Das auf ZFS basierende System bietet Prüfsummen, Snapshots und robuste RAID-Z-Arrays, verlangt dafür aber ECC-RAM und einen etwas steileren Einstieg. <strong>Unraid</strong> glänzt durch Flexibilität: Du kannst Festplatten beliebiger Größe mischen und jederzeit nachrüsten, dazu kommen ein sehr einfaches Docker- und VM-Management — Unraid kostet allerdings eine einmalige Lizenz. <strong>OpenMediaVault (OMV)</strong> ist komplett kostenlos, läuft schon auf schwacher Hardware und basiert auf Debian, bietet aber bei Docker und Virtualisierung weniger Komfort als die beiden anderen. Alle drei lassen sich von einem USB-Stick oder einer kleinen SSD booten und verwalten den Rest der Platten als Datenpool.</p>
+
+<h2>Kostenvergleich: DIY vs. Synology und QNAP</h2>
+
+<p>Ein typisches Einsteiger-Build aus gebrauchtem PC (ca. 150&nbsp;€), einer kleinen SSD fürs System (30&nbsp;€) und zwei 4-TB-Festplatten (zusammen rund 180&nbsp;€) landet bei etwa 360&nbsp;€ ohne Betriebssystem-Lizenz. Zum Vergleich: Ein <a href="../artikel/nas-2026.html">Synology DS223</a> kostet als Leergehäuse schon 279&nbsp;€ — ohne Platten, ohne Docker-Support und mit fix verbautem RAM. Ein QNAP TS-464 mit 4 Bays liegt bei 699&nbsp;€, ein Synology DS923+ bei 799&nbsp;€. Der DIY-Weg spart bei vergleichbarer oder höherer Leistung also schnell mehrere hundert Euro — gerade wenn du ohnehin noch einen alten Rechner im Keller stehen hast.</p>
+
+<h2>Vor- und Nachteile im Überblick</h2>
+
+<p>Für den Eigenbau spricht die hohe Flexibilität bei Hardware und Software, der deutlich günstigere Preis pro Terabyte und die einfache Aufrüstbarkeit. Dagegen stehen der höhere Einrichtungs- und Wartungsaufwand, fehlender Hersteller-Support und ein oft höherer Stromverbrauch als bei optimierten Fertig-NAS-Gehäusen. Wer bereit ist, sich ein Wochenende einzuarbeiten, bekommt mit einem DIY-NAS mehr Leistung und Kontrolle fürs Geld — wer es einfach und wartungsarm will, ist mit einem Fertiggerät aus unserem <a href="../artikel/nas-2026.html">NAS-Vergleich 2026</a> besser beraten.</p>
+
+<h2>Fazit</h2>
+
+<p>Ein DIY-NAS lohnt sich vor allem dann, wenn du Lust aufs Basteln hast, einen gebrauchten Rechner verwerten kannst oder besondere Anforderungen mitbringst, die kein Fertig-NAS erfüllt. Mini-PC und gebrauchter PC sind die besten Einstiegsbasen, bei der Software bist du mit TrueNAS Scale, Unraid oder OMV frei. Die Ersparnis gegenüber Synology und QNAP ist real — bezahlt wird sie mit Eigenverantwortung statt mit Geld.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate-Links. Alle Preise und Angaben entsprechen dem Stand September 2026 und können sich ändern; die genannten Kosten sind Richtwerte ohne Festplatten. Weiterführende Vergleiche findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
