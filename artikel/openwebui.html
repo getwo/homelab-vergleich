@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open WebUI einrichten: Die beste Oberfläche für lokale LLMs</title>
+<meta name="description" content="Open WebUI einrichten Schritt für Schritt: Installation per Docker, Verbindung mit Ollama, Modellauswahl, RAG, Multi-User und die Unterschiede zu anderen LLM-Oberflächen.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Open WebUI einrichten: Die beste Oberfläche für lokale LLMs</h1>
+
+<p>Wer lokale Sprachmodelle über <strong>Ollama</strong> betreibt, kennt das Problem: Das Terminal ist für den Alltag zu sperrig, und ein Chatgefühl wie bei ChatGPT fehlt. Genau hier setzt <strong>Open WebUI</strong> an — eine selbst gehostete, webbasierte Oberfläche, die aus deinem Homelab eine vollwertige, private KI-Chatplattform macht. In diesem Artikel zeige ich, was Open WebUI ist, wie du es per Docker installierst, mit Ollama verbindest und welche Features die Oberfläche gegenüber anderen UIs auszeichnen.</p>
+
+<h2>Was ist Open WebUI?</h2>
+
+<p>Open WebUI (früher Ollama WebUI) ist ein Open-Source-Frontend, das direkt an eine Ollama-Instanz andockt. Es stellt im Browser eine ChatGPT-ähnliche Oberfläche bereit — mit Chatverlauf, Markdown-Unterstützung, Code-Highlighting und der Möglichkeit, nahezu alle Ollama-Modelle per Klick auszuwählen und zu wechseln. Der große Vorteil: Alles bleibt bei dir. Keine Cloud, keine Abo-Kosten, keine Daten, die dein Heimnetz verlassen. Wer bereits <a href="../artikel/ollama-tutorial.html">Ollama eingerichtet</a> hat, bekommt mit Open WebUI in wenigen Minuten ein komplettes Chat-Interface dazu.</p>
+
+<h2>Installation mit Docker</h2>
+
+<p>Die Installation läuft über Docker und ist damit auf nahezu jedem System möglich — NAS, Mini-PC oder Server. Wichtigste Voraussetzung: Ollama muss laufen. Am einfachsten startet man beides zusammen mit einem einzigen Compose-Befehl. Der offizielle Weg verbindet den Open-WebUI-Container mit dem Ollama-Container über ein gemeinsames Netzwerk und mountet die Volumes für die persistenten Daten.</p>
+
+<p>Der Clou dabei: Läuft Ollama bereits auf einem anderen Rechner im Netzwerk, lässt sich Open WebUI auch getrennt starten und per Umgebungsvariable <code>OLLAMA_BASE_URL</code> auf die entfernte Instanz zeigen. So kannst du zum Beispiel das Frontend auf deinem NAS laufen lassen, während die eigentliche Inferenz auf dem leistungsstärkeren PC mit GPU passiert.</p>
+
+<h2>Einrichtung und erster Login</h2>
+
+<p>Nach dem Start erreichst du Open WebUI im Browser unter <code>http://&lt;server-ip&gt;:3000</code> (bei Docker oft Port 8080, je nach Konfiguration). Beim ersten Aufruf legst du ein <strong>Administratorkonto</strong> an — der erste registrierte Nutzer wird automatisch zum Admin. Über das Admin-Panel steuerst du später weitere Nutzer, Modelle und Einstellungen.</p>
+
+<p>Ist Ollama korrekt verbunden, erscheinen die installierten Modelle sofort in der Auswahlliste oben im Chat. Sollte die Liste leer bleiben, hilft meist ein Blick auf die <code>OLLAMA_BASE_URL</code> sowie auf die Netzwerkfreigabe zwischen den Containern.</p>
+
+<h2>Modellauswahl</h2>
+
+<p>Open WebUI zeigt alle Modelle an, die Ollama bereits heruntergeladen hat. Weitere Modelle lassen sich bequem direkt aus dem Admin-Panel oder über die Suche nachziehen, ohne das Terminal zu bemühen. Praktisch ist der Modellwechsel mitten im Gespräch: Du kannst für jede Nachricht ein anderes Modell wählen — etwa ein großes für komplexe Fragen und ein kleines, schnelles für den Alltag. Wer mehrere Modelle parallel testen will, findet in Open WebUI eine übersichtliche Möglichkeit, Antworten direkt zu vergleichen. Welche Modelle sich für deinen Einstieg lohnen, erklärt der Artikel zu <a href="../artikel/lokale-llms-einstieg.html">lokalen LLMs für Einsteiger</a>.</p>
+
+<h2>Features: Chat, RAG und Multi-User</h2>
+
+<p>Neben dem reinen Chat bringt Open WebUI drei Funktionen mit, die es von schlichten Frontends abheben:</p>
+
+<p><strong>Chat mit Dokumenten (RAG):</strong> Du lädst PDFs, Textdateien oder Notizen hoch, und Open WebUI baut daraus eine Wissensbasis. Fragen beantwortet das Modell dann gezielt auf Grundlage deiner Dokumente — ideal für Handbücher, Verträge oder eigene Notizen, ohne dass sensible Inhalte in eine Cloud wandern.</p>
+
+<p><strong>Multi-User-Betrieb:</strong> Über die Benutzerverwaltung legst du mehrere Konten mit eigenen Chatverläufen an. So teilt sich die ganze Familie oder ein kleines Team eine lokale KI-Instanz — jeder mit eigenem Verlauf, du behältst als Admin die Kontrolle über Modelle und Rechte.</p>
+
+<p><strong>Zusätzlich:</strong> Open WebUI unterstützt Web-Suche, Sprachausgabe (TTS), Bildgenerierung über angeschlossene Dienste und lässt sich über eine Plugin-Architektur erweitern. Auch der Import von OpenAI-kompatiblen Endpunkten ist möglich, sodass du neben lokalen Modellen bei Bedarf auch externe APIs anbinden kannst.</p>
+
+<h2>Unterschied zu anderen UIs</h2>
+
+<p>Verglichen mit schlanken Alternativen wie dem reinen Ollama-Terminal oder einfachen Chat-GUIs punktet Open WebUI vor allem durch den Funktionsumfang: Benutzerverwaltung, RAG, Plugin-System und eine aufgeräumte, ChatGPT-ähnliche Optik. Gegenüber Diensten wie LM Studio oder Jan ist Open WebUI kein Desktop-Programm, sondern ein zentraler Web-Dienst — er läuft dauerhaft auf einem Server und ist von jedem Gerät im Netz erreichbar. Genau das macht ihn für Homelabs und kleine Teams zur besten Wahl: einmal eingerichtet, steht die private KI überall im Haus bereit.</p>
+
+<h2>Fazit</h2>
+
+<p>Open WebUI ist der schnellste Weg, aus einer nackten Ollama-Installation eine vollwertige, private Chat-Plattform zu machen. Die Docker-Installation gelingt in Minuten, die Verbindung zu Ollama ist unkompliziert, und mit RAG sowie Multi-User-Betrieb bekommst du Funktionen, die selbst manche kommerzielle Angebote vermissen lassen. Wer lokale Modelle ernsthaft nutzen will, kommt an Open WebUI kaum vorbei.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Weiterführende Artikel findest du in unserem <a href="../artikel/ollama-tutorial.html">Ollama-Tutorial</a> und im <a href="../artikel/lokale-llms-einstieg.html">Einstieg in lokale LLMs</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
