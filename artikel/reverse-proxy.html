@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reverse Proxy fürs Homelab: Nginx Proxy Manager, Traefik & Caddy</title>
+<meta name="description" content="Reverse Proxy fürs Homelab einrichten: Nginx Proxy Manager, Traefik und Caddy im Vergleich — Docker-Setup, SSL per Let's Encrypt, typische Konfigurationen.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Reverse Proxy fürs Homelab: Nginx Proxy Manager, Traefik & Caddy</h1>
+
+<p>Wer im Homelab mehr als einen Dienst betreibt, kennt das Problem schnell: Jeder Container will seinen eigenen Port. Pi-hole lauscht auf 80, Home Assistant auf 8123, Jellyfin auf 8096, Nextcloud auf 8080. Irgendwann verliert man den Überblick, muss sich Portnummern merken und stolpert über Zertifikatswarnungen. Genau hier kommt ein Reverse Proxy ins Spiel. Er ist die zentrale Weiche, die alle eingehenden Anfragen entgegennimmt und an den richtigen Dienst weiterleitet — über einen einzigen Port, mit einer sauberen Domain und gültigem SSL. Grundlage dafür ist ein laufendes Docker-Setup; die Basics dazu findest du in unserem Artikel <a href="../artikel/docker-homelab.html">Docker im Homelab</a>.</p>
+
+<h2>Warum überhaupt ein Reverse Proxy?</h2>
+
+<p>Ein Reverse Proxy ist im Kern ein Webserver, der eingehende Anfragen annimmt und an interne Dienste durchreicht. Der größte Vorteil: Du brauchst nach außen nur noch die Ports 80 und 443 offen zu halten, statt für jeden Dienst eine eigene Freigabe im Router zu pflegen. Statt <code>192.168.1.10:8096</code> rufst du einfach <code>jellyfin.deinedomain.de</code> auf. Der Proxy leitet anhand des Hostnamens weiter, kümmert sich um die TLS-Terminierung und kann zusätzlich Authentifizierung, Rate-Limits oder Websocket-Unterstützung ergänzen.</p>
+
+<p>Gleichzeitig erhöht das die Sicherheit. Dienste müssen nicht mehr direkt aus dem Internet erreichbar sein, sondern laufen intern abgeschirmt hinter dem Proxy. Wer seine Dienste ohnehin nur im eigenen Netz erreichen will, kombiniert den Proxy idealerweise mit einem VPN — dazu passt unser <a href="../artikel/wireguard.html">WireGuard-Guide</a>. So bleibt die Oberfläche intern erreichbar, während ausgewählte Dienste gezielt ins Internet veröffentlicht werden.</p>
+
+<h2>Nginx Proxy Manager, Traefik oder Caddy?</h2>
+
+<p>Drei Werkzeuge dominieren im Homelab-Bereich, und sie unterscheiden sich vor allem in der Bedienphilosophie.</p>
+
+<p><strong>Nginx Proxy Manager (NPM)</strong> ist der Einsteiger-Favorit. Er bringt eine übersichtliche Web-Oberfläche mit, über die sich Hosts, SSL-Zertifikate und Weiterleitungen per Klick verwalten lassen — kein YAML, kein Code. Für fast alle Homelab-Szenarien völlig ausreichend, wird NPM nur unübersichtlich, wenn Dutzende Dienste versioniert und automatisiert verwaltet werden sollen.</p>
+
+<p><strong>Traefik</strong> ist das Gegenteil: ein Cloud-natives Tool, das sich dynamisch über Docker-Labels konfiguriert. Du definierst die Routing-Regeln direkt am jeweiligen Container, Traefik erkennt Änderungen automatisch und holt sich Zertifikate ohne Neustart. Das ist mächtig und elegant, verlangt aber eine steilere Lernkurve und mehr Konfigurationsarbeit in YAML beziehungsweise Labels.</p>
+
+<p><strong>Caddy</strong> liegt dazwischen. Es besticht durch seine simple, lesbare Konfigurationsdatei und automatisches HTTPS: Caddy beantragt und erneuert Let's-Encrypt-Zertifikate vollständig selbstständig, ganz ohne zusätzliche Einrichtung. Wer lieber mit Textdateien als mit GUIs arbeitet, aber keine Traefik-Komplexität will, ist hier richtig.</p>
+
+<h2>Installation per Docker</h2>
+
+<p>Alle drei laufen als Container. Der Nginx Proxy Manager startet mit einem kurzen Compose-File, das zwei Dienste definiert: die App selbst und eine MariaDB-Datenbank für die Einstellungen. Nach dem Start erreichst du die Admin-Oberfläche unter Port 81, legst einen Admin-Account an und fügst dann Proxy-Hosts hinzu.</p>
+
+<pre><code>services:
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    restart: unless-stopped</code></pre>
+
+<p>Traefik und Caddy funktionieren ähnlich schlank. Traefik benötigt zusätzlich die Mounts für die Docker-Socket beziehungsweise eine statische Konfiguration, Caddy kommt mit einem simplen Caddyfile aus. Wichtig ist in jedem Fall: Der Proxy-Container muss im selben Docker-Netzwerk liegen wie die Ziel-Container, sonst findet die Weiterleitung per Containername nicht statt.</p>
+
+<h2>SSL mit Let's Encrypt</h2>
+
+<p>Der eigentliche Komfort liegt in der automatisierten Zertifikatsverwaltung. Über einen DNS- oder HTTP-Challenge beantragt der Proxy kostenlose Zertifikate von Let's Encrypt und erneuert sie vor Ablauf selbstständig. Bei NPM klickst du pro Host einfach „Request a new SSL Certificate“, bei Caddy reicht die Angabe der Domain, und Traefik erledigt es über Labels. Voraussetzung ist eine Domain, die auf deine öffentliche IP zeigt — bei dynamischer IP hilft ein DynDNS-Anbieter.</p>
+
+<h2>Typische Setups</h2>
+
+<p>Das klassische Setup: Ein Proxy-Host je Dienst mit eigener Subdomain (<code>jellyfin</code>, <code>nextcloud</code>, <code>ha</code>). Der Proxy verteilt auf die internen Container, terminisiert TLS und leitet den Rest intern weiter. Sollen bestimmte Dienste nur von unterwegs erreichbar sein, schaltest du den Zugriff über Basic-Auth oder Access-Lists frei. Und wer den Internet-Zugang komplett vermeiden will, bindet den Proxy nur an das interne Netz und erreicht alles über WireGuard.</p>
+
+<h2>Fazit</h2>
+
+<p>Ein Reverse Proxy gehört zu den ersten Diensten, die jedes ernsthafte Homelab einrichten sollte — er bringt Ordnung, Domain statt IP und automatisches SSL. Wer schnell und unkompliziert starten will, nimmt den Nginx Proxy Manager. Wer automatisieren und mit Infrastructure-as-Code arbeiten möchte, wählt Traefik. Und wer eine minimale, textbasierte Konfiguration mit automatischem HTTPS schätzt, ist mit Caddy bestens bedient. Alle drei lösen dasselbe Problem — nur mit unterschiedlicher Philosophie.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate-Links. Es handelt sich um eine unabhängige Anleitung; alle genannten Tools sind Open Source und kostenlos nutzbar. Angaben entsprechen dem Stand September 2026 und können sich ändern. Weiterführende Artikel findest du in unserem <a href="../artikel/docker-homelab.html">Docker-Guide</a> und im <a href="../artikel/wireguard.html">WireGuard-Guide</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
