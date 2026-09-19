@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homelab-Stromkosten: So fährst du dein Lab effizient</title>
+<meta name="description" content="Homelab-Stromkosten berechnen: Watt × 24h × 0,40 €/kWh — Beispiele für 10 W, 50 W und 150 W, plus Tipps für effiziente Hardware, C-States und Timer.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Homelab-Stromkosten: So fährst du dein Lab effizient</h1>
+
+<p>Ein Homelab läuft im Idealfall rund um die Uhr — genau deshalb summieren sich die Stromkosten über das Jahr zu einem Betrag, den viele beim Kauf unterschätzen. Die gute Nachricht: Wer die Rechnung einmal verstanden hat, kann mit wenig Aufwand oft mehr als die Hälfte der laufenden Kosten einsparen. Dieser Artikel zeigt, wie du die Homelab-Stromkosten konkret berechnest, welche Hardware von Haus aus sparsam ist und mit welchen Stellschrauben du den Verbrauch im Leerlauf spürbar senkst.</p>
+
+<h2>Die Stromkosten-Rechnung: Watt in Euro umrechnen</h2>
+
+<p>Die Formel ist simpel und gilt für jedes Gerät, das dauerhaft am Netz hängt:</p>
+
+<p><strong>Watt × 24 Stunden × 30 Tage ÷ 1000 × 0,40 €/kWh = Kosten pro Monat</strong></p>
+
+<p>Vereinfacht gesagt: Jedes Watt Dauerlast kostet bei 0,40&nbsp;€/kWh rund <strong>0,29&nbsp;€ pro Monat</strong> (24&nbsp;h × 30&nbsp;Tage = 720&nbsp;h × 0,40&nbsp;€ ÷ 1000). Drei typische Szenarien machen das greifbar:</p>
+
+<ul>
+<li><strong>10&nbsp;W</strong> — ein sparsamer Mini-PC oder ein kleiner Raspberry-Pi-Cluster: 10 × 720 × 0,40 ÷ 1000 = <strong>2,88&nbsp;€/Monat</strong> (rund 35&nbsp;€ im Jahr).</li>
+<li><strong>50&nbsp;W</strong> — ein Mini-PC mit zwei SSDs und ein paar Docker-Containern: 50 × 720 × 0,40 ÷ 1000 = <strong>14,40&nbsp;€/Monat</strong> (rund 173&nbsp;€ im Jahr).</li>
+<li><strong>150&nbsp;W</strong> — ein ausgewachsener Tower mit mehreren Festplatten und GPU: 150 × 720 × 0,40 ÷ 1000 = <strong>43,20&nbsp;€/Monat</strong> (rund 518&nbsp;€ im Jahr).</li>
+</ul>
+
+<p>Zwischen dem sparsamen und dem stromhungrigen Setup liegen also schnell 480&nbsp;€ pro Jahr — reines Geld, das du mit der richtigen Hardwarewahl nicht ausgeben musst.</p>
+
+<h2>Effiziente Hardware: Mini-PC statt Tower</h2>
+
+<p>Der größte Hebel sitzt beim Gerät selbst. Ein klassischer Tower mit 500-Watt-Netzteil zieht schon im Leerlauf oft 60 bis 100&nbsp;W, selbst wenn er kaum etwas tut. Ein <a href="../artikel/minipc-homelab.html">Mini-PC als Homelab-Basis</a> mit Notebook-CPU (Intel N100, Celeron oder ein älterer i5-U-Prozessor) begnügt sich dagegen mit 6 bis 15&nbsp;W im Idle — und reicht für Docker, Home Assistant, Pi-hole, Paperless oder ein kleines NAS mit zwei NVMe-SSDs völlig aus.</p>
+
+<p>Der Grund liegt im Energiedesign: Mobile Prozessoren sind auf niedrigen Verbrauch getrimmt, externe Netzteile arbeiten effizienter als große ATX-Netzteile, und ohne dedizierte GPU entfällt einer der größten Stromfresser. Auch bei Festplatten lohnt der Blick auf die Effizienz: Eine einzelne 3,5-Zoll-HDD braucht 5 bis 8&nbsp;W, eine NVMe-SSD meist unter 3&nbsp;W. Wer viel Speicher braucht, sollte lieber wenige große SSDs als viele kleine Platten einsetzen.</p>
+
+<h2>Idle-Verbrauch senken: C-States aktivieren</h2>
+
+<p>Ein Server verbringt den Großteil seiner Zeit im Leerlauf. Entscheidend ist deshalb, wie tief die CPU in diesem Zustand schlafen darf — genau das regeln die C-States. In tieferen Schlafzuständen (C6, C7, C8) taktet der Prozessor herunter und schaltet ganze Rechenkerne ab. Der Unterschied ist enorm: Ohne aktive C-States kann ein System 20 bis 40&nbsp;W mehr ziehen als mit aktivierten tiefen Sleep-States.</p>
+
+<p>Unter Linux lässt sich das mit <code>powertop</code> prüfen und mit <code>--auto-tune</code> automatisch optimieren; im BIOS bzw. UEFI findest du die Option meist unter „C-State Control“ oder „CPU Power Management“. Wichtig: Deaktiviere in der Firmware keine C-States, nur weil irgendein altes Handbuch es für Stabilität empfiehlt — moderne Betriebssysteme und Container kommen mit tiefen Sleep-States problemlos klar.</p>
+
+<h2>Timer und Sleep: Nicht alles muss 24/7 laufen</h2>
+
+<p>Der zweite große Hebel ist die Frage, ob der Server überhaupt dauerhaft wach sein muss. Wer das Lab nur abends oder am Wochenende nutzt, kann mit einem Timer enorm sparen: Ein geplanter Wake-on-LAN-Start und ein automatisches Herunterfahren zu festen Zeiten kosten nichts und reduzieren den Verbrauch auf null, wenn du schläfst oder auf der Arbeit bist.</p>
+
+<p>Für Dienste, die durchgehend erreichbar sein sollen (DNS-Blocker, Monitoring), bietet sich ein Splitting an: Ein sparsamer Mini-PC oder ein Raspberry Pi übernimmt den 24/7-Dienst und zieht dabei vielleicht 5 bis 10&nbsp;W, während der leistungshungrige <a href="../artikel/server-homelab.html">Server für das Homelab</a> nur bei Bedarf hochfährt. Auch per Systemd-Timer oder Cron geplante Jobs (Backups, Updates) lassen sich so bündeln, dass die Maschine nachts für eine Stunde aufwacht, ihre Aufgaben erledigt und wieder herunterfährt.</p>
+
+<h2>Was sich wirklich lohnt</h2>
+
+<p>Nicht jede Maßnahme zahlt sich gleich aus. Die Faustregel: Je dauerhafter ein Verbrauch anliegt, desto mehr lohnt die Optimierung. Diese Reihenfolge bringt in der Praxis am meisten:</p>
+
+<ol>
+<li><strong>Hardware wechseln</strong> — ein Mini-PC statt eines alten Towers spart oft 50 bis 90&nbsp;W Dauerlast, das sind bis zu 300&nbsp;€ im Jahr. Eine Neuanschaffung amortisiert sich damit häufig innerhalb eines Jahres.</li>
+<li><strong>C-States aktivieren</strong> — kostenlos, oft 20 bis 40&nbsp;W Ersparnis bei unveränderter Hardware.</li>
+<li><strong>Timer und Sleep</strong> — kostenlos und dort am wirksamsten, wo du das Lab nicht durchgehend brauchst.</li>
+<li><strong>Festplatten konsolidieren</strong> — jede stillgelegte 3,5-Zoll-Platte spart dauerhaft 5 bis 8&nbsp;W.</li>
+</ol>
+
+<p>Messgerät nicht vergessen: Eine einfache WLAN-Steckdose mit Verbrauchsmessung für 10 bis 20&nbsp;€ zeigt dir innerhalb weniger Tage, wo dein Geld tatsächlich hingeht. Erst messen, dann optimieren — sonst tauschst du am Ende Hardware aus, die gar nicht das Problem war.</p>
+
+<h2>Fazit</h2>
+
+<p>Die Homelab-Stromkosten sind keine Konstante, sondern eine Stellschraube. Mit einem sparsamen Mini-PC statt eines alten Towers, aktivierten C-States und einem durchdachten Timer-Konzept fährst du dein Lab oft für unter 5&nbsp;€ im Monat — statt für 40&nbsp;€ und mehr. Wer heute einen Neustart plant, sollte den Verbrauch von Anfang an mitdenken: Die Hardware, die du jetzt kaufst, bestimmt die Stromrechnung der nächsten Jahre.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate-Links. Alle Angaben zum Stromverbrauch sind typische Näherungswerte und hängen von Hardware, Konfiguration und Auslastung ab; der angenommene Strompreis von 0,40&nbsp;€/kWh dient als Rechenbeispiel und kann je nach Tarif abweichen. Weiterführende Hardware-Vergleiche findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
