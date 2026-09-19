@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gebrauchte Server fürs Homelab 2026: Lohnt sich das?</title>
+<meta name="description" content="Dell PowerEdge R730, HP ProLiant DL380 & Co. gebraucht fürs Homelab 2026: Preise, Stromverbrauch und Lärm ehrlich eingeordnet.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Gebrauchte Server fürs Homelab 2026: Lohnt sich das?</h1>
+
+<p>Ein gebrauchter Enterprise-Server wirkt auf den ersten Blick wie das ultimative Upgrade: echtes ECC-RAM, viele Kerne, redundante Netzteile, Remote-Management per iDRAC oder iLO — und das für einen Bruchteil des Neupreises. Ein Dell PowerEdge R730 oder HP ProLiant DL380 Gen9 kostet heute oft weniger als ein neuer Mini-PC mit halber Leistung. Aber diese Maschinen wurden fürs Rechenzentrum gebaut, nicht fürs Wohnzimmer. Lärm, Stromverbrauch und fehlender Rack-Platz sind die eigentlichen Kosten. Ob sich der Kauf lohnt, entscheidet sich nicht beim Anschaffungspreis, sondern bei Stromrechnung und Gehör.</p>
+
+<h2>Die Realität: Strom + Lärm</h2>
+
+<p>Der Idle-Verbrauch ist fürs Homelab der wichtigste Wert, denn ein Homeserver läuft 24/7 und hängt die meiste Zeit im Leerlauf. Unsere Vergleichsmodelle liegen grob zwischen 70 und 180 Watt:</p>
+
+<ul>
+<li><strong>Single-CPU-Racks mit SSDs</strong> (DL380 Gen9, R730) schaffen rund 70–130 W Idle.</li>
+<li><strong>Storage-Varianten</strong> mit vielen 3,5″-Platten und Dual-CPU (R730xd, DL380 Gen10) eher 120–180 W.</li>
+</ul>
+
+<p>Beim Lärm gilt eine einfache Faustregel: Die Bauhöhe entscheidet. <strong>1U-Server</strong> wie der DL360 Gen9 haben kleine Lüfter mit hoher Drehzahl — sie sind am lautesten und gehören ins Rack mit Dämpfung oder in den Keller. <strong>2U-Modelle</strong> (R730, DL380) sind hörbar, aber erträglich. Nur der <strong>Tower T620</strong> dreht große, langsame Lüfter und ist damit der einzige Kandidat, der im Wohnraum überhaupt infrage kommt.</p>
+
+<h2>Preis-Leistungs-Tipps</h2>
+
+<ul>
+<li><strong>Dell PowerEdge R730 (~300 €):</strong> Der Allrounder. Solide Xeon-Kerne, DDR4 ECC, bis zu 16× 2,5″-Slots. Für Virtualisierung und NAS die beste Preis-Leistung — die 2U-Lüfter sind hörbar, aber nicht brutal.</li>
+<li><strong>HP ProLiant DL360 Gen9 (ab ~99 €):</strong> Der billigste Einstieg, aber Vorsicht: 1U heißt laut. Nur mit Dämpfung oder im Keller, dazu wenig Platz für Platten.</li>
+<li><strong>Dell PowerEdge T620 (~300 €):</strong> Der einzige Wohnraum-Kandidat. Große, langsame Lüfter = angenehm leise. Dafür ältere DDR3-Plattform mit relativ hohem Idle — gut fürs Büro oder den Abstellraum statt Rack-Schrank.</li>
+<li><strong>Dell PowerEdge R740 (~550 €) &amp; HP ProLiant DL380 Gen10 (~600 €):</strong> Moderner (Xeon Scalable, effizienter pro Kern) und mit Zukunftsspielraum, aber deutlich teurer. Erst sinnvoll, wenn ein Gen9 wirklich nicht mehr reicht.</li>
+</ul>
+
+<h2>Vergleichstabelle</h2>
+
+<table>
+<thead>
+<tr><th>Modell</th><th>Bauform</th><th>Idle</th><th>Preis (ca.)</th></tr>
+</thead>
+<tbody>
+<tr><td>Dell PowerEdge R730</td><td>2U Rack</td><td>80–130 W</td><td>~300 €</td></tr>
+<tr><td>Dell PowerEdge R730xd</td><td>2U Rack (Storage)</td><td>120–160 W</td><td>~350 €</td></tr>
+<tr><td>Dell PowerEdge R740</td><td>2U Rack</td><td>90–150 W</td><td>~550 €</td></tr>
+<tr><td>HP ProLiant DL360 Gen9</td><td>1U Rack</td><td>90–120 W</td><td>ab ~99 €</td></tr>
+<tr><td>HP ProLiant DL380 Gen9</td><td>2U Rack</td><td>70–150 W</td><td>~250 €</td></tr>
+<tr><td>HP ProLiant DL380 Gen10</td><td>2U Rack</td><td>120–180 W</td><td>~600 €</td></tr>
+<tr><td>Dell PowerEdge T620</td><td>Tower (5U)</td><td>90–150 W</td><td>~300 €</td></tr>
+</tbody>
+</table>
+
+<h2>Ehrliche Warnung: Stromkosten bei 0,40 €/kWh rechnen!</h2>
+
+<p>Das ist die Rechnung, die viele vergessen. Ein Server mit <strong>100 W Idle</strong> zieht 2,4 kWh am Tag — das sind rund <strong>876 kWh im Jahr und etwa 350 € Stromkosten</strong> bei 0,40 €/kWh. Ein R730 mit 100 W kostet also pro Jahr mehr an Strom als sein Kaufpreis. Bei 150 W Idle sind es schon über 500 € jährlich. Der günstige Anschaffungspreis ist nur die Eintrittskarte — die laufenden Kosten entscheiden, ob sich das Gerät wirklich rechnet.</p>
+
+<h2>Fazit: Für wen lohnt sich ein gebrauchter Server?</h2>
+
+<p>Ein gebrauchter Enterprise-Server lohnt sich, wenn du <strong>viel ECC-RAM (128 GB und mehr), viele Kerne, echtes Remote-Management</strong> oder Rack-Platz für mehrere Geräte brauchst — und einen Keller oder Abstellraum hast, wo Lärm und Abwärme niemanden stören. Er lohnt sich <strong>nicht</strong>, wenn du nur ein paar Docker-Container oder eine kleine NAS betreiben willst: Ein Mini-PC oder NUC mit 5–15 W Idle ist über die Jahre deutlich günstiger, auch wenn er in der Anschaffung ähnlich teuer wirkt. Wer ehrlich rechnet, kauft den Server für die Leistung — und zahlt den Strom bewusst.</p>
+
+<p style="font-size:0.9em;color:#666;">Hinweis: Preise und Verbrauchswerte stammen aus dem serverdeals.at-Preisindex und eBay/Kleinanzeigen (Stand 09/2026) und können je nach Ausstattung (CPU, RAM, Plattenbestückung) deutlich schwanken. Wir sind nicht mit den genannten Anbietern verbunden und erhalten keine Provision. Eine vollständige Gegenüberstellung aller Modelle findest du im <a href="../vergleich.html">Hardware-Vergleich</a>.</p>
+
+</article>
+</main>
+<footer>
+<div class="wrap">
+<p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p>
+</div>
+</footer>
+</body>
+</html>
