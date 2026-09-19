@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WireGuard VPN selbst hosten: Sicherer Zugriff aufs Homelab</title>
+<meta name="description" content="WireGuard VPN selbst hosten: Anleitung für Server und Clients, Konfiguration, Lösung fürs CGNAT-Problem per VPS-Relay oder Tailscale — plus Sicherheits-Tipps.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>WireGuard VPN selbst hosten: Sicherer Zugriff aufs Homelab</h1>
+
+<p>Wer sein Homelab unterwegs erreichen will, steht schnell vor derselben Frage: Wie bekomme ich einen sicheren Zugriff, ohne halbherzige Portfreigaben für Web-Interfaces offenzulegen? Die Antwort lautet inzwischen fast immer WireGuard. Das moderne VPN-Protokoll hat sich binnen weniger Jahre vom Nischenprojekt zum Standard für Selbsthoster entwickelt — aus gutem Grund.</p>
+
+<h2>Warum WireGuard?</h2>
+
+<p>WireGuard verbindet zwei Eigenschaften, die sich bei klassischen VPNs lange widersprachen: <strong>Geschwindigkeit und Einfachheit</strong>. Statt hunderter Konfigurationszeilen und dutzender Krypto-Optionen wie bei OpenVPN kommt WireGuard mit einer Handvoll Parametern aus — je Peer ein Schlüsselpaar, eine IP-Adresse und ein Endpoint. Das reduziert nicht nur die Fehleranfälligkeit, sondern macht den Code so klein, dass er vollständig auditierbar ist. Der Kernel-Teil umfasst nur rund 4.000 Zeilen, während OpenVPN und IPsec auf mehrere hunderttausend Zeilen kommen.</p>
+
+<p>Praktisch heißt das: WireGuard erreicht oft nahezu die volle Leitungsgeschwindigkeit, verbraucht wenig CPU und roamt nahtlos zwischen WLAN und Mobilfunk, weil es zustandslos arbeitet. Für ein Homelab mit einer Fritzbox oder einem kleinen Server ist es damit die erste Wahl.</p>
+
+<h2>Installation: Server und Clients</h2>
+
+<p>Die Installation ist auf praktisch jedem System trivial. Auf Debian- oder Ubuntu-basierten Servern genügt ein Befehl:</p>
+
+<pre><code>sudo apt install wireguard</code></pre>
+
+<p>Anschließend legst du auf dem Server ein Schlüsselpaar an und definierst die Konfiguration unter <code>/etc/wireguard/wg0.conf</code>. Das Interface bekommt eine Adresse aus einem privaten Bereich — etwa <code>10.0.0.1/24</code> — und startet mit <code>sudo wg-quick up wg0</code>. Jeder Client erhält sein eigenes Schlüsselpaar und wird als <code>[Peer]</code>-Block mit seiner Public Key und einer festen Tunnel-IP eingetragen.</p>
+
+<p>Für Clients gibt es offizielle Apps für Windows, macOS, Android und iOS sowie das Kommandozeilen-Tool für Linux. Ein QR-Code oder die schlichte <code>.conf</code>-Datei reicht, um ein Smartphone in unter einer Minute zu verbinden. Wer sich die manuelle Arbeit sparen will, kann eine Verwaltungsoberfläche wie <strong>wg-easy</strong> oder <strong>PiVPN</strong> nutzen, die Konfiguration und Client-Verwaltung übernehmen.</p>
+
+<h2>Konfiguration im Detail</h2>
+
+<p>Die minimale Server-Konfiguration sieht so aus:</p>
+
+<pre><code>[Interface]
+Address = 10.0.0.1/24
+ListenPort = 51820
+PrivateKey = &lt;Server-PrivKey&gt;
+
+[Peer]
+PublicKey = &lt;Client-PubKey&gt;
+AllowedIPs = 10.0.0.2/32</code></pre>
+
+<p>Der entscheidende Punkt ist <code>AllowedIPs</code>: Hier legst du fest, welche Adressen über den Tunnel laufen. Soll der gesamte Traffic durch das VPN fließen, steht dort <code>0.0.0.0/0</code>. Für reinen Homelab-Zugriff reicht es, nur das lokale Subnetz wie <code>192.168.1.0/24</code> einzutragen — dann bleibt der restliche Internetverkehr der Clients direkt und ungebremst.</p>
+
+<h2>Das Port-Forwarding- und CGNAT-Problem</h2>
+
+<p>Der Haken an jedem selbst gehosteten VPN: Der Server braucht eine öffentlich erreichbare IP-Adresse und eine Portweiterleitung für UDP-Port 51820. Bei einem Anschluss mit echter öffentlicher IPv4 ist das schnell eingerichtet — im Router einfach eine UDP-Weiterleitung auf den Server legen.</p>
+
+<p>Problematisch wird es bei <strong>CGNAT</strong> (Carrier-Grade NAT), das viele Internetprovider inzwischen einsetzen. Hier teilst du dir eine öffentliche IPv4 mit zahlreichen anderen Kunden, und eine eingehende Portweiterleitung ist technisch unmöglich. Auch hinter einem reinen IPv6- oder DS-Lite-Anschluss kommst du mit klassischem Port-Forwarding nicht weiter.</p>
+
+<p>Für diesen Fall gibt es zwei saubere Lösungen. Die erste: ein günstiger <strong>VPS als Relay</strong>. Der VPS mit öffentlicher IP läuft als WireGuard-Server, dein Homelab baut als Client eine dauerhafte Verbindung zu ihm auf. Deine Geräte verbinden sich ebenfalls mit dem VPS, der den Verkehr ins Homelab weiterreicht. Welcher VPS sich dafür eignet, klären wir in unserem <a href="../artikel/vps-vergleich.html">VPS-Vergleich</a>.</p>
+
+<p>Die zweite, deutlich bequemere Lösung ist <strong>Tailscale</strong>. Die Software baut auf WireGuard auf, übernimmt aber das komplette Verbindungsmanagement automatisch: NAT-Traversal, Schlüsselverteilung und Relay-Server inklusive. Du installierst Tailscale einfach auf allen Geräten und meldest dich mit deinem Account an — fertig. Der Nachteil ist die Abhängigkeit vom Anbieter, auch wenn der Datenverkehr selbst Ende-zu-Ende verschlüsselt bleibt. Mehr zur Grundsatzfrage Selbsthosten versus Cloud findest du im Artikel <a href="../artikel/server-vs-cloud.html">Server vs. Cloud</a>.</p>
+
+<h2>Sicherheit</h2>
+
+<p>WireGuard ist von Grund auf minimalistisch und damit sicher: moderne Kryptografie (ChaCha20, Curve25519), keine veralteten Cipher, die sich deaktivieren lassen, und ein schlanker Code, der gut prüfbar ist. Trotzdem gelten die üblichen Regeln: Bewahre die privaten Schlüssel getrennt und offline auf, vergib pro Gerät ein eigenes Schlüsselpaar statt eines geteilten Keys und beschränke den Zugriff auf das, was wirklich nötig ist — über <code>AllowedIPs</code> und zusätzlich eine Firewall, die nur den UDP-Port und nur autorisierte Quell-IPs zulässt. Aktualisiere Server und Clients regelmäßig, denn auch bei WireGuard werden gelegentlich Sicherheitslücken geschlossen.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Die Befehle und Konfigurationsbeispiele dienen der Veranschaulichung; passe Adressen und Schlüssel immer an deine Umgebung an. Weiterführende Hardware-Vergleiche findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
