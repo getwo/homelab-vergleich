@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pfSense vs OPNsense: Die beste Firewall fürs Homelab</title>
+<meta name="description" content="pfSense oder OPNsense? Vergleich der beiden Firewall-Betriebssysteme fürs Homelab: Installation, VLANs, NAT, Regeln und passende Mini-PC-Hardware mit 2 NICs.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>pfSense vs OPNsense: Die beste Firewall fürs Homelab</h1>
+
+<p>Wer sein Homelab absichern will, kommt früher oder später an der Frage vorbei: pfSense oder OPNsense? Beide sind Open-Source-Firewall-Betriebssysteme auf FreeBSD-Basis, beide übernehmen die Rolle von Router und Firewall in einem Gerät — und beide teilen sich eine gemeinsame Geschichte. OPNsense ist 2015 als Fork aus der damaligen pfSense-Community entstanden. Seitdem haben sich die Projekte technisch deutlich auseinanderentwickelt. Dieser Vergleich zeigt, worin sie sich unterscheiden, wie du sie installierst und worauf du bei der Hardware achten solltest.</p>
+
+<h2>Der Unterschied in Kürze</h2>
+
+<p>Beide Systeme können im Kern dasselbe: NAT, Firewall-Regeln, VLANs, VPN, DHCP und DNS. Die Unterschiede liegen in der Philosophie. <strong>pfSense</strong> setzt auf Stabilität und eine riesige, über Jahre gewachsene Dokumentation und Community — dafür kommt die pfSense-Community-Edition (CE) mit Updates eher langsam, während der Hersteller Netgate seine Energie zunehmend in das kommerzielle pfSense Plus steckt. <strong>OPNsense</strong> verfolgt dagegen einen strikten Release-Zyklus: zweimal im Jahr eine neue Version, regelmäßige Security-Updates, eine modernere Weboberfläche und eine konsequentere Trennung zwischen freier Community-Version und Business-Edition. Wer maximale Langzeit-Stabilität und die größte Wissensbasis sucht, ist bei pfSense gut aufgehoben. Wer frische Features, transparente Roadmap und saubere Open-Source-Haltung schätzt, wählt OPNsense.</p>
+
+<h2>Einsatz als Router und Firewall</h2>
+
+<p>In beiden Fällen ersetzt die Software den handelsüblichen Router: Sie wird auf einem eigenen Gerät installiert, das zwischen Modem und Heimnetz sitzt. Ein Netzwerkport (WAN) geht zum Modem, der zweite (LAN) ins interne Netz. Das gibt dir volle Kontrolle über Port-Weiterleitungen, Kindersicherung, Gast-WLANs und VPN-Zugänge — Dinge, die die meisten Consumer-Router nur halbherzig können. Besonders im Homelab zahlt sich das aus, weil du Labor-Netze sauber vom produktiven Netz trennen kannst.</p>
+
+<h2>Installation: VM oder Bare-Metal</h2>
+
+<p>Der einfachste Einstieg ist eine virtuelle Maschine. In Proxmox legst du eine VM mit zwei virtuellen Netzwerk-Adaptern an — einen für WAN, einen für LAN — und startest vom ISO-Image. Das ist ideal zum Testen, bevor du dich festlegst; eine Anleitung zum Einstieg findest du in unserem <a href="../artikel/proxmox-einstieg.html">Proxmox-Einstiegsratgeber</a>. Für den Dauerbetrieb empfiehlt sich jedoch Bare-Metal auf dedizierter Hardware: Dann läuft die Firewall auch dann weiter, wenn der Virtualisierungshost gewartet oder neu gestartet wird, und das gesamte Netz hängt nicht an der Verfügbarkeit einer VM.</p>
+
+<p>Die Installation selbst ist bei beiden Systemen unkompliziert: ISO auf einen USB-Stick schreiben, booten, wenige Minuten warten, fertig. Nach dem ersten Start erreichst du die Konsole per Kommandozeile und die Weboberfläche über die LAN-IP (Standard bei pfSense 192.168.1.1, bei OPNsense 192.168.1.1 mit dem Login root/opnsense). Den Assistenten von OPNsense empfinden viele als eingängiger, aber auch pfSense ist schnell eingerichtet.</p>
+
+<h2>Grundkonfiguration: VLANs, NAT und Regeln</h2>
+
+<p>Nach der Installation stehen dieselben Kernaufgaben an. <strong>NAT</strong> richtest du über ausgehende NAT-Regeln ein, damit alle Geräte im LAN ins Internet kommen; eingehend leitest du Ports über Port-Forwarding weiter, etwa für einen Webserver. <strong>VLANs</strong> legst du unter den Schnittstellen an und weist ihnen eigene Subnetze zu — zum Beispiel VLAN 10 für das Heimnetz, VLAN 20 für IoT-Geräte und VLAN 30 für Gäste. Die eigentliche Trennung erledigen dann die <strong>Firewall-Regeln</strong>: Du erlaubst dem IoT-VLAN nur den Zugriff ins Internet, aber nicht auf deine Server. Bei pfSense geschieht das im Menü „Firewall &rarr; Rules“, bei OPNsense unter „Firewall &rarr; Rules &rarr; [VLAN]“. Konzeptionell sind beide gleich aufgebaut; die Oberfläche von OPNsense ist aufgeräumter, während pfSense mehr Legacy-Optionen anbietet.</p>
+
+<h2>Hardware-Empfehlung: Mini-PC mit 2 NICs</h2>
+
+<p>Für eine Homelab-Firewall brauchst du keine Server-Hardware. Ein kompakter Mini-PC mit zwei Netzwerkanschlüssen reicht vollkommen aus und verbraucht dabei nur 5 bis 15 Watt. Wichtig ist allein, dass das Gerät <strong>zwei separate NICs</strong> mitbringt — einen für WAN, einen für LAN — oder einen Slot für eine zweite Netzwerkkarte. Intel-Chipsätze sind dabei die sicherste Wahl, da FreeBSD deren Treiber besonders zuverlässig unterstützt. Welche Modelle sich dafür eignen, haben wir in unserem <a href="../artikel/minipc-homelab.html">Mini-PC-Ratgeber fürs Homelab</a> zusammengestellt. Als grobe Orientierung gilt: 2 bis 4 GB RAM und ein beliebiger aktueller Dual-Core-Prozessor genügen für Gigabit-Durchsatz, mehr Kerne brauchst du erst für VPN-Verschlüsselung oder Paketinspektion mit hohen Datenraten.</p>
+
+<h2>Fazit</h2>
+
+<p>Beide Firewalls sind ausgezeichnete Wahlen fürs Homelab — die Frage ist vor allem eine des Geschmacks. <strong>pfSense</strong> punktet mit der größten Community, unzähligen Tutorials und maximaler Langzeit-Stabilität. <strong>OPNsense</strong> überzeugt mit regelmäßigen Updates, moderner Oberfläche und klarer Open-Source-Strategie. Da sich die Kernfunktionen kaum unterscheiden und beide kostenlos sind, lohnt es sich, beide kurz als VM auszuprobieren und dann diejenige dauerhaft auf einem sparsamen Mini-PC mit zwei NICs zu installieren. Am Ende gewinnst du in jedem Fall: eine professionelle Firewall, wie sie sonst in Unternehmen läuft — für kleines Geld im eigenen Keller.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Markennamen wie pfSense, OPNsense, Netgate und FreeBSD sind Eigentum ihrer jeweiligen Inhaber und werden hier nur zu Informationszwecken genannt. Weiterführende Hardware-Vergleiche findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
