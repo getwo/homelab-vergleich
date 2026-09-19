@@ -20,6 +20,14 @@
   <url><loc>https://homelab.brillianze.de/artikel/jellyfin.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/wireguard.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/pfsense-opnsense.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/homelab-starter.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/immich.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/diy-nas.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/reverse-proxy.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/pihole.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/stable-diffusion-lokal.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/whisper-lokal.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/rag-lokal.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/impressum.html</loc><priority>0.3</priority></url>
   <url><loc>https://homelab.brillianze.de/datenschutz.html</loc><priority>0.3</priority></url>
 </urlset>
