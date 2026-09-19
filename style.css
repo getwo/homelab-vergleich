@@ -34,6 +34,11 @@ nav a:hover { color: var(--fg); }
 .hero h1 { font-size: 2rem; margin: 0 0 16px; }
 .lead { color: var(--muted); font-size: 1.1rem; max-width: 760px; }
 .disclosure { font-size: 0.85rem; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 12px; margin-top: 24px; }
+.cta {
+  display: inline-block; margin-top: 22px; background: var(--accent); color: #0d1117;
+  text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 8px;
+}
+.cta:hover { filter: brightness(1.1); }
 
 .grid { padding: 20px 0 40px; }
 .grid h2 { font-size: 1.4rem; margin: 0 0 16px; }
