@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whisper lokal: Spracherkennung ohne Cloud (Anleitung)</title>
+<meta name="description" content="Whisper lokal betreiben: Spracherkennung ohne Cloud mit whisper.cpp oder faster-whisper. Modelle von tiny bis large, Hardware-Anforderungen und praktische Anleitung.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Whisper lokal: Spracherkennung ohne Cloud (Anleitung)</h1>
+
+<p>Sprachmemos, Meetings, Podcasts, Interviews — wer Audio automatisch in Text verwandeln will, landet meist bei Cloud-Diensten. Doch die Aufnahmen verlassen dabei dein Zuhause, und bei sensiblen Inhalten ist das ein Problem. OpenAIs <strong>Whisper</strong> löst genau das: Die Spracherkennung läuft komplett lokal auf deiner eigenen Hardware, offline und ohne laufende Kosten. Diese Anleitung zeigt, was Whisper ist, welche Modelle es gibt und wie du deine eigenen Audios transkribierst.</p>
+
+<h2>Was ist Whisper?</h2>
+<p>Whisper ist ein quelloffenes Sprachmodell von OpenAI, das Sprache in Text umwandelt. Anders als ChatGPT läuft es nicht als Cloud-Dienst, sondern als Modell, das du selbst herunterlädst und lokal ausführst. Es beherrscht über 90 Sprachen — darunter Deutsch, Englisch und viele weitere — und transkribiert nicht nur, sondern übersetzt auch automatisch ins Englische. Da es robust gegenüber Hintergrundgeräuschen und verschiedenen Akzenten ist, eignet es sich auch für Aufnahmen in schlechter Qualität.</p>
+
+<h2>Die Modelle: von tiny bis large</h2>
+<p>Whisper gibt es in fünf Größen. Die kleinen Modelle sind schnell und sparsam, die großen deutlich genauer — gerade bei schwieriger Akustik oder Fachbegriffen:</p>
+
+<table>
+<thead>
+<tr><th>Modell</th><th>Parameter</th><th>VRAM (ca.)</th><th>Geschwindigkeit</th></tr>
+</thead>
+<tbody>
+<tr><td>tiny</td><td>39 M</td><td>~1 GB</td><td>sehr schnell</td></tr>
+<tr><td>base</td><td>74 M</td><td>~1 GB</td><td>schnell</td></tr>
+<tr><td>small</td><td>244 M</td><td>~2 GB</td><td>mittel</td></tr>
+<tr><td>medium</td><td>769 M</td><td>~5 GB</td><td>langsam</td></tr>
+<tr><td>large (v3)</td><td>1,55 Mrd.</td><td>~10 GB</td><td>sehr langsam</td></tr>
+</tbody>
+</table>
+
+<p>Für den Einstieg reicht <strong>small</strong> meist völlig aus: gute Genauigkeit bei überschaubarem Ressourcenbedarf. Wer maximale Qualität will, greift zu <strong>large-v3</strong> — zahlt dafür aber mit deutlich höherem Rechenaufwand.</p>
+
+<h2>Installation: whisper.cpp oder faster-whisper</h2>
+<p>Zwei Wege haben sich durchgesetzt. <strong>whisper.cpp</strong> ist eine schlanke C++-Implementierung ohne Python-Abhängigkeiten und läuft selbst auf schwachen Geräten und sogar auf dem Raspberry Pi. Du klonst das Repository, kompilierst es mit <code>make</code> und lädst ein Modell im ggml-Format herunter — fertig. Es ist der sparsamste Weg, Whisper lokal zu betreiben.</p>
+<p><strong>faster-whisper</strong> ist die schnellere Alternative auf Basis von CTranslate2. Installiert wird es per <code>pip install faster-whisper</code>, die Nutzung ist Python-basiert und damit näher an anderen Data-Science-Workflows. faster-whisper ist bei gleicher Genauigkeit oft mehrfach schneller als die Original-Implementierung und nutzt GPUs über CUDA oder CPU mit mehreren Threads. Für die meisten Homelab-User ist faster-whisper der beste Kompromiss aus Komfort und Tempo.</p>
+
+<h2>Eigene Audios transkribieren</h2>
+<p>Der Ablauf ist bei beiden Tools ähnlich: Audio-Datei angeben, Modell wählen, Ergebnis als Text ausgeben. Mit whisper.cpp rufst du <code>./main -m models/ggml-small.bin -f meeting.wav</code> auf und erhältst das Transkript direkt im Terminal. Mit faster-whisper lädst du das Modell im Skript, übergibst die Datei und schreibst die Segmente in eine Textdatei. Whisper verarbeitet WAV, MP3, M4A und viele weitere Formate — unter der Haube wird alles auf 16 kHz Mono heruntergerechnet. Tipp: Mit der Option <code>--language de</code> (bzw. dem Sprachparameter bei faster-whisper) erzwingst du die Erkennung auf Deutsch und vermeidest Fehlraten bei kurzen Aufnahmen.</p>
+
+<h2>Hardware-Anforderungen</h2>
+<p>Whisper läuft rein auf der CPU — eine GPU ist optional. Die <strong>tiny</strong>- und <strong>base</strong>-Modelle packt jeder moderne Rechner oder Mini-PC in Echtzeit oder schneller; für <strong>large-v3</strong> auf CPU solltest du allerdings Geduld mitbringen. Eine GPU mit 8–12 GB VRAM beschleunigt die großen Modelle erheblich. Wer Whisper im Homelab dauerhaft betreiben will, fährt mit einem <a href="../artikel/lokale-llms-einstieg.html">lokalen LLM-Setup</a> gut: Dieselbe Maschine, die Sprachmodelle wie Llama bedient, transkribiert nebenbei auch deine Audios — CPU und RAM werden einfach geteilt.</p>
+
+<h2>Anwendungsfälle</h2>
+<p>Die Einsatzmöglichkeiten sind vielfältig: <strong>Meetings und Interviews</strong> automatisch protokollieren, <strong>Sprachmemos und Diktate</strong> in Notizen verwandeln, <strong>Podcasts und Videos</strong> für Untertitel transkribieren oder <strong>Vorlesungen</strong> durchsuchbar machen. Besonders stark ist Whisper in Kombination mit anderen lokalen Tools: Ein lokales LLM fasst das Transkript anschließend zusammen, übersetzt es oder beantwortet Fragen zum Inhalt — ganz ohne Cloud. Da alles offline passiert, eignen sich solche Pipelines auch für vertrauliche Gespräche, Kundendaten oder medizinische Aufnahmen, die du nicht an fremde Server geben willst.</p>
+
+<h2>Fazit</h2>
+<p>Whisper macht lokale Spracherkennung zugänglich — kostenlos, offline und datenschutzfreundlich. Mit whisper.cpp oder faster-whisper ist der Einstieg in wenigen Minuten erledigt, und schon das small-Modell liefert erstaunlich gute Transkripte. Wer seine Audios ohnehin im eigenen Homelab verarbeitet, bekommt mit Whisper ein mächtiges Werkzeug, das sich ideal mit lokalen LLMs kombinieren lässt.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Alle Angaben zu Modellgrößen, VRAM-Bedarf und Geschwindigkeit dienen der Orientierung und können je nach Hardware, Audiodatei und Software-Version abweichen. Whisper ist ein quelloffenes Projekt von OpenAI und steht unter der MIT-Lizenz — die Nutzung ist kostenlos. Weiterführende Infos zum lokalen Betrieb von Sprachmodellen findest du in unserem <a href="../artikel/lokale-llms-einstieg.html">Einstieg zu lokalen LLMs</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
