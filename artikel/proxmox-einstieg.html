@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxmox für Einsteiger: Der komplette Guide 2026</title>
+<meta name="description" content="Proxmox für Einsteiger: Installation per USB-Stick und ISO, erste VM und Container anlegen, Netzwerk-Grundlagen mit vmbr0, häufige Fehler und sinnvolle Hardware.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Proxmox für Einsteiger: Der komplette Guide 2026</h1>
+
+<p>Wer sein Homelab selbst aufbauen will, stößt früher oder später auf Proxmox Virtual Environment — kurz Proxmox VE. Die kostenlose Open-Source-Plattform verwandelt einen einzelnen Rechner in einen kompletten Virtualisierungs-Server, auf dem mehrere virtuelle Maschinen und Container gleichzeitig laufen. Dieser Guide führt dich Schritt für Schritt durch den Einstieg: von der Installation über die erste VM bis zu den wichtigsten Netzwerk- und Fehler-Grundlagen.</p>
+
+<h2>Was ist Proxmox?</h2>
+
+<p>Proxmox VE ist ein sogenannter Typ-1-Hypervisor auf Basis von Debian Linux. Das heißt: Es läuft direkt auf der Hardware — ohne ein Windows oder Linux darunter — und verwaltet darüber Betriebssysteme als virtuelle Maschinen (VMs). Zusätzlich unterstützt Proxmox <strong>LXC-Container</strong>, die deutlich weniger Ressourcen brauchen als eine volle VM und sich besonders für einzelne Dienste wie Pi-hole, Home Assistant oder einen Webserver eignen. Verwaltet wird alles über eine übersichtliche Web-Oberfläche, die du im Browser unter der IP deines Servers erreichst. Proxmox ist kostenlos und quelloffen; optional gibt es ein Support-Abo, für den Heimgebrauch brauchst du es aber nicht.</p>
+
+<h2>Installation: USB-Stick, ISO, erster Boot</h2>
+
+<p>Die Installation ist der einfachste Teil. So gehst du vor:</p>
+
+<ol>
+<li><strong>ISO herunterladen:</strong> Lade das aktuelle Proxmox-VE-ISO-Image von der offiziellen Website herunter.</li>
+<li><strong>USB-Stick erstellen:</strong> Schreibe die ISO mit einem Tool wie Rufus (Windows) oder balenaEtcher auf einen USB-Stick. Ein 8-GB-Stick reicht locker.</li>
+<li><strong>Booten:</strong> Stecke den Stick in den Server, starte ihn neu und wähle im BIOS/UEFI-Bootmenü den USB-Stick aus.</li>
+<li><strong>Installieren:</strong> Folge dem grafischen Installer. Wichtig sind hier drei Dinge: das Ziel-Laufwerk für die Installation, ein <strong>Root-Passwort</strong> (unbedingt merken) und die <strong>Netzwerk-Konfiguration</strong> mit fester IP-Adresse.</li>
+<li><strong>Web-Oberfläche öffnen:</strong> Nach dem Neustart erreichst du Proxmox im Browser unter <code>https://IP-Adresse:8006</code>.</li>
+</ol>
+
+<p>Die Warnung zum fehlenden Zertifikat kannst du im Heimnetz getrost akzeptieren — sie entsteht, weil Proxmox ein selbstsigniertes Zertifikat mitbringt.</p>
+
+<h2>Die erste VM und der erste Container</h2>
+
+<p>Für eine <strong>virtuelle Maschine</strong> brauchst du zuerst ein Installations-Image. Lade dir zum Beispiel eine Ubuntu- oder Windows-ISO herunter und lege sie über „local“ → „ISO Images“ hoch. Danach klickst du auf „Create VM“, folgst dem Assistenten und weist der VM CPU-Kerne, RAM und Speicherplatz zu. Beim Start mountest du die ISO als CD-Laufwerk und installierst das Betriebssystem wie auf echter Hardware.</p>
+
+<p>Ein <strong>Container</strong> geht noch schneller: Proxmox bringt vorgefertigte Templates mit. Unter „local“ → „CT Templates“ lädst du ein Template (etwa Debian oder Ubuntu) herunter und erstellst daraus mit wenigen Klicks einen Container. Der ist in Sekunden gestartet und verbraucht nur einen Bruchteil des Speichers einer VM.</p>
+
+<h2>Netzwerk-Grundlagen: vmbr0</h2>
+
+<p>Das Herzstück des Proxmox-Netzwerks ist die <strong>Linux Bridge</strong> <code>vmbr0</code>. Eine Bridge funktioniert wie ein virtueller Switch: Sie verbindet deine physische Netzwerkkarte mit den virtuellen Netzwerkkarten deiner VMs und Container. Deshalb bekommen alle Gäste ihre IP-Adressen direkt aus deinem Router — sie sind im Heimnetz genauso erreichbar wie ein echtes Gerät. Bei der Installation wird vmbr0 normalerweise automatisch angelegt und mit deiner Netzwerkkarte verbunden. Solange du nichts Besonderes vorhast, musst du daran nichts ändern. Jede neue VM und jeder Container wird einfach an vmbr0 gehängt und funktioniert sofort.</p>
+
+<h2>Häufige Fehler (und wie du sie vermeidest)</h2>
+
+<p>Diese Stolpersteine begegnen fast jedem Einsteiger irgendwann:</p>
+
+<ul>
+<li><strong>Virtualisierung nicht aktiviert:</strong> Läuft keine VM, fehlt im BIOS oft die Einstellung „Intel VT-x“ bzw. „AMD-V“. Prüfe das als Erstes.</li>
+<li><strong>IOMMU vergessen:</strong> Wer VMs später echte Hardware (z.&nbsp;B. eine Grafikkarte) durchreichen will, muss im BIOS auch „VT-d“ bzw. „AMD-Vi“ aktivieren.</li>
+<li><strong>Falsche Bridge gewählt:</strong> Wählst du beim Anlegen einer VM versehentlich keine Bridge, bekommt die VM kein Netzwerk. Achte darauf, dass „vmbr0“ ausgewählt ist.</li>
+<li><strong>Zu wenig RAM eingeplant:</strong> Windows-VMs brauchen mindestens 4&nbsp;GB, sonst werden sie unbenutzbar. Plane Puffer ein.</li>
+<li><strong>Abo-Hinweis:</strong> Der rote Hinweis „Kein gültiges Abonnement“ ist nur kosmetisch — im Heimgebrauch kannst du ihn ignorieren.</li>
+</ul>
+
+<h2>Sinnvolle Hardware</h2>
+
+<p>Proxmox läuft schon auf bescheidener Hardware, aber ein paar Dinge solltest du einplanen. Die CPU sollte Virtualisierung unterstützen — praktisch jede CPU der letzten zehn Jahre tut das. <strong>RAM ist der wichtigste Faktor</strong>: Rechne mindestens 8&nbsp;GB, besser 16&nbsp;GB, da jede VM ihren Speicher exklusiv belegt. Für die Installation reicht eine schnelle <strong>NVMe-SSD</strong>, für Daten und Backups empfehlen sich zusätzlich große HDDs. Eine <strong>zweite Netzwerkkarte</strong> ist nur nötig, wenn du Netze sauber trennen willst — für den Start genügt eine.</p>
+
+<p>Welcher Rechner sich als Proxmox-Host eignet, hängt stark von deinem Budget und Platzbedarf ab: Ein <a href="../artikel/minipc-homelab.html">sparsamer Mini-PC</a> ist ideal, wenn du leise und stromsparend starten willst. Wer mehr Leistung, ECC-Speicher oder viele Festplatten braucht, findet in unserem Ratgeber zu <a href="../artikel/server-homelab.html">Server-Hardware fürs Homelab</a> die passende Empfehlung.</p>
+
+<h2>Fazit</h2>
+
+<p>Proxmox ist der perfekte Einstieg in die Virtualisierung: kostenlos, stabil und mit einer Web-Oberfläche, die auch Anfänger schnell verstehen. Der Weg ist immer derselbe — ISO auf den USB-Stick, installieren, vmbr0 bestätigen, erste VM oder den ersten Container anlegen. Sobald du die Grundlagen verstanden hast, steht dir die ganze Welt des Homelabs offen: von zusätzlichen Diensten bis zu ausgewachsenen Server-Setups.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Proxmox VE ist freie Open-Source-Software und kostenlos nutzbar. Weiterführende Hardware-Empfehlungen findest du auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
