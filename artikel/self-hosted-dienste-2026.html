@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die 15 besten Self-Hosted Dienste für dein Homelab 2026 — Homelab Vergleich</title>
+<meta name="description" content="Die 15 besten Self-Hosted Dienste für dein Homelab 2026  Ein Homelab lebt von den Diensten, die darauf laufen. Wer selbst hostet, spart Abo-Gebühren, ">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Die 15 besten Self-Hosted Dienste für dein Homelab 2026</h1>
+<p>Ein Homelab lebt von den Diensten, die darauf laufen. Wer selbst hostet, spart Abo-Gebühren, behält die Kontrolle über seine Daten und macht sich unabhängig von Cloud-Anbietern. Doch bei der riesigen Auswahl fällt der Einstieg schwer. Wir haben deshalb die 15 wichtigsten Self-Hosted-Dienste für 2026 zusammengestellt – sortiert nach Kategorien, mit einer kurzen Erklärung, was jeder Dienst kann und warum er sich lohnt. Welche Grundlage du dafür brauchst, erklärt unser [Homelab-Einrichten-Guide](homelab-einrichten-guide.md); als Betriebssystem empfehlen wir [Proxmox](proxmox-einsteiger-guide.md).</p>
+<h2>Medien: Filme, Serien und Fotos selbst verwalten</h2>
+<h2>1. Jellyfin</h2>
+<p>Jellyfin ist die quelloffene Alternative zu Plex und Netflix: ein Medienserver, der Filme, Serien und Musik zentral verwaltet und auf alle Geräte streamt – vom Smart-TV über das Handy bis zum Browser. Kostenlos, ohne Konto-Zwang und ohne Tracking.</p>
+<h2>2. Immich</h2>
+<p>Immich ist die Self-Hosted-Antwort auf Google Fotos. Die Plattform sichert Fotos und Videos automatisch vom Smartphone, erkennt Gesichter und Objekte per KI und bietet eine schnelle Web-Oberfläche – alles auf deiner eigenen Hardware.</p>
+<h2>Daten &amp; Organisation: Deine eigene Cloud</h2>
+<h2>3. Nextcloud</h2>
+<p>Nextcloud ist dein privates Google-Workspace: Dateien synchronisieren, Kalender, Kontakte, Notizen, Aufgaben und Videokonferenzen – alles auf deinem Server. Perfekt, um Dokumente mit Familie oder Team zu teilen, ohne fremde Clouds.</p>
+<h2>4. Vaultwarden</h2>
+<p>Vaultwarden ist ein leichtgewichtiger, kompatibler Bitwarden-Server für deine Passwörter. Er speichert alle Zugangsdaten verschlüsselt und synchronisiert sie über die offiziellen Bitwarden-Apps auf alle Geräte – dein Passwort-Tresor gehört dir allein.</p>
+<h2>Smart Home: Das Zuhause automatisieren</h2>
+<h2>5. Home Assistant</h2>
+<p>Home Assistant ist das Gehirn deines Smart Homes: Es verbindet über 3.000 Geräte und Dienste lokal, ohne Hersteller-Cloud. Wie du die Plattform auf Proxmox installierst, zeigen wir im Detail im Artikel [Home Assistant auf Proxmox](home-assistant-proxmox.md).</p>
+<h2>Künstliche Intelligenz: Lokal und privat</h2>
+<h2>6. Ollama</h2>
+<p>Ollama macht lokale Sprachmodelle so einfach wie einen Paketmanager: Ein Befehl genügt, um Modelle wie Llama oder Mistral herunterzuladen und lokal auszuführen – ganz ohne Cloud. Wer seine KI selbst betreiben will, startet hier.</p>
+<h2>7. Open WebUI</h2>
+<p>Open WebUI ist die Chat-Oberfläche für deine lokalen Modelle. Sie bringt eine ChatGPT-ähnliche Weboberfläche mit Verlauf, Mehrbenutzer-Verwaltung und direkter Anbindung an Ollama – so fühlt sich lokale KI an wie ein fertiger Cloud-Dienst.</p>
+<h2>8. ComfyUI</h2>
+<p>ComfyUI ist das mächtige Werkzeug für lokale Bildgenerierung. Über eine visuelle Node-Oberfläche baust du Workflows für Stable Diffusion &amp; Co. und behältst die volle Kontrolle über jeden Schritt. Welche GPU sich dafür lohnt, erfährst du in unserem [GPU-Guide für lokale KI](gpu-lokale-ki-2026.md); den Vergleich zu Cloud-Diensten liefert [Lokale KI vs. Cloud](lokale-ki-vs-cloud.md).</p>
+<h2>Netzwerk &amp; Sicherheit: Das Fundament</h2>
+<h2>9. WireGuard</h2>
+<p>WireGuard ist das moderne, schlanke VPN, um von unterwegs sicher auf dein Homelab zuzugreifen. Schnell, einfach konfigurierbar und in wenigen Minuten einsatzbereit – die Schritt-für-Schritt-Anleitung findest du in unserem [WireGuard-Artikel](wireguard-homelab.md).</p>
+<h2>10. Pi-hole</h2>
+<p>Pi-hole filtert Werbung und Tracker netzwerkweit, noch bevor sie deine Geräte erreichen. Einmal als DNS-Server eingerichtet, blockiert es Anzeigen auf allen Geräten im Netz – ohne Browser-Plugin.</p>
+<h2>11. Nginx Proxy Manager</h2>
+<p>Ein Reverse-Proxy ist die Schaltzentrale für deine Webdienste: Er leitet Anfragen an die richtigen Dienste weiter und kümmert sich automatisch um SSL-Zertifikate. Nginx Proxy Manager liefert das mit einer einfachen Web-Oberfläche – ideal für Einsteiger.</p>
+<h2>Monitoring: Den Überblick behalten</h2>
+<h2>12. Grafana</h2>
+<p>Grafana verwandelt Metriken und Logs in übersichtliche Dashboards. In Kombination mit Datenquellen wie Prometheus behältst du CPU-Last, Speicher, Netzwerk und Temperaturen deines Homelabs jederzeit im Blick.</p>
+<h2>13. Uptime Kuma</h2>
+<p>Uptime Kuma überwacht alle deine Dienste und Webseiten und meldet sich sofort per E-Mail, Push oder Webhook, wenn etwas ausfällt. Ein schlichtes, aber unverzichtbares Werkzeug für den reibungslosen Betrieb.</p>
+<h2>Automatisierung &amp; Übersicht</h2>
+<h2>14. n8n</h2>
+<p>n8n ist das Self-Hosted-Pendant zu Zapier oder Make: Über eine grafische Oberfläche verbindest du hunderte Apps und automatisierst Workflows – vom Newsletter-Versand bis zur Datensicherung. Deine Automatisierungen bleiben komplett bei dir.</p>
+<h2>15. Homepage</h2>
+<p>Homepage ist das Dashboard, das alle deine Dienste auf einer einzigen Startseite bündelt. Mit Statusanzeigen, Schnellzugriff und hübschen Widgets wird dein Homelab endlich übersichtlich – und dein Browser-Startbildschirm zeigt dir auf einen Blick, was läuft.</p>
+<h2>Fazit: Starte klein, wachse mit</h2>
+<p>Diese 15 Dienste decken fast alles ab, was ein modernes Homelab 2026 braucht: Medien, Daten, Smart Home, KI, Netzwerk, Monitoring und Automatisierung. Der wichtigste Tipp: Starte mit zwei oder drei Diensten – etwa Jellyfin, Pi-hole und Home Assistant – und erweitere Schritt für Schritt. So lernst du jeden Dienst richtig kennen und baust dir ein System auf, das genau zu deinen Anforderungen passt. Wie hoch dabei die Stromkosten ausfallen und wie du sie senkst, erklärt unser Beitrag [Stromkosten im Homelab](stromkosten-homelab.md).</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
