@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAG lokal: Eigene Dokumente mit LLMs durchsuchen</title>
+<meta name="description" content="RAG lokal einrichten: So durchsuchst du deine eigenen Dokumente mit lokalen LLMs via Ollama, Vektor-Datenbanken, Open WebUI, LangChain und LlamaIndex — ohne Cloud.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>RAG lokal: Eigene Dokumente mit LLMs durchsuchen</h1>
+
+<p>Ein Sprachmodell wie Llama, Mistral oder Qwen beantwortet Fragen aus seinem Training heraus — aber es kennt deine eigenen Dokumente nicht. Genau diese Lücke schließt <strong>RAG</strong> (Retrieval-Augmented Generation). Statt das Modell neu zu trainieren, holt RAG zum Zeitpunkt der Frage die passenden Textstellen aus deinen Dateien und gibt sie dem Modell als Kontext mit. Das Ergebnis: Antworten, die auf deinen tatsächlichen Unterlagen basieren — und zwar komplett lokal, ohne dass ein einziges Dokument in die Cloud wandert.</p>
+
+<h2>Was ist Retrieval-Augmented Generation?</h2>
+
+<p>RAG verbindet zwei Bausteine: einen <strong>Retriever</strong>, der relevante Textpassagen findet, und einen <strong>Generator</strong> (das LLM), der daraus eine Antwort formuliert. Der Ablauf ist immer gleich: Deine Dokumente werden in kleine Abschnitte (Chunks) zerlegt und als numerische Vektoren in einer <strong>Vektor-Datenbank</strong> gespeichert. Kommt eine Frage, wird sie ebenfalls in einen Vektor umgewandelt und mit den gespeicherten Abschnitten verglichen. Die ähnlichsten Stellen landen im Prompt, das Modell antwortet auf dieser Grundlage und kann dabei Quellen nennen.</p>
+
+<p>Der große Vorteil gegenüber reinem Feintuning: Es ist schnell eingerichtet, kostet kaum Rechenleistung und lässt sich aktualisieren, indem du einfach neue Dateien hinzufügst. Außerdem reduzieren sich Halluzinationen spürbar, weil das Modell sich auf gelieferten Text stützen kann, statt frei zu raten.</p>
+
+<h2>Vektor-Datenbanken: das Gedächtnis</h2>
+
+<p>Das Herzstück jeder RAG-Pipeline ist die Vektor-Datenbank. Sie speichert keine Wörter, sondern mathematische Vektoren, die die Bedeutung eines Textabschnitts abbilden. Ähnliche Inhalte liegen im Vektorraum nah beieinander, sodass eine Ähnlichkeitssuche blitzschnell die relevanten Stellen liefert. Beliebte lokale Optionen sind <strong>ChromaDB</strong> (einfach, läuft in Python), <strong>Qdrant</strong> (schnell, als Docker-Container oder eingebettet), <strong>Weaviate</strong> und <strong>FAISS</strong> (eine schlanke Bibliothek von Meta). Für den Einstieg reicht ChromaDB völlig — es speichert die Daten lokal und braucht keine separate Installation.</p>
+
+<p>Bevor Text in die Datenbank wandert, wird er <strong>chunkiert</strong> und <strong>embedded</strong>. Beim Chunking zerlegst du Dokumente in Abschnitte von wenigen hundert Zeichen; beim Embedding wandelt ein Modell (lokal z. B. <code>nomic-embed-text</code> oder <code>all-minilm</code> über Ollama) diese Abschnitte in Vektoren um. Die Wahl des Embedding-Modells beeinflusst die Qualität der Suche mehr als die des LLMs selbst.</p>
+
+<h2>Lokale Tools für RAG</h2>
+
+<p>Den schnellsten Weg bietet <strong>Open WebUI</strong>. Das Tool, das du ohnehin als Web-Oberfläche für <a href="../artikel/ollama-tutorial.html">Ollama</a> nutzen kannst, bringt eine eingebaute RAG-Funktion mit: Du legst eine Wissensbasis an, lädst PDFs, Markdown- oder Textdateien hoch, und Open WebUI übernimmt Chunking, Embedding und Abruf automatisch. Anschließend kannst du im Chat gezielt gegen dieses Wissen fragen — ganz ohne eine Zeile Code.</p>
+
+<p>Wer mehr Kontrolle will, greift zu Frameworks. <strong>LangChain</strong> ist das Schweizer Taschenmesser: Es orchestriert Dokumentenladung, Chunking, Embedding, Vektorspeicher und die Kette bis zur Antwort. <strong>LlamaIndex</strong> (früher GPT Index) setzt dagegen stärker auf die Datenebene und glänzt beim Indizieren und Abfragen großer Dokumentbestände. Beide lassen sich problemlos mit einem lokalen Ollama-Modell koppeln, sodass die komplette Pipeline auf deiner eigenen Hardware läuft.</p>
+
+<h2>Einrichtung mit Ollama</h2>
+
+<p>Die Grundlage ist ein lokales Modell. Wer noch keines hat, findet im <a href="../artikel/lokale-llms-einstieg.html">Einstieg in lokale LLMs</a> eine Schritt-für-Schritt-Anleitung. Für RAG brauchst du zusätzlich ein Embedding-Modell:</p>
+
+<p><code>ollama pull llama3.1</code><br>
+<code>ollama pull nomic-embed-text</code></p>
+
+<p>Der einfachste Weg führt dann über Open WebUI: Installiere es als Docker-Container, verbinde es mit Ollama, und lege unter „Knowledge“ eine Wissensbasis an. Alternativ baust du eine eigene Pipeline mit Python, LangChain und ChromaDB — etwa so im Kern:</p>
+
+<pre><code>from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.vectorstores import Chroma
+from langchain_ollama import OllamaEmbeddings, ChatOllama
+
+docs = DirectoryLoader("dokumente/", glob="**/*.pdf").load()
+store = Chroma.from_documents(docs, OllamaEmbeddings(model="nomic-embed-text"))
+retriever = store.as_retriever()
+# Frage -> retriever liefert Kontext -> ChatOllama antwortet</code></pre>
+
+<p>Für eine produktive RAG-Lösung genügt überraschend wenig Hardware: Ein Mini-PC mit 16 bis 32 GB RAM und eine GPU ab 8 GB VRAM reichen, um ein 7B- bis 13B-Modell samt Embedding flüssig zu betreiben. RAG selbst ist günstig, weil die Vektorsuche nur wenig Rechenzeit kostet — die Hauptlast trägt weiterhin das LLM.</p>
+
+<h2>Anwendungsfälle</h2>
+
+<p>Die Einsatzmöglichkeiten sind vielfältig. Im Homelab-Kontext durchsuchst du damit deine eigene <strong>Dokumentensammlung</strong>: Verträge, Rechnungen, Notizen oder die Markdown-Sammlung aus einem Obsidian-Vault. Fürs Studium oder die Recherche wird eine PDF-Bibliothek zur durchsuchbaren Wissensbasis, die mit Quellenangaben antwortet. Auch im Alltag hilft RAG: Bedienungsanleitungen, Versicherungsunterlagen oder die eigene Rezeptsammlung werden plötzlich in natürlicher Sprache abfragbar — und bleiben dabei vollständig auf deiner Festplatte.</p>
+
+<p>Wichtig ist die Erwartungshaltung: RAG funktioniert dort am besten, wo Fakten in deinen Dokumenten stehen. Es ersetzt kein Allgemeinwissen und keine Internetsuche, sondern macht genau deinen eigenen Bestand durchsuchbar. Für vertrauliche Daten ist das der entscheidende Vorteil gegenüber Cloud-Diensten.</p>
+
+<h2>Fazit</h2>
+
+<p>RAG macht aus einem generischen lokalen LLM einen Assistenten, der deine eigenen Dokumente kennt. Mit Ollama als Modell-Server, einem Embedding-Modell wie <code>nomic-embed-text</code> und Open WebUI als Oberfläche steht in unter einer Stunde eine funktionierende lokale Wissensbasis. Wer individuelle Pipelines bauen will, findet in LangChain und LlamaIndex zwei ausgereifte Frameworks. Der Einstieg ist günstig, die Daten bleiben bei dir — und die Qualität der Antworten steigt dort, wo es zählt: bei deinen eigenen Inhalten.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate-Links. Genannte Tools und Frameworks sind Open Source und werden unabhängig empfohlen. Angaben entsprechen dem Stand September 2026 und können sich ändern. Weiterführende Artikel: <a href="../artikel/lokale-llms-einstieg.html">Lokale LLMs — der Einstieg</a> und <a href="../artikel/ollama-tutorial.html">Ollama-Tutorial</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
