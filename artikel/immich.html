@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Immich: Selbst gehostete Foto-Cloud (Google Photos Alternative)</title>
+<meta name="description" content="Immich selbst hosten: Die Open-Source-Foto-Cloud als Google Photos Alternative — Installation per Docker, Auto-Backup, Gesichtserkennung und Suche.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Immich: Selbst gehostete Foto-Cloud als Google Photos Alternative</h1>
+
+<p>Wer seine Fotos aus der Cloud von Google holen will, landet früher oder später bei Immich. Die quelloffene Foto-Cloud bringt fast alles mit, was Google Photos groß gemacht hat — automatisches Backup vom Smartphone, Gesichtserkennung, Volltextsuche und eine aufgeräumte Weboberfläche — läuft dabei aber komplett auf der eigenen Hardware. Deine Bilder bleiben auf deinem Server, ohne Abo, ohne Speicherlimit und ohne Datenexport in eine fremde Infrastruktur.</p>
+
+<h2>Was ist Immich?</h2>
+
+<p>Immich ist eine selbst gehostete Foto- und Video-Verwaltung, die seit ihrem Start einen kometenhaften Aufstieg hingelegt hat. Die App besteht aus einem Server-Backend und mobilen Apps für Android und iOS, die deine Aufnahmen automatisch sichern. Dazu kommt eine Web-Oberfläche, über die du deine gesamte Bibliothek durchsuchen, sortieren und teilen kannst. Das Projekt ist Open Source und lässt sich per Docker in wenigen Minuten auf einem NAS, einem Mini-PC oder einem Server installieren.</p>
+
+<p>Technisch setzt Immich auf maschinelles Lernen, das direkt auf deinem eigenen Rechner läuft. Objekterkennung, Gesichts-Clustering und semantische Suche passieren lokal — kein Bild wird dafür an einen externen Dienst geschickt. Genau das ist der entscheidende Unterschied zu kommerziellen Cloud-Diensten.</p>
+
+<h2>Installation mit Docker</h2>
+
+<p>Die Installation läuft über Docker Compose. Eine offizielle <code>docker-compose.yml</code> definiert den Server, die Datenbank (PostgreSQL), Redis und den Machine-Learning-Container. Wer bereits ein Homelab mit Docker betreibt, startet Immich mit einem einzigen Befehl:</p>
+
+<p><code>docker compose up -d</code></p>
+
+<p>Danach erreichst du die Weboberfläche unter der Adresse deines Servers, legst ein Administratorkonto an und verbindest die mobile App über einen QR-Code oder die Server-URL. Für den Betrieb eignet sich jedes System, das Docker ausführen kann — von einem Raspberry Pi 5 über ein <a href="../artikel/nas-2026.html">NAS mit Docker-Support</a> bis hin zu einem Mini-PC. Wichtig ist, das Foto- und Bibliotheksverzeichnis als Volume einzubinden, damit deine Bilder bei Updates erhalten bleiben.</p>
+
+<h2>Features: Auto-Backup, Gesichtserkennung, Suche</h2>
+
+<p>Das Herzstück ist das automatische Backup. Die mobile App lädt neue Fotos und Videos im Hintergrund auf den Server, optional nur im WLAN oder bei angeschlossenem Ladegerät. So entsteht kontinuierlich eine vollständige Kopie deiner Kamerarolle, ohne dass du manuell eingreifen musst.</p>
+
+<p>Die Gesichtserkennung gruppiert Personen automatisch in Alben. Du benennst jede Person einmal, und Immich ordnet anschließend neue Aufnahmen selbstständig zu. Die Objekterkennung verschlagwortet zusätzlich Motive wie Hunde, Autos oder Essen, sodass die Suche auch ohne manuelle Tags funktioniert.</p>
+
+<p>Die Suche ist dabei der größte Trumpf: Du suchst nicht nur nach Datum oder Dateiname, sondern nach Inhalt. Eine Eingabe wie „Katze auf dem Sofa" liefert passende Treffer, weil Immich Bildinhalte semantisch versteht. Auch nach Orten, Kameramodellen oder Personen lässt sich filtern. Dazu kommen geteilte Alben, mit denen du Bilder über einen Link an Familie oder Freunde freigibst.</p>
+
+<h2>Immich vs. Google Photos</h2>
+
+<p>Der Vergleich fällt in vielen Punkten überraschend deutlich aus. Google Photos kostet ab einem bestimmten Volumen Geld und bindet dich an das Google-Ökosystem; Immich kostet nichts und läuft auf deiner eigenen Hardware. Google bietet dafür null Wartungsaufwand und eine nahtlos integrierte Cloud; bei Immich bist du selbst für Updates, Backups und Erreichbarkeit verantwortlich.</p>
+
+<p>Bei den Funktionen hat Immich inzwischen fast gleichgezogen: Auto-Backup, Gesichtserkennung, Suche und geteilte Alben decken die wichtigsten Google-Photos-Features ab. Was Google weiterhin voraus hat, sind die ausgereifte Bearbeitung, die Magic-Erase-Tricks und die nahtlose Einbindung in andere Google-Dienste. Dafür gewinnt Immich klar beim Datenschutz: Die Bilder verlassen dein Netzwerk nicht.</p>
+
+<h2>Hardware-Anforderungen</h2>
+
+<p>Immich ist genügsam, solange du die maschinelle Lernfunktion realistisch einschätzt. Auf einem Raspberry Pi 5 mit 8&nbsp;GB RAM läuft der Betrieb für kleinere Bibliotheken gut, auch wenn Gesichtserkennung und Objekterkennung dort spürbar länger brauchen. Für flüssige Ergebnisse empfehle ich einen Mini-PC mit x86-CPU und mindestens 8&nbsp;GB RAM. Eine GPU beschleunigt die ML-Aufgaben deutlich, ist aber keine Pflicht — der ML-Container rechnet auch auf der CPU.</p>
+
+<p>Beim Speicher gilt die einfache Faustregel: Immich braucht mindestens so viel Platz wie deine Fotobibliothek plus Reserve. Da Fotos und Videos den Löwenanteil ausmachen, lohnt sich ein NAS mit mehreren Bays. Wer kein eigenes NAS besitzt, findet in unserem <a href="../artikel/nas-2026.html">NAS-Vergleich</a> passende Geräte mit Docker-Unterstützung.</p>
+
+<h2>Backup nicht vergessen</h2>
+
+<p>Der wichtigste Punkt beim Selbsthosting: Immich ersetzt dein Smartphone-Backup, aber nicht dein Backup-System. Ein Serverausfall, ein defekter Datenträger oder ein Fehler beim Update kann ohne zweite Kopie zum Totalverlust führen. Plane deshalb von Anfang an eine regelmäßige Sicherung der Foto-Verzeichnisse auf einen zweiten Datenträger oder an einen externen Ort. Wie eine belastbare Sicherungsstrategie aussieht, erklärt unsere <a href="../artikel/backup-3-2-1.html">3-2-1-Backup-Anleitung</a>.</p>
+
+<h2>Fazit</h2>
+
+<p>Immich ist die derzeit überzeugendste Google-Photos-Alternative für Selbsthoster. Auto-Backup, Gesichtserkennung und die semantische Suche machen die App alltagstauglich, der Docker-Setup ist in Minuten erledigt und die Daten bleiben vollständig unter eigener Kontrolle. Wer bereit ist, ein wenig Wartungsaufwand zu übernehmen und sich um ein solides Backup zu kümmern, bekommt eine Foto-Cloud, die kommerziellen Diensten in kaum etwas nachsteht — und dafür nichts kostet.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate- oder Partner-Links. Angaben und Preise entsprechen dem Stand September 2026 und können sich ändern. Weiterführende Informationen findest du in unserem <a href="../artikel/nas-2026.html">NAS-Vergleich</a> und der <a href="../artikel/backup-3-2-1.html">3-2-1-Backup-Anleitung</a>.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
