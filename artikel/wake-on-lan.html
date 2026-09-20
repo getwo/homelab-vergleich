@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wake-on-LAN: Server aus der Ferne einschalten und Strom sparen — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Wake-on-LAN: Server aus der Ferne einschalten und Strom sparen" description: "Wake-on-LAN (WOL) einrichten: So wecken Sie Ihren Homelab-Se">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Wake-on-LAN: Server aus der Ferne einschalten und Strom sparen&quot;</p>
+<p>description: &quot;Wake-on-LAN (WOL) einrichten: So wecken Sie Ihren Homelab-Server bei Bedarf per Magic Packet aus dem Netzwerk – BIOS, Netzwerkkarte, Tools und Sicherheit im Überblick.&quot;</p>
+<hr>
+<h1>Wake-on-LAN: Server aus der Ferne einschalten und Strom sparen</h1>
+<p>Ein Homelab, das rund um die Uhr läuft, verbraucht Strom – auch dann, wenn niemand die Dienste nutzt. Die Lösung heißt Wake-on-LAN (WOL): Der Server bleibt ausgeschaltet, bis er tatsächlich gebraucht wird, und wacht auf Zuruf aus dem Netzwerk wieder auf. Dieser Artikel erklärt, wie WOL funktioniert, was es dafür braucht und wie Sie es sicher einrichten.</p>
+<h2>Was ist Wake-on-LAN?</h2>
+<p>Wake-on-LAN ist ein Standard, mit dem sich ein ausgeschalteter Computer über das Netzwerk einschalten lässt. Dazu schickt ein Gerät im Netzwerk ein sogenanntes „Magic Packet“ an die MAC-Adresse des Zielrechners. Erkennt die Netzwerkkarte dieses Datenpaket, gibt sie ein Signal ans Mainboard und startet den Rechner – obwohl er zuvor komplett heruntergefahren war oder sich im Ruhezustand befand.</p>
+<p>Wichtig ist der Unterschied zum reinen Standby: Bei WOL bleibt die Netzwerkkarte auch im ausgeschalteten Zustand minimal aktiv und lauscht auf eingehende Pakete. Dafür benötigt sie eine kleine Reststromversorgung, die in modernen Systemen mit wenigen Milliwatt zu Buche schlägt.</p>
+<h2>Warum WOL? Strom sparen ohne Komfortverlust</h2>
+<p>Der größte Kostenfaktor eines Homelabs ist die reine Laufzeit. Ein Server, der 24/7 läuft, verursacht bei 0,40 €/kWh schnell dreistellige Jahresbeträge – selbst wenn er die meiste Zeit im Leerlauf vor sich hin werkelt. Wer Dienste wie Nextcloud, Plex oder Backups nur abends oder am Wochenende nutzt, verschwendet damit bares Geld.</p>
+<p>Wake-on-LAN macht den Auto-Shutdown erst alltagstauglich: Der Server fährt sich nachts oder bei Abwesenheit selbst herunter und wird bei Bedarf gezielt geweckt – per App, per Smart-Home-Automation oder automatisch vor einem geplanten Backup. So sinkt die Laufzeit oft um 50 bis 70 Prozent, ohne dass Sie auf Funktion verzichten müssen.</p>
+<h2>Voraussetzungen: BIOS und Netzwerkkarte</h2>
+<p>Damit WOL funktioniert, müssen drei Dinge zusammenkommen:</p>
+<ul>
+<li><strong>Netzwerkkarte mit WOL-Unterstützung:</strong> Praktisch jede moderne LAN-Karte beherrscht WOL, bei Mainboard-Netzwerkchips ohnehin. Wireless-Karten unterstützen WOL oft nur eingeschränkt – eine kabelgebundene Verbindung (Ethernet) ist die zuverlässige Wahl.</li>
+<li><strong>BIOS/UEFI aktiviert:</strong> Die Option heißt je nach Hersteller „Wake on LAN“, „Power On By PCI-E“ oder „Wake on Magic Packet“ und findet sich meist unter den Energie- oder ACPI-Einstellungen.</li>
+<li><strong>Betriebssystem konfiguriert:</strong> Unter Linux regelt das Tool <code>ethtool</code>, ob die Netzwerkkarte auf Magic Packets reagiert. Windows blendet die Einstellung im Geräte-Manager unter den erweiterten Treiberoptionen ein.</li>
+</ul>
+<h2>WOL einrichten: Schritt für Schritt</h2>
+<p>1. <strong>BIOS/UEFI:</strong> Starten Sie ins BIOS und aktivieren Sie die WOL-Option. Bei manchen Boards muss zusätzlich „ErP/EuP“ ausgeschaltet sein, da diese Energiesparfunktion die Netzwerkkarte im ausgeschalteten Zustand komplett stromlos schaltet.</p>
+<p>2. <strong>Netzwerkkarte im System:</strong> Unter Linux aktivieren Sie WOL mit <code>sudo ethtool -s eno1 wol g</code>. Damit die Einstellung den Neustart übersteht, hinterlegen Sie sie über ein systemd-Skript oder die Netzwerk-Konfiguration.</p>
+<p>3. <strong>MAC-Adresse notieren:</strong> Diese brauchen Sie später als Zieladresse für das Magic Packet. Sie finden sie mit <code>ip link</code> unter Linux oder <code>getmac</code> unter Windows.</p>
+<p>4. <strong>Test:</strong> Fahren Sie den Rechner herunter und schicken Sie ein Magic Packet aus dem Netzwerk. Startet er, ist die Einrichtung abgeschlossen.</p>
+<h2>WOL-Tools: Router, App und Skript</h2>
+<p>Zum Aufwecken gibt es mehrere Wege, je nachdem, von wo Sie den Server erreichen wollen:</p>
+<ul>
+<li><strong>Router (Fritz!Box &amp; Co.):</strong> Viele Router bieten WOL direkt im Webinterface an – die Fritz!Box etwa unter Heimnetz → Netzwerk. Praktisch, wenn Sie zu Hause im WLAN sind, aber keinen weiteren Client bemühen wollen.</li>
+<li><strong>Apps:</strong> Für Android und iOS gibt es schlanke WOL-Apps, die MAC-Adresse und Broadcast-Adresse einmalig speichern und den Server per Fingertipp wecken.</li>
+<li><strong>Skripte &amp; Befehle:</strong> Unter Linux weckt ein Einzeiler mit <code>wakeonlan &lt;MAC&gt;</code> den Server, unter Windows das Tool <code>wolcmd</code>. Für Automatisierung – etwa vor jedem Backup – lässt sich das in Cron-Jobs oder Skripte einbauen.</li>
+<li><strong>Fernzugriff:</strong> Von außerhalb des Heimnetzes funktioniert WOL nur über einen VPN-Tunnel oder eine Portweiterleitung. Der saubere Weg ist VPN: Sie wählen sich ins Heimnetz ein und wecken den Server wie von zu Hause.</li>
+</ul>
+<h2>Grenzen und Sicherheit</h2>
+<p>WOL hat zwei Einschränkungen: Das Magic Packet kommt per UDP-Broadcast und wird von Routern standardmäßig nicht ins Internet weitergeleitet. Und nach einem kompletten Stromausfall kann sich ein Server nicht mehr wecken lassen, weil der WOL-Zustand der Netzwerkkarte verloren geht – es sei denn, das BIOS bietet ein „Restore on AC Power Loss“.</p>
+<p>Sicherheitstechnisch ist WOL unkritisch: Das Magic Packet enthält keinerlei Zugangsdaten und kann nur einen Neustart auslösen, nicht aber Daten auslesen. Wer trotzdem sichergehen will, beschränkt WOL auf das interne Netz und verzichtet auf Portweiterleitungen ins Internet – der Zugriff von außen läuft ohnehin besser verschlüsselt über den VPN-Tunnel.</p>
+<h2>Fazit</h2>
+<p>Wake-on-LAN ist das fehlende Puzzleteil für ein stromsparendes Homelab: Mit einer aktivierten BIOS-Option und ein paar Zeilen Konfiguration wacht der Server genau dann auf, wenn er gebraucht wird – und bleibt den Rest der Zeit aus. In Kombination mit Auto-Shutdown sinken die Stromkosten spürbar, ohne dass Dienste oder Backups darunter leiden.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
