@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker für Einsteiger: Container in 20 Minuten verstehen — Homelab Vergleich</title>
+<meta name="description" content="Docker für Einsteiger: Container in 20 Minuten verstehen  Docker ist die mit Abstand beliebteste Container-Plattform und aus keinem modernen Homelab m">
+<link rel="stylesheet" href="../style.css">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/docker-homelab.html">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Docker für Einsteiger: Container in 20 Minuten verstehen</h1>
+<p>Docker ist die mit Abstand beliebteste Container-Plattform und aus keinem modernen Homelab mehr wegzudenken. Statt jede Anwendung mühsam manuell auf einem Server einzurichten, packst du sie samt aller Abhängigkeiten in einen Container – und startest sie damit auf jedem Rechner identisch. In diesem Guide lernst du in rund 20 Minuten, was Container von virtuellen Maschinen unterscheidet, warum Docker auch für dein Homelab sinnvoll ist und wie du mit den ersten Befehlen sofort loslegst.</p>
+<h2>Container vs. virtuelle Maschine: der entscheidende Unterschied</h2>
+<p>Der Unterschied zwischen beiden Ansätzen ist leichter zu verstehen, als er oft klingt:</p>
+<ul>
+<li><strong>Virtuelle Maschine (VM):</strong> Eine VM emuliert komplette Hardware und bringt ein eigenes Betriebssystem inklusive Kernel mit. Sie ist stark isoliert, benötigt aber viel RAM, Festplatte und Bootzeit. Werkzeuge wie Proxmox oder VirtualBox arbeiten auf dieser Ebene.</li>
+<li><strong>Container:</strong> Ein Container teilt sich den Kernel des Host-Systems und enthält nur die Anwendung samt ihrer Abhängigkeiten. Dadurch startet er in Sekunden und verbraucht nur einen Bruchteil der Ressourcen einer VM.</li>
+</ul>
+<p>Faustregel: <strong>Ein Container isoliert eine Anwendung, eine VM isoliert ein ganzes Betriebssystem.</strong> Für die allermeisten Linux-Dienste im Homelab ist der Container die schlankere, schnellere Wahl.</p>
+<h2>Warum Docker im Homelab?</h2>
+<p>Docker löst ein klassisches Problem: „Auf meinem Rechner lief es doch!&quot; Weil jede Anwendung ihre komplette Umgebung mitbringt, gibt es keine Konflikte durch unterschiedliche Python-, Node- oder Datenbankversionen. Dazu kommen klare Vorteile:</p>
+<ul>
+<li><strong>Reproduzierbar:</strong> Ein Dienst läuft auf jedem Docker-Host identisch – egal ob Raspberry Pi, Mini-PC oder Server.</li>
+<li><strong>Portabel:</strong> Container lassen sich als Image speichern, teilen und in Sekunden auf anderer Hardware starten.</li>
+<li><strong>Sauber aufräumbar:</strong> Ein Dienst lässt sich komplett entfernen, ohne Restdateien oder verwaiste Abhängigkeiten zu hinterlassen.</li>
+<li><strong>Großes Ökosystem:</strong> Auf Docker Hub stehen tausende fertige Images bereit – von Home Assistant über Jellyfin bis zu Pihole.</li>
+</ul>
+<h2>Installation unter Linux</h2>
+<p>Unter Debian oder Ubuntu installierst du Docker am bequemsten über das offizielle Installationsskript:</p>
+<pre><code>
+curl -fsSL https://get.docker.com | sh
+</code></pre>
+<p>Danach fügst du deinen Benutzer zur Gruppe <code>docker</code> hinzu, damit du ohne <code>sudo</code> arbeiten kannst:</p>
+<pre><code>
+sudo usermod -aG docker $USER
+</code></pre>
+<p>Nach einem erneuten Login prüfst du die Installation:</p>
+<pre><code>
+docker --version
+docker run hello-world
+</code></pre>
+<p>Erscheint die Begrüßungsmeldung, ist Docker einsatzbereit.</p>
+<h2>Die ersten Befehle: run, ps, stop</h2>
+<p>Der wichtigste Befehl ist <code>docker run</code>. Er lädt ein Image herunter (falls nötig) und startet daraus einen Container. Ein erstes Praxisbeispiel mit dem DNS-Werbe-Blocker Pihole – hier stark vereinfacht:</p>
+<pre><code>
+docker run -d --name mein-test -p 8080:80 nginx
+</code></pre>
+<p>Die Schalter im Überblick:</p>
+<ul>
+<li><code>-d</code> startet den Container im Hintergrund (detached).</li>
+<li><code>--name</code> vergibt einen sprechenden Namen.</li>
+<li><code>-p 8080:80</code> verbindet Port 8080 des Hosts mit Port 80 im Container.</li>
+<li><code>nginx</code> ist das verwendete Image.</li>
+</ul>
+<p>Mit diesen Befehlen behältst du den Überblick:</p>
+<pre><code>
+docker ps          # laufende Container auflisten
+docker ps -a       # auch gestoppte Container anzeigen
+docker stop mein-test   # Container stoppen
+docker rm mein-test     # Container entfernen
+</code></pre>
+<h2>Mehrere Dienste mit Docker Compose verwalten</h2>
+<p>Sobald du mehr als einen Dienst betreibst, lohnt sich Docker Compose. Statt langer <code>docker run</code>-Befehle beschreibst du alle Container in einer deklarativen Datei. Ein typisches Beispiel, das einen Webserver und eine Datenbank gemeinsam startet:</p>
+<pre><code>
+version: &quot;3.9&quot;
+
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - &quot;8080:80&quot;
+    restart: unless-stopped
+
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: geheim123
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  db_data:
+</code></pre>
+<p>Gespeichert als <code>docker-compose.yml</code> startest du den gesamten Stack mit einem einzigen Befehl:</p>
+<pre><code>
+docker compose up -d
+</code></pre>
+<p>Mit <code>docker compose down</code> fährst du alles wieder herunter, <code>docker compose ps</code> zeigt den Status. Der Clou: Du versionierst diese Datei einfach mit Git – dein komplettes Homelab wird damit nachvollziehbar und reproduzierbar.</p>
+<h2>Typische Anwendungen im Homelab</h2>
+<p>Die Auswahl an fertigen Images ist riesig. Diese Dienste laufen bei Homelab-Betreibern besonders häufig in Containern:</p>
+<ul>
+<li><strong>Pihole oder AdGuard Home:</strong> DNS-basierte Werbeblocker für das ganze Netzwerk.</li>
+<li><strong>Home Assistant:</strong> Zentrale Smart-Home-Steuerung.</li>
+<li><strong>Jellyfin oder Plex:</strong> Eigener Medienserver für Filme und Serien.</li>
+<li><strong>Nextcloud:</strong> Private Cloud für Dateien, Kalender und Kontakte.</li>
+<li><strong>Portainer:</strong> Web-Oberfläche zur bequemen Verwaltung aller Container.</li>
+<li><strong>Watchtower:</strong> Hält deine Container automatisch aktuell.</li>
+</ul>
+<h2>Tipps für einen sauberen Einstieg</h2>
+<ul>
+<li><strong>Volumes nutzen:</strong> Speichere Daten immer in Volumes oder gebundenen Verzeichnissen, nicht im Container selbst – sonst gehen sie beim Update verloren.</li>
+<li><strong>Ports dokumentieren:</strong> Notiere dir, welcher Dienst welchen Port belegt, um Konflikte zu vermeiden.</li>
+<li><strong>Compose statt Einzelbefehle:</strong> Sobald ein Dienst eine zweite Komponente braucht, wechsle auf <code>docker-compose.yml</code>.</li>
+<li><strong>Images aufräumen:</strong> Mit <code>docker system prune</code> entfernst du regelmäßig ungenutzte Images und Container.</li>
+<li><strong>Klein anfangen:</strong> Starte mit einem Dienst wie Pihole, bevor du ganze Stacks aufsetzt.</li>
+</ul>
+<h2>Fazit</h2>
+<p>Docker senkt die Einstiegshürde für Homelab-Selbsthoster erheblich: Ein Befehl genügt, um einen fertigen Dienst zu starten, und mit Compose bleibt das ganze Setup reproduzierbar. Wer Container einmal verstanden hat, wird seine Dienste kaum noch anders betreiben wollen – egal ob auf einem Raspberry Pi oder einem ausgewachsenen Server.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
