@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homelab-Monitoring: Uptime-Kuma & Grafana selbst gehostet — Homelab Vergleich</title>
+<meta name="description" content="Homelab-Monitoring: Uptime-Kuma & Grafana selbst gehostet  Wer ein Homelab betreibt, kennt das Gefühl: Man bemerkt erst Tage später, dass ein Dienst a">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Homelab-Monitoring: Uptime-Kuma &amp; Grafana selbst gehostet</h1>
+<p>Wer ein Homelab betreibt, kennt das Gefühl: Man bemerkt erst Tage später, dass ein Dienst ausgefallen ist – weil der Pi-Hole-Werbeblocker stillsteht oder das NAS-Update die Platte an ihre Grenze bringt. Genau hier setzt Monitoring an. Es macht aus deinem Heim-Server eine beobachtbare Infrastruktur: Du siehst auf einen Blick, ob alle Dienste laufen, wie ausgelastet die Hardware ist und ob sich ein Problem anbahnt, bevor es dich wirklich trifft. Zwei Tools haben sich dabei als Standard etabliert: <strong>Uptime-Kuma</strong> für die Erreichbarkeit und <strong>Grafana mit Prometheus</strong> für Metriken und Dashboards.</p>
+<h2>Warum Monitoring im Homelab?</h2>
+<p>Ein Homelab wächst schnell: Proxmox, Docker-Container, Nextcloud, Jellyfin, Home Assistant – irgendwann laufen ein Dutzend Dienste gleichzeitig, und keiner schickt dir Bescheid, wenn er stirbt. Monitoring schließt diese Lücke:</p>
+<ul>
+<li><strong>Ausfälle früh erkennen:</strong> Statt den Ausfall selbst zu bemerken, meldet sich das System proaktiv.</li>
+<li><strong>Kapazität planen:</strong> Du siehst, wann RAM oder Festplatte knapp werden, und kannst rechtzeitig erweitern.</li>
+<li><strong>Ursachen eingrenzen:</strong> Bei Problemen zeigen Verlaufsdaten, was sich kurz zuvor geändert hat.</li>
+<li><strong>Ruhig schlafen:</strong> Wer weiß, dass alles überwacht wird, muss nicht ständig manuell nachschauen.</li>
+</ul>
+<p>Das Schöne daran: Beide Werkzeuge laufen als Docker-Container und sind in wenigen Minuten einsatzbereit.</p>
+<h2>Uptime-Kuma: Erreichbarkeit und Status im Blick</h2>
+<p>Uptime-Kuma ist ein schlankes Monitoring-Tool mit übersichtlicher Web-Oberfläche. Es prüft in einstellbaren Abständen, ob deine Dienste antworten – per HTTP(S), Ping, TCP-Port oder sogar auf den Inhalt einer Webseite hin. Fällt ein Dienst aus, schlägt es Alarm; ist er wieder da, meldet es Entwarnung.</p>
+<p>Der große Vorteil gegenüber ausgewachsenen Systemen wie Nagios oder Zabbix: die Einfachheit. Ein Monitor ist in unter einer Minute angelegt, und eine Statusseite zeigt grün/rot auf einen Blick. Du kannst Uptime-Kuma zudem als öffentliche Statusseite freigeben – praktisch, wenn Familie oder Freunde auf deine Dienste zugreifen.</p>
+<p>Typische Monitore im Homelab:</p>
+<ul>
+<li><strong>Webdienste:</strong> Nextcloud, Jellyfin oder die Portainer-Oberfläche per HTTPS-Request.</li>
+<li><strong>Netzwerkgeräte:</strong> Router, Switch oder der Drucker per Ping.</li>
+<li><strong>Datenbanken oder SSH:</strong> Per TCP-Port-Check auf den jeweiligen Port.</li>
+<li><strong>Zertifikate:</strong> Uptime-Kuma überwacht auch SSL-Zertifikate und warnt vor dem Ablauf.</li>
+</ul>
+<h2>Grafana + Prometheus: Metriken und Dashboards</h2>
+<p>Uptime-Kuma beantwortet die Frage „läuft es oder nicht?&quot;. <strong>Prometheus</strong> und <strong>Grafana</strong> beantworten „wie gut läuft es?&quot;. Das Duo sammelt Zahlenwerte – Metriken – und stellt sie als ansprechende Diagramme dar.</p>
+<ul>
+<li><strong>Prometheus</strong> ist die Datenbank: Sie fragt in festen Intervallen definierte Ziele ab (Scraping) und speichert die Messwerte als Zeitreihen.</li>
+<li><strong>Grafana</strong> ist die Anzeige: Es liest die Daten aus Prometheus und baut daraus Dashboards mit Graphen, Balken und Alarm-Schwellwerten.</li>
+</ul>
+<p>Der Einstieg gelingt am schnellsten mit <strong>Node Exporter</strong>, einem kleinen Agenten, der auf jedem Rechner läuft und CPU-, RAM-, Festplatten- und Netzwerk-Metriken bereitstellt. Für Docker-Container liefert <strong>cAdvisor</strong> zusätzlich Auslastungswerte je Container. Beide bindet Prometheus als Ziel ein; fertige Grafana-Dashboards aus der Community importierst du mit wenigen Klicks per ID.</p>
+<h2>Installation per Docker</h2>
+<p>Alle Komponenten lassen sich bequem mit Docker Compose aufsetzen. Ein kompakter Einstieg:</p>
+<pre><code>
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    ports:
+      - &quot;3001:3001&quot;
+    volumes:
+      - uptime-kuma-data:/app/data
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - &quot;9090:9090&quot;
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - &quot;3000:3000&quot;
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=geheim
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  uptime-kuma-data:
+  prometheus-data:
+  grafana-data:
+</code></pre>
+<p>Anschließend startest du alles mit <code>docker compose up -d</code>. Uptime-Kuma erreichst du dann unter <code>http://dein-server:3001</code>, Grafana unter <code>http://dein-server:3000</code> und Prometheus unter <code>http://dein-server:9090</code>. In der Prometheus-Konfiguration trägst du den Node Exporter als Ziel ein, in Grafana verbindest du Prometheus als Datenquelle.</p>
+<h2>Was du überwachen solltest</h2>
+<p>Die wichtigsten Werte im Blick zu behalten, ist keine Zauberei. Diese fünf Metriken decken die häufigsten Ausfallursachen ab:</p>
+<ul>
+<li><strong>CPU-Auslastung:</strong> Dauerhaft hohe Werte deuten auf eine überforderte Maschine oder einen ausgerutschten Prozess hin.</li>
+<li><strong>RAM-Nutzung:</strong> Volllaufender Arbeitsspeicher führt zu Auslagerung und spürbar langsamen Diensten.</li>
+<li><strong>Festplattenplatz:</strong> Die häufigste Ursache für stillstehende Dienste – ein volles Laufwerk stoppt Datenbanken und Logs.</li>
+<li><strong>Temperaturen:</strong> Bei Mini-PCs und Servern lohnt ein Blick auf die CPU-Temperatur, bevor sie drosselt.</li>
+<li><strong>Dienststatus:</strong> Ob ein Container läuft, erfasst Prometheus ebenfalls; Uptime-Kuma prüft zusätzlich die Erreichbarkeit von außen.</li>
+</ul>
+<h2>Benachrichtigungen: Telegram und E-Mail</h2>
+<p>Monitoring ist nur so gut wie der Moment, in dem es dich erreicht. Sowohl Uptime-Kuma als auch Grafana bringen eine breite Palette an Benachrichtigungskanälen mit – am beliebtesten sind <strong>Telegram</strong> und <strong>E-Mail</strong>.</p>
+<p><strong>Telegram</strong> ist im Homelab erste Wahl: Ein Bot lässt sich in zwei Minuten über den BotFather anlegen, und Nachrichten kommen sekundenschnell und kostenlos aufs Smartphone. In Uptime-Kuma hinterlegst du Bot-Token und Chat-ID einmalig und wählst sie dann pro Monitor als Benachrichtigung aus.</p>
+<p><strong>E-Mail</strong> eignet sich als zweiter Kanal oder für weniger dringende Meldungen. Uptime-Kuma und Grafana unterstützen SMTP direkt; viele Homelab-Betreiber leiten E-Mails zusätzlich über einen lokalen Relay weiter, damit sie das Hausnetz nicht verlassen.</p>
+<p>Ein Tipp: Konfiguriere Benachrichtigungen von Anfang an mit. Ein Monitoring, das niemanden informiert, verfehlt seinen Zweck – und eine Testbenachrichtigung beim Einrichten zeigt dir sofort, ob der Kanal funktioniert.</p>
+<h2>Fazit</h2>
+<p>Monitoring macht dein Homelab zuverlässiger, ohne dass es kompliziert sein muss: Uptime-Kuma überwacht die Erreichbarkeit deiner Dienste, Prometheus und Grafana liefern tiefe Einblicke in Auslastung und Trends – und beides läuft in wenigen Minuten als Docker-Container. Wer Benachrichtigungen per Telegram oder E-Mail von Anfang an einrichtet, erfährt von Problemen künftig früher als seine Nutzer. Damit gehört das Monitoring zur kleinen Investition mit großer Wirkung in jedem ernsthaften Homelab.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
