@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaultwarden Backup & Restore: Passwörter sicher sichern — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Vaultwarden Backup & Restore: Passwörter sicher sichern" description: "Vaultwarden Backup & Restore: So sicherst du Datenbank, Anhänge und">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Vaultwarden Backup &amp; Restore: Passwörter sicher sichern&quot;</p>
+<p>description: &quot;Vaultwarden Backup &amp; Restore: So sicherst du Datenbank, Anhänge und Attachments deines Passwort-Tresors – inklusive verschlüsseltem Backup, Restore-Test und 3-2-1-Regel.&quot;</p>
+<hr>
+<h1>Vaultwarden Backup &amp; Restore: Passwörter sicher sichern</h1>
+<p>Ein Passwort-Manager, der nicht gesichert wird, ist eine tickende Zeitbombe. In Vaultwarden liegen sämtliche Zugangsdaten – sie zu verlieren bedeutet im schlimmsten Fall den Verlust des Zugriffs auf Dutzende Konten. Ein durchdachtes Backup gehört deshalb nicht zum Optionalen, sondern zur Pflicht. In diesem Guide zeigen wir, was du sichern musst, welche Methoden sich bewährt haben und wie du die Wiederherstellung absicherst.</p>
+<h2>Warum ein Passwort-Backup kritisch ist</h2>
+<p>Bei den meisten Daten ist ein Verlust ärgerlich. Beim Passwort-Tresor ist er existenziell: Die Zugangsdaten sind der Schlüssel zu deinem gesamten digitalen Leben. Geht die Datenbank verloren, sind E-Mail-Konten, Banking, Cloud-Dienste und Foren-Logins auf einen Schlag unerreichbar – und anders als bei einem Textdokument gibt es keine „letzte Kopie&quot;, die sich per Hand neu eintippen ließe.</p>
+<p>Dazu kommt ein zweites Risiko, das oft übersehen wird: Wegen der Verschlüsselung sind die Daten ohne das Master-Passwort ohnehin nutzlos. Ein Backup schützt dich also nicht nur vor Hardware-Ausfällen und versehentlichem Löschen, sondern auch davor, nach einem Einbruch oder einer Ransomware-Infektion komplett ohne Zugangsdaten dazustehen.</p>
+<h2>Was sichern: Datenbank, Anhänge und Attachments</h2>
+<p>Vaultwarden speichert alle Daten in einem einzigen Datenverzeichnis – im Docker-Setup meist der Ordner <code>vw-data</code>. Die wichtigsten Bestandteile:</p>
+<ul>
+<li><strong><code>db.sqlite3</code></strong> – die SQLite-Datenbank mit allen Tresoreinträgen, Ordnern und Zugangsdaten. Das ist das Herzstück.</li>
+<li><strong><code>attachments/</code></strong> – der Ordner mit allen Dateianhängen. Diese sind <strong>nicht</strong> in der Datenbank enthalten und müssen separat gesichert werden.</li>
+<li><strong><code>rsa_key.pem</code> und <code>rsa_key.pub.pem</code></strong> – die Schlüssel für die Verschlüsselung von Organisationen und Sends. Ohne sie lassen sich manche Daten nicht mehr entschlüsseln.</li>
+<li><strong><code>config.json</code></strong> – die Konfiguration deiner Instanz.</li>
+<li><strong><code>sends/</code></strong> – versendete Dateien und Texte, falls du die Send-Funktion nutzt.</li>
+</ul>
+<p>Merke: Ein Backup nur der Datenbank reicht nicht, wenn du Anhänge oder Sends verwendest. Sichere das komplette Verzeichnis.</p>
+<h2>Backup-Methoden</h2>
+<p><strong>1. Datenbank-Dump (SQLite)</strong></p>
+<p>Die sauberste Methode für die Datenbank ist ein Online-Dump über SQLite:</p>
+<pre><code>
+sqlite3 /data/db.sqlite3 &quot;.backup &#x27;/backup/db-$(date +%F).sqlite3&#x27;&quot;
+</code></pre>
+<p>Der Befehl erstellt eine konsistente Kopie, während der Dienst weiterläuft – ideal für tägliche Cron-Jobs. Attachments musst du zusätzlich kopieren.</p>
+<p><strong>2. Ordner-Kopie</strong></p>
+<p>Die einfachste Variante ist das Kopieren des gesamten <code>vw-data</code>-Ordners. Wichtig: Stoppe vorher den Container (<code>docker compose stop</code>), sonst riskierst du eine beschädigte SQLite-Datei, falls während des Kopierens geschrieben wird. Alternativ nutzt du ein Tool wie Borg oder Restic, das konsistente Snapshots erzeugt.</p>
+<p><strong>3. Verschlüsseltes Backup</strong></p>
+<p>In der Admin-Oberfläche unter <strong>Tools → Backup Database</strong> erzeugt Vaultwarden ein verschlüsseltes Backup der Datenbank. Das ist praktisch für Offsite-Kopien, enthält aber ebenfalls keine Attachments – die sicherst du weiterhin separat.</p>
+<h2>Restore-Test: Wiederherstellung üben</h2>
+<p>Ein Backup, das nie getestet wurde, ist nur eine Vermutung. Plane regelmäßig eine echte Wiederherstellung: Richte eine frische Vaultwarden-Instanz ein, spiele die gesicherte <code>db.sqlite3</code> zurück, starte den Container und melde dich mit deinem Master-Passwort an. Funktionieren Login, Einträge und Anhänge, ist das Backup belastbar. Erst dieser Test macht aus einer Sicherung ein verlässliches Sicherheitsnetz.</p>
+<h2>Die 3-2-1-Regel</h2>
+<p>Orientiere dich an der bewährten 3-2-1-Regel:</p>
+<ul>
+<li><strong>3 Kopien</strong> deiner Daten (Original plus zwei Backups),</li>
+<li>auf <strong>2 verschiedenen Medientypen</strong> (z. B. SSD und NAS),</li>
+<li>davon <strong>1 Kopie außerhalb deines Standorts</strong> (Offsite), etwa verschlüsselt in der Cloud oder bei Familie.</li>
+</ul>
+<p>Für ein Passwort-Backup ist der Offsite-Anteil besonders wichtig: Ein Brand oder Einbruch trifft sonst Original und Backup gleichzeitig. Da das Backup verschlüsselt ist, kannst du es bedenkenlos extern ablegen.</p>
+<h2>Fazit</h2>
+<p>Vaultwarden sichert deine Passwörter – aber nur ein durchdachtes Backup sichert Vaultwarden. Sichere Datenbank und Attachments gemeinsam, nutze verschlüsselte Kopien für den Offsite-Speicher und teste die Wiederherstellung regelmäßig. Wer diese Routine einmal eingerichtet hat, verliert im Ernstfall keine Zugangsdaten, sondern höchstens ein paar Minuten Zeit. Wie du Vaultwarden überhaupt einrichtest, erklärt unser [Vaultwarden-Einsteiger-Guide](vaultwarden-passwortmanager.md).</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
