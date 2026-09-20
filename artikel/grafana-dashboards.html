@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homelab-Monitoring: Schöne Grafana-Dashboards bauen — Homelab Vergleich</title>
+<meta name="description" content="Homelab-Monitoring: Schöne Grafana-Dashboards bauen  Ein Homelab wächst schnell: Server, NAS, Container, virtuelle Maschinen. Irgendwann willst du wis">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Homelab-Monitoring: Schöne Grafana-Dashboards bauen</h1>
+<p>Ein Homelab wächst schnell: Server, NAS, Container, virtuelle Maschinen. Irgendwann willst du wissen, wie ausgelastet deine Hardware wirklich ist – und ob eine Festplatte kurz davorsteht, vollzulaufen. Genau dafür ist Grafana das Werkzeug der Wahl. Es wandelt Messdaten in ansprechende, übersichtliche Dashboards um. Dieser Artikel zeigt dir die Grundlagen, welche Datenquellen du brauchst, welche Metriken wichtig sind und wie du ein Dashboard baust, das nicht nur informiert, sondern auch gut aussieht.</p>
+<h2>Grafana-Dashboard-Grundlagen</h2>
+<p>Grafana selbst speichert keine Messdaten – es ist eine reine Visualisierungs-Engine. Es verbindet sich mit Datenquellen, fragt dort Daten ab und stellt sie als Panels dar. Ein Dashboard ist eine Sammlung von Panels, die du frei auf einem Raster anordnest. Jedes Panel zeigt genau eine Metrik: als Zeitreihe, als Gauge, als einzelner Statistik-Wert oder als Tabelle.</p>
+<p>Die wichtigsten Begriffe kurz erklärt:</p>
+<ul>
+<li><strong>Dashboard</strong>: eine Seite mit mehreren Panels, thematisch sortiert</li>
+<li><strong>Panel</strong>: ein einzelnes Diagramm oder ein Wert</li>
+<li><strong>Datenquelle</strong> (Data Source): die Verbindung zu einer Messdatenbank</li>
+<li><strong>Query</strong>: die Abfrage, die bestimmt, welche Daten ein Panel anzeigt</li>
+<li><strong>Variable</strong>: ein Platzhalter, zum Beispiel für den Host-Namen, um ein Dashboard für mehrere Server zu verwenden</li>
+</ul>
+<p>Grafana läuft am einfachsten als Docker-Container und ist danach unter Port 3000 erreichbar.</p>
+<h2>Datenquellen: Prometheus und Node-Exporter</h2>
+<p>Das Standard-Setup im Homelab heißt Prometheus plus Node-Exporter. Prometheus ist eine Zeitreihendatenbank, die in regelmäßigen Abständen Metriken von Zielen abfragt – das sogenannte Scraping. Der Node-Exporter läuft auf jedem Linux-Server und liefert dessen Systemdaten als Metriken im Prometheus-Format.</p>
+<p>Der Datenfluss sieht so aus:</p>
+<p>1. Der Node-Exporter sammelt die Systemdaten auf dem Server.</p>
+<p>2. Prometheus fragt diese Daten regelmäßig ab und speichert sie.</p>
+<p>3. Grafana liest die Daten aus Prometheus und stellt sie dar.</p>
+<p>Grafana verbindest du über eine einzige Data Source mit Prometheus. Danach stehen dir tausende Metriken zur Verfügung, die du mit der Abfragesprache PromQL filterst.</p>
+<h2>Wichtige Metriken: CPU, RAM, Disk, Netzwerk</h2>
+<p>Die vier wichtigsten Kategorien für ein Homelab-Dashboard:</p>
+<p><strong>CPU</strong>: Die Auslastung zeigt, ob ein Dienst die Rechenleistung frisst. Wichtige Kennzahlen sind die Gesamtauslastung, die Last (Load Average) und die Temperatur.</p>
+<p><strong>RAM</strong>: Der Arbeitsspeicher ist im Homelab oft der erste Engpass. Relevant sind der belegte Speicher, der Cache und der Swap.</p>
+<p><strong>Disk</strong>: Festplatten laufen voll – häufig unbemerkt. Überwache den belegten Platz pro Mountpoint, den freien Platz und die Schreib- und Leserate (I/O).</p>
+<p><strong>Netzwerk</strong>: Durchsatz (Upload und Download), aktive Verbindungen und Fehlerzähler zeigen, ob das Netzwerk zum Flaschenhals wird.</p>
+<p>Als Faustregel gilt: Pro Kategorie ein Panel, das die wichtigste Kennzahl sofort sichtbar macht. Details wandern in weitere Panels.</p>
+<h2>Dashboard-Design-Tipps</h2>
+<p>Ein gutes Dashboard ist schnell lesbar. Diese Tipps helfen dabei:</p>
+<ul>
+<li><strong>Weniger ist mehr</strong>: Zehn gut gewählte Panels schlagen fünfzig unübersichtliche.</li>
+<li><strong>Klare Anordnung</strong>: Oben die Übersicht, darunter die Details pro Kategorie.</li>
+<li><strong>Konsistente Einheiten</strong>: Prozent für Auslastung, Bytes für Speicher. Mische keine Einheiten.</li>
+<li><strong>Schwellwerte</strong>: Farben zeigen den Zustand – grün, gelb, rot bei Überschreitung.</li>
+<li><strong>Variablen nutzen</strong>: Ein Dashboard mit Host-Variable funktioniert für alle Server, statt eines pro Maschine.</li>
+<li><strong>Sinnvoller Zeitbereich</strong>: Standardmäßig 6 oder 24 Stunden, damit die Seite schnell lädt.</li>
+</ul>
+<p>Grafana bietet außerdem fertige Dashboards aus der Community. Die beliebte Vorlage „Node Exporter Full&quot; importierst du mit einer ID und sparst dir stundenlange Handarbeit.</p>
+<h2>Beispiel: Ein Basis-Dashboard</h2>
+<p>Ein einfaches Dashboard könnte so aufgebaut sein:</p>
+<ul>
+<li><strong>Erste Reihe</strong>: vier Statistik-Panels – CPU-Auslastung, RAM-Verbrauch, belegter Festplattenspeicher und Netzwerk-Durchsatz</li>
+<li><strong>Zweite Reihe</strong>: Zeitreihen für CPU-Last, Speicherverlauf und Temperatur</li>
+<li><strong>Dritte Reihe</strong>: eine Tabelle der Mountpoints mit dem freien Platz</li>
+</ul>
+<p>Die wichtigsten PromQL-Abfragen für den Einstieg:</p>
+<pre><code>
+# CPU-Auslastung in Prozent
+100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=&quot;idle&quot;}[5m])) * 100)
+
+# Freier Arbeitsspeicher in Prozent
+100 * (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+
+# Belegter Festplattenspeicher in Prozent
+100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100
+</code></pre>
+<p>Damit hast du in wenigen Minuten ein Dashboard, das dir sofort zeigt, ob in deinem Homelab alles gesund läuft.</p>
+<h2>Fazit</h2>
+<p>Grafana ist der Standard fürs Homelab-Monitoring – kostenlos, mächtig und dank Community-Vorlagen schnell eingerichtet. Mit Prometheus und Node-Exporter als Datenquelle hast du CPU, RAM, Disk und Netzwerk jederzeit im Blick. Ein aufgeräumtes Dashboard mit klaren Schwellwerten macht aus rohen Messdaten einen echten Überblick, der dir Ärger erspart, bevor er entsteht.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
