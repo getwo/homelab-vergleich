@@ -58,4 +58,7 @@
   <url><loc>https://homelab.brillianze.de/artikel/frigate-nvr.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/paperless-backup.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/vaultwarden-backup.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/jellyfin-hardware-transcoding.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/pihole-wireguard.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/nextcloud-onlyoffice.html</loc><priority>0.7</priority></url>
 </urlset>
