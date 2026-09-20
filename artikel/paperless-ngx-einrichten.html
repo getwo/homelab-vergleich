@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperless-ngx einrichten: Schritt-für-Schritt-Anleitung (2026) — Homelab Vergleich</title>
+<meta name="description" content="Paperless-ngx einrichten: Schritt-für-Schritt-Anleitung (2026)  Stapelweise Papierkram, verlegte Rechnungen und die ewige Suche nach „diesem einen Bel">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Paperless-ngx einrichten: Schritt-für-Schritt-Anleitung (2026)</h1>
+<p>Stapelweise Papierkram, verlegte Rechnungen und die ewige Suche nach „diesem einen Beleg&quot;: Mit Paperless-ngx digitalisierst du deine Dokumente, machst sie per Volltextsuche durchsuchbar und räumst deinen Schreibtisch auf – komplett selbst gehostet und ohne Cloud-Abo. In dieser Schritt-für-Schritt-Anleitung zeigen wir dir, wie du Paperless-ngx per Docker einrichtest, deinen Scanner anbindest und deine Ablage automatisierst.</p>
+<h2>Was ist Paperless-ngx?</h2>
+<p>Paperless-ngx ist ein quelloffenes Dokumenten-Management-System, das Papierdokumente digitalisiert, archiviert und durchsuchbar macht. Es ist der aktiv gepflegte Nachfolger des ursprünglichen Paperless-Projekts und steht unter der GPL-3.0-Lizenz – du kannst es also kostenlos und ohne Herstellerbindung auf eigener Hardware betreiben.</p>
+<p>Der Kern des Systems: Du legst Dokumente als Scan oder PDF in einen Überwachungsordner, und Paperless-ngx übernimmt den Rest. Es extrahiert den Text per OCR (optische Zeichenerkennung), erkennt Datum und Korrespondenten und sortiert die Datei automatisch in dein Archiv ein. Über die Weboberfläche durchsuchst du später alle Dokumente in Sekunden statt in Aktenordnern zu blättern.</p>
+<h2>Warum deine Belege digitalisieren?</h2>
+<p>Der praktische Nutzen zeigt sich vor allem bei der Volltextsuche. Statt jede Rechnung von Hand zu wälzen, tippst du einfach „Stromrechnung 2025&quot; in die Suche – Paperless-ngx findet das Dokument, weil es den kompletten Inhalt indexiert hat. Das funktioniert auch bei gescannten Dokumenten, da der OCR-Text mitgespeichert wird.</p>
+<p>Dazu kommen weitere Vorteile:</p>
+<ul>
+<li><strong>Kein Papierchaos:</strong> Post, Belege und Verträge landen direkt im Scanner und danach im digitalen Archiv.</li>
+<li><strong>Volle Datenhoheit:</strong> Deine sensiblen Unterlagen bleiben auf deinem eigenen Server statt bei einem Cloud-Anbieter.</li>
+<li><strong>Automatische Ablage:</strong> Tags, Dokumenttypen und Korrespondenten werden anhand deiner Regeln vergeben.</li>
+<li><strong>Kostenlos erweiterbar:</strong> Durch die offene Architektur lassen sich Workflows an deine Bedürfnisse anpassen.</li>
+</ul>
+<h2>Installation per Docker</h2>
+<p>Der schnellste Weg führt über Docker Compose. Paperless-ngx besteht aus mehreren Diensten, die zusammenarbeiten: dem Webserver selbst, einem Redis-Broker für die Warteschlange sowie Gotenberg und Apache Tika für die Verarbeitung von Office-Dateien. Speichere folgende Konfiguration als <code>docker-compose.yml</code>:</p>
+<pre><code>
+services:
+  broker:
+    image: docker.io/library/redis:7
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - broker
+      - gotenberg
+      - tika
+    ports:
+      - &quot;8000:8000&quot;
+    volumes:
+      - data:/usr/src/paperless/data
+      - media:/usr/src/paperless/media
+      - ./export:/usr/src/paperless/export
+      - ./consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_OCR_LANGUAGE: deu
+      PAPERLESS_SECRET_KEY: bitte-aendern
+      PAPERLESS_TIME_ZONE: Europe/Berlin
+
+  gotenberg:
+    image: docker.io/gotenberg/gotenberg:8
+    restart: unless-stopped
+    command:
+      - &quot;gotenberg&quot;
+      - &quot;--chromium-disable-javascript=true&quot;
+
+  tika:
+    image: ghcr.io/paperless-ngx/tika:latest
+    restart: unless-stopped
+
+volumes:
+  data:
+  media:
+  redisdata:
+</code></pre>
+<p>Gestartet wird der Stack mit:</p>
+<pre><code>
+docker compose up -d
+</code></pre>
+<p>Danach erreichst du die Oberfläche unter <code>http://deine-ip:8000</code>. Beim ersten Start legst du ein Admin-Konto an. Wie Docker grundsätzlich funktioniert, erklärt unser [Docker-Einsteiger-Guide](docker-einsteiger.md). Wichtig: Ersetze den Platzhalter bei <code>PAPERLESS_SECRET_KEY</code> durch einen langen, zufälligen Wert – er schützt deine Sitzungen.</p>
+<h2>Erste Schritte: Scanner, Tags und Dokumenttypen</h2>
+<p>Nach der Anmeldung richtest du die Grundstruktur ein, bevor die ersten Dokumente eintreffen:</p>
+<p>1. <strong>Korrespondenten anlegen:</strong> Das sind die Absender oder Empfänger deiner Dokumente, etwa „Stadtwerke&quot; oder „Versicherung&quot;.</p>
+<p>2. <strong>Dokumenttypen definieren:</strong> Beispiele sind Rechnung, Vertrag, Kontoauszug oder Bescheid.</p>
+<p>3. <strong>Tags vergeben:</strong> Tags bündeln Dokumente themenübergreifend, etwa „Steuer 2026&quot; oder „Wohnung&quot;.</p>
+<p>Diese drei Bausteine nutzt Paperless-ngx, um eingehende Dokumente automatisch zu kategorisieren. Anschließend richtest du die Konsumenten ein, die bestimmen, woher neue Dokumente kommen. Der einfachste Weg ist der Überwachungsordner <code>./consume</code>: Alles, was du dort ablegst, wird automatisch importiert. Viele Nutzer koppeln daran ein Netzwerkverzeichnis ihres Scanners – so genügt ein Knopfdruck am Gerät, und das Dokument landet direkt im Archiv.</p>
+<h2>OCR für gescannte Dokumente</h2>
+<p>Damit gescannte Briefe durchsuchbar werden, läuft die Texterkennung über Tesseract. Über die Variable <code>PAPERLESS_OCR_LANGUAGE: deu</code> ist bereits die deutsche Spracherkennung aktiviert; für mehrsprachige Dokumente kannst du mehrere Sprachen kombiniert angeben (etwa <code>deu+eng</code>). Gescannte PDFs und Bilder werden beim Import automatisch per OCR verarbeitet, der erkannte Text wird mit dem Dokument gespeichert und indexiert.</p>
+<p>Für Office-Dateien wie Word- oder Excel-Dokumente sind Gotenberg und Tika zuständig: Sie wandeln die Dateien in PDFs um und extrahieren den Text, damit auch diese Formate voll durchsuchbar sind.</p>
+<h2>Konsumenten und Speicherpfade</h2>
+<p>Neben dem Überwachungsordner bringt Paperless-ngx weitere Konsumenten mit. Per E-Mail-Konsument kannst du Dokumente als Anhang an eine eigene Mail-Adresse senden, die automatisch verarbeitet werden. Über die REST-API bindest du eigene Skripte oder Apps an.</p>
+<p>Die Speicherpfade legst du über die Volumes in der Compose-Datei fest. Die Medien selbst liegen im Volume <code>media</code>, die Suchdatenbank und Konfiguration in <code>data</code>. Der Export-Ordner hält deine Original-PDFs für ein einfaches Backup bereit – sichere diese Verzeichnisse regelmäßig, etwa mit einem Cron-Job.</p>
+<h2>Fazit</h2>
+<p>Paperless-ngx ist die ideale Lösung, um deine Papierflut dauerhaft in den Griff zu bekommen: selbst gehostet, kostenlos und mit mächtiger Volltextsuche. Dank Docker Compose steht der komplette Stack in wenigen Minuten, und mit Scanner-Anbindung, Tags und OCR läuft die Ablage danach weitgehend automatisch.</p>
+<h2>FAQ</h2>
+<p><strong>Ist Paperless-ngx kostenlos?</strong></p>
+<p>Ja. Paperless-ngx ist Open Source unter der GPL-3.0-Lizenz und kann ohne Lizenzkosten auf eigener Hardware betrieben werden.</p>
+<p><strong>Welche Hardware brauche ich?</strong></p>
+<p>Paperless-ngx läuft bereits auf einem Raspberry Pi 4 oder einem kleinen Mini-PC. Der größte Bedarf entsteht durch die OCR-Verarbeitung, daher helfen bei vielen Scans 2 bis 4 GB RAM.</p>
+<p><strong>Kann ich Dokumente auch von unterwegs erreichen?</strong></p>
+<p>Ja, über einen VPN-Zugang wie [WireGuard](wireguard-homelab.md) oder einen abgesicherten Reverse-Proxy mit HTTPS. Den Dienst selbst solltest du nicht ungeschützt ins Internet stellen.</p>
+<p><strong>Was passiert mit meinen Originaldokumenten?</strong></p>
+<p>Deine Scans werden im <code>media</code>-Volume gespeichert und bleiben vollständig in deiner Hand. Nach der Digitalisierung kannst du die Papieroriginale entsorgen – viele Nutzer heben sie aber aus rechtlichen Gründen zusätzlich auf.</p>
+<p><strong>Erkennt Paperless-ngx handschriftliche Dokumente?</strong></p>
+<p>Die OCR über Tesseract ist auf gedruckten Text optimiert. Handschrift wird nur unzuverlässig erkannt; für gute Ergebnisse eignen sich maschinell erstellte Dokumente am besten.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
