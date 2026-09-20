@@ -52,4 +52,8 @@
   <url><loc>https://homelab.brillianze.de/artikel/truenas-vs-unraid-vs-proxmox.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/homelab-dashboard.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/audiobookshelf.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/tailscale-vs-wireguard.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/proxmox-backup-server.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/deepseek-r1-lokal.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/frigate-nvr.html</loc><priority>0.7</priority></url>
 </urlset>
