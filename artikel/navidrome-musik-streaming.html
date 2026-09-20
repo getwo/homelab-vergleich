@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navidrome: Musik-Streaming selbst hosten – die Spotify-Alternative fürs Homelab — Homelab Vergleich</title>
+<meta name="description" content="Navidrome: Musik-Streaming selbst hosten – die Spotify-Alternative fürs Homelab  Du bezahlst jeden Monat für Musik, die dir nicht gehört, und hörst We">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Navidrome: Musik-Streaming selbst hosten – die Spotify-Alternative fürs Homelab</h1>
+<p>Du bezahlst jeden Monat für Musik, die dir nicht gehört, und hörst Werbung zwischen den Songs – dabei liegt die Lösung oft schon im eigenen Homelab. Navidrome ist ein quelloffener Musikserver, der deine eigene Musiksammlung auf alle Geräte streamt: kostenlos, ohne Tracking und mit voller Kontrolle über deine Daten. In diesem Artikel erfährst du, was Navidrome kann, wie du es per Docker installierst und warum es für viele die bessere Spotify-Alternative ist.</p>
+<h2>Was ist Navidrome?</h2>
+<p>Navidrome ist ein schlanker Musik-Streaming-Server für die eigene Hardware. Er durchsucht deinen Musikordner, liest Titel, Alben, Interpreten und Cover aus den Metadaten und stellt die Bibliothek über eine moderne Web-Oberfläche sowie die Subsonic-API bereit. Praktisch heißt das: Du bekommst ein Spotify-ähnliches Erlebnis – Suche, Wiedergabelisten, Favoriten, Transcoding – nur eben mit deiner eigenen Musik.</p>
+<p>Technisch ist Navidrome ein einzelnes, in Go geschriebenes Programm, das nur wenige Megabyte Arbeitsspeicher benötigt. Damit läuft es problemlos auf einem Raspberry Pi, einem Mini-PC oder in deinem bestehenden Docker-Setup.</p>
+<h2>Warum deine eigene Musik selbst hosten?</h2>
+<p>Selbsthoster nennen drei Hauptgründe, auf einen eigenen Musikserver zu setzen:</p>
+<ul>
+<li><strong>Kosten:</strong> Statt eines dauerhaften Abos zahlst du einmalig für Hardware, die du ohnehin schon besitzt.</li>
+<li><strong>Datenschutz:</strong> Es wird nichts protokolliert, keine Hörgewohnheiten an Werbetreibende verkauft und kein Konto benötigt.</li>
+<li><strong>Kontrolle:</strong> Deine Musik bleibt deine Musik. Kein Titel verschwindet, weil eine Lizenz ausläuft, und du entscheidest, was in deiner Bibliothek liegt – von FLAC bis zu seltenen Live-Aufnahmen.</li>
+</ul>
+<p>Wer bereits ein [Homelab betreibt](homelab-einrichten-guide.md) und [Docker verstanden hat](docker-einsteiger.md), hat den Musikserver in wenigen Minuten eingerichtet.</p>
+<h2>Installation mit Docker</h2>
+<p>Am einfachsten startest du Navidrome über Docker Compose. Speichere folgende Datei als <code>docker-compose.yml</code>:</p>
+<pre><code>
+services:
+  navidrome:
+    image: deluan/navidrome:latest
+    ports:
+      - &quot;4533:4533&quot;
+    environment:
+      ND_SCANSCHEDULED: &quot;1h&quot;
+      ND_LOGLEVEL: info
+    volumes:
+      - ./data:/data
+      - ./music:/music:ro
+    restart: unless-stopped
+</code></pre>
+<p>Anschließend startest du den Dienst mit:</p>
+<pre><code>
+docker compose up -d
+</code></pre>
+<p>Nach wenigen Sekunden erreichst du die Weboberfläche unter <code>http://dein-server:4533</code>. Beim ersten Aufruf legst du einen Administrator-Benutzer an – fertig.</p>
+<h2>Musikbibliothek einrichten</h2>
+<p>Navidrome zeigt nur, was im gemounteten Ordner liegt. Kopiere deine Musik daher nach <code>./music</code> und achte auf eine saubere Ordnerstruktur, etwa <code>Interpret/Album/Titel.mp3</code>. Unterstützt werden gängige Formate wie MP3, FLAC, OGG und AAC; verlustfreie Formate transkodiert der Server bei Bedarf automatisch in ein Streaming-Format für unterwegs.</p>
+<p>Wichtig ist eine gepflegte Tag-Struktur: Titel, Interpret, Album und Cover. Fehlende Albumcover ergänzt Navidrome selbstständig über Last.fm und Spotify. Nach dem Einrichten wartest du auf den ersten Scan – der Zeitplan lässt sich über <code>ND_SCANSCHEDULED</code> steuern – und die Bibliothek steht in allen Apps bereit.</p>
+<h2>Client-Apps für Handy und Desktop</h2>
+<p>Der größte Vorteil der Subsonic-Kompatibilität: Du bist nicht auf eine einzige App angewiesen. Für Mobilgeräte stehen unter anderem bereit:</p>
+<ul>
+<li><strong>Substreamer</strong> (iOS/Android) – kostenlos und vollgepackt mit Funktionen.</li>
+<li><strong>Amperfy</strong> (iOS) – schlank, modern und kostenlos.</li>
+<li><strong>Symfonium</strong> (Android) – die leistungsfähigste Wahl, einmalig kostenpflichtig.</li>
+<li><strong>play:Sub</strong> (iOS) – mit Offline-Cache und CarPlay.</li>
+</ul>
+<p>Auf dem Desktop nutzt du <strong>Feishin</strong> oder <strong>Supersonic</strong> – oder einfach die Weboberfläche im Browser. Für Apple-Fans bietet Navidrome sogar eine eigene, experimentelle App für iOS an.</p>
+<h2>Navidrome vs. Spotify: Kosten, Datenschutz, Kontrolle</h2>
+<p>| Kriterium | Navidrome | Spotify |</p>
+<p>|---|---|---|</p>
+<p>| Kosten | kostenlos (Open Source) | rund 12 Euro/Monat (Stand 2026, Richtwert) |</p>
+<p>| Datenschutz | keine Registrierung, keine Analyse | Nutzungsdaten für Empfehlungen und Werbung |</p>
+<p>| Kontrolle | volle Kontrolle über die Bibliothek | Titel können durch Lizenzen verschwinden |</p>
+<p>| Qualität | bis verlustfrei (FLAC) | max. 320 kbit/s (Premium) |</p>
+<p>| Aufwand | einmalige Einrichtung | keiner, sofort nutzbar |</p>
+<p>Der wichtigste Unterschied ist philosophisch: Spotify vermietet dir Zugang zu einem Katalog, der dir nie gehört. Navidrome spielt genau die Musik ab, die du besitzt – dauerhaft, offline-fähig und ohne dass dein Hörverhalten zur Ware wird. Dafür musst du die Musik selbst besitzen und den Server einmal einrichten und warten.</p>
+<h2>Fazit</h2>
+<p>Navidrome ist die überzeugendste Spotify-Alternative für alle, die ihre Musiksammlung selbst in der Hand behalten wollen. Der Server ist leichtgewichtig, die Docker-Installation dauert Minuten, und dank Subsonic-API findest du für jedes Gerät eine passende App. Wer bereits ein Homelab betreibt, holt sich damit ein Stück digitale Souveränität zurück – ganz ohne Abo und ganz ohne Tracking.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
