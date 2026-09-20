@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxmox Backup Server einrichten: Backups automatisieren — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Proxmox Backup Server einrichten: Backups automatisieren" description: "Proxmox Backup Server (PBS) einrichten: So automatisierst du dedup">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Proxmox Backup Server einrichten: Backups automatisieren&quot;</p>
+<p>description: &quot;Proxmox Backup Server (PBS) einrichten: So automatisierst du deduplizierte, inkrementelle Backups deiner VMs und Container und stellst sie im Ernstfall schnell wieder her.&quot;</p>
+<hr>
+<h1>Proxmox Backup Server einrichten: Backups automatisieren</h1>
+<p>Wer ein Homelab mit Proxmox VE betreibt, kennt das Problem: Virtuelle Maschinen und Container sammeln sich an, und irgendwann steht die Frage im Raum, wie man sie zuverlässig sichert. Die eingebaute Backup-Lösung von Proxmox (vzdump) funktioniert, stößt aber bei vielen Gästen und großen Datenmengen schnell an Grenzen. Genau hier setzt der <strong>Proxmox Backup Server</strong> (PBS) an – eine eigenständige Open-Source-Plattform, die Backups nicht nur ablegt, sondern intelligent verwaltet.</p>
+<h2>Was ist der Proxmox Backup Server?</h2>
+<p>Der Proxmox Backup Server ist eine dedizierte Backup-Lösung, die nahtlos mit Proxmox VE zusammenarbeitet. Technisch ist er ein eigenständiges Debian-basiertes System, das du entweder als virtuelle Maschine, als Container oder auf eigener Hardware betreiben kannst. Sein Herzstück ist ein speziell für Backups optimierter Datenspeicher, der die Daten serverseitig verarbeitet, bevor sie auf die Platte geschrieben werden.</p>
+<p>Der große Unterschied zu klassischen Backups: PBS speichert keine vollständigen Kopien jedes Sicherungslaufs, sondern zerlegt die Daten in kleine Blöcke (Chunks) und legt jeden Chunk nur einmal ab. Das ist die Grundlage für die beiden wichtigsten Vorteile des Systems.</p>
+<h2>Warum PBS? Deduplizierung, inkrementelle Backups, schnelle Wiederherstellung</h2>
+<p><strong>Deduplizierung</strong> ist das schlagende Argument. Wenn du zehn Container mit demselben Debian-Basisimage betreibst, wird dieses Image nur einmal gespeichert – alle weiteren Kopien sind nur noch Referenzen. In der Praxis bedeutet das Einsparungen von oft 70 bis 90 Prozent des Speicherplatzes. Je mehr ähnliche Gäste du hast, desto größer fällt der Effekt aus.</p>
+<p><strong>Inkrementelle Backups</strong> sind der zweite Baustein. Da PBS weiß, welche Chunks bereits vorhanden sind, überträgt ein neuer Backup-Lauf nur die tatsächlich veränderten Daten. Ein täglicher Lauf, der früher Stunden dauerte, ist damit oft in Minuten erledigt – und belastet nebenbei weder Netz noch Festplatte unnötig.</p>
+<p><strong>Wiederherstellung</strong> ist der Punkt, an dem sich ein gutes Backup-System bewährt. PBS bietet Datei-Level-Restore: Du kannst einzelne Dateien aus einem Backup heraussuchen, ohne den kompletten Container zurückzuspielen. Auch die Vollwiederherstellung einer VM oder eines Containers auf einen beliebigen Proxmox-Host ist mit wenigen Klicks erledigt. Optional lassen sich Backups zudem verschlüsseln und auf Fernzugriff (Client/Server-Trennung) erweitern.</p>
+<h2>Installation: VM oder LXC?</h2>
+<p>Die einfachste Variante ist die Installation als <strong>virtuelle Maschine</strong>. Proxmox liefert dafür ein fertiges Installations-Image, das du als ISO einbindest und wie ein normales Betriebssystem installierst. Nach dem ersten Start erreichst du die Weboberfläche unter <code>https://&lt;ip&gt;:8007</code>.</p>
+<p>Alternativ lässt sich PBS auch als <strong>LXC-Container</strong> betreiben. Das spart Ressourcen, bringt aber ein paar Eigenheiten mit sich: Die Deduplizierung und Verifikation profitiert von direktem Zugriff auf die Datenträger, daher ist die Container-Variante etwas mehr Fummelei. Für den Einstieg ist die VM der robusteste Weg.</p>
+<p>Wichtig ist bei beiden Varianten die <strong>Lagerung der Backups</strong>: Lege den Datastore auf einem separaten, ausreichend großen Speicher an. Ein eigener Datastore für Backups gehört nicht auf die Systemplatte des PBS selbst.</p>
+<h2>Proxmox VE anbinden</h2>
+<p>Nach der Installation verbindest du den PBS mit deinem Proxmox-Host. Dazu legst du in der Proxmox-Oberfläche unter <strong>Datacenter → Storage → Add → Proxmox Backup Server</strong> einen neuen Speicher an. Du brauchst dafür:</p>
+<ul>
+<li>die IP-Adresse des PBS,</li>
+<li>einen API-Benutzer mit zugehörigem API-Token (unter <strong>Datacenter → Permissions</strong> im PBS anlegen),</li>
+<li>den Fingerprint des Server-Zertifikats.</li>
+</ul>
+<p>Proxmox zeigt dir den Fingerprint beim Anlegen an; einmal bestätigt, ist die Verbindung hergestellt. Der neue Backup-Speicher erscheint danach in der Storage-Liste und steht allen Nodes des Clusters zur Verfügung.</p>
+<h2>Backup-Jobs einrichten</h2>
+<p>Jetzt automatisierst du die Sicherung. Unter <strong>Datacenter → Backup</strong> legst du einen neuen Job an:</p>
+<p>1. <strong>Storage</strong> auf den PBS-Datastore setzen.</p>
+<p>2. <strong>Zeitplan</strong> wählen – für die meisten Homelabs ist ein täglicher oder wöchentlicher Lauf sinnvoll.</p>
+<p>3. <strong>Auswahlmodus</strong> festlegen: einzelne Gäste, alle Gäste oder nach Pool/VMID filtern.</p>
+<p>4. <strong>Aufbewahrung</strong> konfigurieren, z. B. tägliche Backups sieben Tage aufbewahren, wöchentliche vier Wochen, monatliche zwölf Monate. PBS räumt alte, abgelaufene Sicherungen automatisch auf (Prune).</p>
+<p>Ein sinnvolles Muster: tägliche Backups mit kurzer Aufbewahrung plus ein wöchentlicher Lauf mit längerer Retention. So hast du aktuelle Stände und historische Schnappschüsse, ohne Speicher zu verschwenden.</p>
+<h2>Restore: So kommst du an deine Daten zurück</h2>
+<p>Im Ernstfall startest du die Wiederherstellung direkt über den Backup-Speicher in Proxmox. Wähle den gewünschten Backup-Snapshot und den Ziel-Storage – Proxmox legt den Gast als neue VM oder neuen Container wieder an. Für einzelne Dateien öffnest du den Backup-Inhalt im <strong>File-Restore</strong> und lädst gezielt herunter, was du brauchst.</p>
+<h2>Fazit</h2>
+<p>Der Proxmox Backup Server verwandelt die oft vernachlässigte Backup-Pflicht in einen automatisierten, platzsparenden Prozess. Deduplizierung und inkrementelle Sicherungen halten den Speicherbedarf klein, der File-Restore rettet im Notfall einzelne Dateien statt ganzer Systeme. Für jedes Homelab mit mehr als einer Handvoll Gäste ist PBS die Investition wert – einmal eingerichtet, läuft die Sicherung von selbst.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
