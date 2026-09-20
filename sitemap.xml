@@ -47,4 +47,9 @@
   <url><loc>https://homelab.brillianze.de/artikel/wake-on-lan.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/cloudflare-tunnel-vs-reverse-proxy.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/photoprism-vs-immich.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/paperless-ngx-einrichten.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/adguard-home-vs-pihole.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/truenas-vs-unraid-vs-proxmox.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/homelab-dashboard.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/audiobookshelf.html</loc><priority>0.7</priority></url>
 </urlset>
