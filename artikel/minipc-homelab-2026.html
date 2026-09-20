@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die besten Mini-PCs für Homelab & Selfhosting 2026 — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Die besten Mini-PCs für Homelab & Selfhosting 2026" description: "Mini-PCs für Homelab und Selfhosting 2026: stromsparend, leise, klein. K">
+<link rel="stylesheet" href="../style.css">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/minipc-homelab.html">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Die besten Mini-PCs für Homelab &amp; Selfhosting 2026&quot;</p>
+<p>description: &quot;Mini-PCs für Homelab und Selfhosting 2026: stromsparend, leise, klein. Konkrete Modelle und Preisklassen von Intel NUC, gebrauchten Business-PCs bis Beelink und Minisforum – inklusive Leistungsgrenzen und Einsteiger-Empfehlung.&quot;</p>
+<hr>
+<h1>Die besten Mini-PCs für Homelab &amp; Selfhosting 2026</h1>
+<p>Ein Homelab braucht keinen klobigen Tower-Server. Der moderne Standard ist ein Mini-PC im Format einer Getränkedose: Er läuft 24/7, zieht im Leerlauf oft unter 10 Watt, ist kaum hörbar und verschwindet unauffällig im Regal oder hinter dem Router. Dieser Artikel zeigt, warum Mini-PCs die erste Wahl für Selfhosting sind, welche Modelle und Preisklassen 2026 Sinn ergeben und wo ihre Grenzen liegen.</p>
+<h2>Warum ein Mini-PC fürs Homelab?</h2>
+<p>Drei Argumente sprechen für den Mini-PC gegenüber Desktop-Rechner und klassischem Server:</p>
+<ul>
+<li><strong>Stromsparend:</strong> Typische Modelle liegen im Leerlauf zwischen 6 und 15 Watt. Bei 0,40 €/kWh kostet ein 10-Watt-Dauerläufer rund 2,90 Euro im Monat beziehungsweise 35 Euro im Jahr – ein ausgewachsener Server zieht locker das Zehnfache.</li>
+<li><strong>Leise:</strong> Viele Mini-PCs kommen komplett ohne Lüfter aus oder drehen ihn erst unter Last hoch. Im Wohnraum oder Arbeitszimmer ist das ein entscheidender Vorteil gegenüber einem Server mit Delta-Lüftern.</li>
+<li><strong>Klein und flexibel:</strong> Das Gehäuse ist handtellergroß, passt in jede Ecke und wird per VESA-Halterung auch an die Monitorrückseite geschraubt.</li>
+</ul>
+<p>Dazu kommt: Moderne Einsteiger-CPUs wie der Intel N100 oder AMD Ryzen Embedded bieten genug Leistung für Dutzende parallele Dienste – und kosten im kompletten Gerät oft weniger als 200 Euro.</p>
+<h2>Die wichtigsten Preisklassen im Überblick</h2>
+<h2>1. Einsteiger mit Intel N100 (ca. 150–250 Euro)</h2>
+<p>Der Intel N100 ist der heimliche Star des Homelab-Universums. Vier Effizienz-Kerne, 6 bis 12 Watt typische Leistungsaufnahme und Hardware-Beschleunigung für Video-Transcoding – perfekt für Jellyfin, Plex, Pi-hole, WireGuard, Nextcloud und ein gutes Dutzend Docker-Container. Anbieter wie <strong>Beelink</strong> und <strong>Minisforum</strong> liefern hier fertige Systeme mit 8 oder 16 GB RAM und NVMe-SSD. Für reines Selfhosting ohne Virtualisierungs-Monster ist das die preiswerteste sinnvolle Wahl.</p>
+<h2>2. Gebrauchte Business-Mini-PCs (ca. 80–200 Euro)</h2>
+<p>Der Geheimtipp fürs schmale Budget: ausgemusterte Büro-Rechner wie <strong>HP EliteDesk 800 G4/G5 Mini</strong>, <strong>Dell OptiPlex 7070 Micro</strong> oder <strong>Lenovo ThinkCentre M720q Tiny</strong>. Leasing-Rückläufer werden massenhaft und günstig verkauft, sind für Dauerbetrieb gebaut und lassen sich leicht aufrüsten – mehr RAM, größere SSD, zweite Netzwerkkarte als Firewall-Port. Wer hier einen Prozessor der Intel Core i5-8x00-Serie oder neuer erwischt, bekommt deutlich mehr Multicore-Leistung als ein N100, für oft weniger Geld. Nachteil: etwas höherer Stromverbrauch und kein fabrikneuer Zustand.</p>
+<h2>3. Leistungsklasse mit AMD (ca. 300–500 Euro)</h2>
+<p>Für anspruchsvollere Setups – mehrere virtuelle Maschinen, viele Container, Transcoding von 4K-Material – lohnen sich Mini-PCs mit AMD Ryzen 5/7 der U-Serie, etwa von <strong>Minisforum</strong> oder <strong>Beelink</strong>. Sechs bis acht Kerne und bis zu 32 GB RAM machen Proxmox mit mehreren VMs zum Kinderspiel.</p>
+<h2>4. Intel-NUC-Klasse (ca. 250–700 Euro)</h2>
+<p>Die klassischen <strong>Intel NUCs</strong> (und ihre Nachfolger von ASUS, die die NUC-Linie übernommen haben) sind der Premium-Weg: hochwertige Verarbeitung, lange Verfügbarkeit, saubere Treiberlage und viele Anschlüsse. Sie kosten mehr als die vergleichbaren No-Name-Alternativen, bieten dafür aber ein rundes Gesamtpaket für alle, die ein zuverlässiges Dauerlauf-System mit Marken-Support wollen.</p>
+<h2>Was ein Mini-PC im Homelab wirklich kann</h2>
+<p>Ein moderner Mini-PC ist ein vollwertiger x86-Server. Typische Aufgaben, die er mühelos bewältigt:</p>
+<ul>
+<li><strong>Proxmox VE</strong> als Virtualisierungs-Basis mit mehreren VMs und LXC-Containern.</li>
+<li><strong>Docker / Docker Compose</strong> für ein gutes Dutzend paralleler Dienste: Pi-hole, WireGuard, Nextcloud, Home Assistant, Jellyfin, Vaultwarden, Immich und mehr.</li>
+<li><strong>Firewall/Router</strong> (etwa mit OPNsense) dank zweiter Netzwerkschnittstelle – bei vielen Modellen einfach per USB-Adapter nachrüstbar.</li>
+<li><strong>Medienserver</strong> mit Hardware-Transcoding, das dank Intel Quick Sync auch auf der N100-Klasse flüssig läuft.</li>
+</ul>
+<p>Die x86-Architektur ist der große Vorteil gegenüber dem Raspberry Pi: Praktisch jede Software läuft, vom ersten Docker-Container bis zum vollwertigen Proxmox-Server.</p>
+<h2>Grenzen: Was der Mini-PC nicht kann</h2>
+<p>Ehrlich bleiben lohnt sich auch hier:</p>
+<ul>
+<li><strong>Kein großes LLM ohne GPU:</strong> Ein Sprachmodell mit 7 bis 70 Milliarden Parametern passt weder in den typischen 16- oder 32-GB-Arbeitsspeicher noch reicht die CPU-Leistung für flüssige Antworten. Kleine, stark quantisierte Modelle laufen zwar, ein echtes KI-Rechenzentrum ist ein Mini-PC aber nicht. Wer lokale KI ernsthaft betreiben will, braucht eine dedizierte Grafikkarte – die in diesem Formfaktor nicht unterkommt.</li>
+<li><strong>Begrenzter Massenspeicher:</strong> Meist passt nur eine NVMe-SSD plus eine 2,5-Zoll-Platte. Wer ein großes NAS mit vielen Festplatten plant, sollte das getrennt lösen.</li>
+<li><strong>Wenige Erweiterungsmöglichkeiten:</strong> PCIe-Slots, zusätzliche Netzwerkkarten oder große Kühler sucht man im Mini-Format vergeblich.</li>
+</ul>
+<h2>Empfehlung für Einsteiger</h2>
+<p>Der beste Einstieg für die meisten ist klar: ein <strong>Mini-PC mit Intel N100, 16 GB RAM und 512-GB-NVMe-SSD</strong> im Bereich um 200 Euro – neu von Beelink oder Minisforum, oder als gebrauchter Business-Mini-PC von Dell, HP oder Lenovo, wenn das Budget kleiner ist. Darauf lässt sich in einem Nachmittag ein sauberes Setup aus Proxmox oder direkt Docker aufsetzen, und die Hardware wächst für die ersten Jahre mit.</p>
+<p>Mein Rat: Starte klein, aber starte mit x86. Ein Raspberry Pi bleibt ein wunderbarer energiesparender Dauerläufer für Pi-hole und VPN, als Hauptrechner des Homelabs ist ein Mini-PC aber die flexiblere Basis – für wenig mehr Geld.</p>
+<h2>Fazit</h2>
+<p>Der Mini-PC ist 2026 die beste Allround-Wahl für Homelab und Selfhosting: günstig in der Anschaffung, sparsam im Dauerbetrieb, leise und klein, aber leistungsfähig genug für Proxmox, Docker und ein ganzes Ökosystem an Diensten. Seine Grenzen – vor allem bei lokaler KI ohne GPU und beim Massenspeicher – sind klar benannt und lassen sich sauber umschiffen. Wer mit einem N100-System im 200-Euro-Bereich startet, bekommt für wenig Geld eine solide Basis, die sich später durch AMD-Systeme oder einen gebrauchten Business-PC gezielt erweitern lässt.</p>
+<p><em>Hinweis: Alle Preise und Verbrauchswerte sind Richtwerte (Stand Anfang 2026) und können je nach Modell, Ausstattung und Marktlage abweichen. Affiliate-Links sind in diesem Artikel nicht enthalten.</em></p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
