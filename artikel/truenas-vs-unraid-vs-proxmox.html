@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrueNAS vs Unraid vs Proxmox: Welches System für dein NAS? — Homelab Vergleich</title>
+<meta name="description" content="TrueNAS vs Unraid vs Proxmox: Welches System für dein NAS?  Drei Namen tauchen immer wieder auf, wenn es um den selbstgebauten Speicher im Homelab geh">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>TrueNAS vs Unraid vs Proxmox: Welches System für dein NAS?</h1>
+<p>Drei Namen tauchen immer wieder auf, wenn es um den selbstgebauten Speicher im Homelab geht: TrueNAS, Unraid und Proxmox. Dabei ist die Ausgangslage alles andere als gleich — TrueNAS und Unraid sind fertige NAS-Betriebssysteme, Proxmox dagegen eine Virtualisierungsplattform. Wer das versteht, trifft die richtige Entscheidung. Dieser Artikel vergleicht Dateisysteme, RAID-Konzepte, Virtualisierung, Kosten und Hardware-Anforderungen und endet mit einer klaren Empfehlung pro Anwendungsfall.</p>
+<h2>Was sind die drei Systeme?</h2>
+<p><strong>TrueNAS</strong> ist ein quelloffenes NAS-Betriebssystem, das in zwei Varianten existiert: TrueNAS CORE (auf FreeBSD-Basis) und TrueNAS SCALE (auf Linux/Debian-Basis). Beide setzen konsequent auf das Dateisystem ZFS und liefern eine ausgereifte Weboberfläche für Freigaben, Snapshots, Replikation und Datenintegrität. TrueNAS ist der Spezialist für zuverlässigen, großen Speicher.</p>
+<p><strong>Unraid</strong> ist ein kommerzielles, aber preiswert lizenziertes NAS-Betriebssystem auf Linux-Basis. Sein Markenzeichen ist das eigene Paritäts-Array: Du kannst Festplatten unterschiedlicher Größe mischen und jederzeit ergänzen, solange die größte Platte als Parität dient. Docker und virtuelle Maschinen sind direkt integriert — Unraid versteht sich als „Apps plus Speicher&quot; in einem.</p>
+<p><strong>Proxmox VE</strong> ist keine NAS-Software, sondern ein Hypervisor auf Debian-Basis. Er verwaltet virtuelle Maschinen (KVM) und LXC-Container über ein Web-Interface. Ein NAS baust du damit nicht direkt, sondern als virtuelle Maschine (zum Beispiel mit TrueNAS als Gast) — dafür bekommst du maximale Freiheit, beliebige Dienste isoliert auf einer Maschine zu betreiben.</p>
+<h2>Dateisysteme im Vergleich: ZFS vs BTRFS vs LVM</h2>
+<p>Der wichtigste Unterschied liegt unter der Haube:</p>
+<ul>
+<li><strong>TrueNAS = ZFS.</strong> ZFS bietet Prüfsummen für jede Datei, Snapshots, Kompression und Selbstheilung bei stillen Datenfehlern. Es ist das robusteste der drei Konzepte, verlangt aber RAM (Faustregel: 1 GB pro TB Speicher) und lässt sich nicht trivial um einzelne Platten erweitern.</li>
+<li><strong>Unraid = XFS (optional BTRFS).</strong> Die Datenplatten laufen einzeln mit XFS; ein oder zwei Paritätsplatten sichern das Array ab. Dafür verzichtet Unraid auf ZFS-Datenprüfung pro Datei und Selbstheilung — der Preis für die flexible Plattenmischung.</li>
+<li><strong>Proxmox = ZFS oder LVM-thin.</strong> Als Hypervisor nutzt Proxmox ZFS (mit denselben Vorteilen wie TrueNAS) oder schlankes LVM-thin für Over-Provisioning. Die Wahl triffst du pro Speicher-Pool selbst.</li>
+</ul>
+<h2>RAID-Ansatz: fest, flexibel oder gar nicht?</h2>
+<p>TrueNAS baut auf klassische ZFS-Pools mit RAID-Z (Z1, Z2, Z3). Die Konfiguration legst du beim Anlegen fest; nachträgliches Erweitern eines Pools um einzelne Platten ist nur begrenzt möglich. Dafür ist die Redundanz berechenbar und die Datenintegrität vorbildlich.</p>
+<p>Unraid geht den umgekehrten Weg: Sein Array ist kein echtes RAID, sondern ein Paritätsverbund. Der Vorteil ist die extreme Flexibilität — du wirfst einfach eine weitere Platte beliebiger Größe dazu. Der Nachteil: Lese- und Schreibgeschwindigkeit liegen unter einem ZFS-Pool, weil Daten und Parität anders verteilt werden.</p>
+<p>Proxmox bringt selbst kein RAID mit. Die Redundanz kommt vom darunterliegenden Speicher: ZFS-Pools, ein Hardware-RAID-Controller oder ein einfaches mdadm-RAID. Du hast volle Kontrolle, aber auch volle Verantwortung.</p>
+<h2>Docker, LXC oder virtuelle Maschinen?</h2>
+<ul>
+<li><strong>Unraid:</strong> Docker per Community-Apps-Store mit einem Klick, dazu vollwertige VMs mit GPU-Durchreichung. Für Dienste-Fans die bequemste Lösung.</li>
+<li><strong>TrueNAS SCALE:</strong> Container- und App-Verwaltung (Docker-basiert) sowie VMs sind an Bord, fühlen sich aber etwas technischer an als bei Unraid.</li>
+<li><strong>Proxmox:</strong> Kein natives Docker, dafür erstklassige LXC-Container und KVM-VMs. Docker betreibst du in einem Container oder einer VM — mehr Aufwand, aber sauber getrennt.</li>
+</ul>
+<h2>Lizenz und Kosten</h2>
+<p>TrueNAS und Proxmox sind vollständig open source und kostenlos nutzbar. Proxmox bietet zusätzlich ein optionales Enterprise-Abo für Support und getestete Updates; für den Heimbetrieb genügt das kostenlose Repository. Unraid ist die Ausnahme: Hier zahlst du eine einmalige Lizenz, gestaffelt nach Anzahl der Laufwerke — grob zwischen 60 und 130 Euro je nach Größe. Dafür bekommst du Updates für die gewählte Major-Version.</p>
+<h2>Hardware-Anforderungen</h2>
+<ul>
+<li><strong>TrueNAS:</strong> Mindestens 8 GB RAM (mit ZFS lieber 16 GB oder mehr), eine SSD für das System, eine fürs Log oder Cache ist optional. ECC-RAM wird für kritische Daten empfohlen.</li>
+<li><strong>Unraid:</strong> Läuft genügsam ab 2 bis 4 GB RAM von einem USB-Stick; mehr RAM hilft VMs und Docker. Ideal für alte oder gemischte Hardware.</li>
+<li><strong>Proxmox:</strong> 4 GB RAM Minimum, empfohlen 16 GB aufwärts, dazu eine SSD. Die Anforderungen skalieren mit der Zahl der VMs und Container.</li>
+</ul>
+<h2>Welches System für welchen Anwendungsfall?</h2>
+<ul>
+<li><strong>Reiner, großer Datenspeicher mit maximaler Datenintegrität:</strong> TrueNAS. ZFS-Prüfsummen, Snapshots und Replikation sind hier unschlagbar.</li>
+<li><strong>Flexibles Medien- und Backup-NAS mit vielen Docker-Apps:</strong> Unraid. Die einfache Platten-Erweiterung und der riesige App-Store machen es zum beliebtesten Allrounder.</li>
+<li><strong>Voller Homelab-Server mit Virtualisierung:</strong> Proxmox. Wer mehrere VMs, lokale KI, Firewalls und Dienste parallel betreiben will, bekommt hier die leistungsfähigste Basis — und kann TrueNAS als VM für den Speicher einhängen.</li>
+<li><strong>Einsteiger mit alter Hardware:</strong> Unraid oder TrueNAS SCALE, je nach Budget und Lust auf ZFS.</li>
+</ul>
+<h2>Fazit</h2>
+<p>TrueNAS, Unraid und Proxmox konkurrieren nur teilweise miteinander. TrueNAS ist der Datenintegritäts-Spezialist, Unraid der flexible Allrounder für Speicher plus Apps, und Proxmox die Virtualisierungsbasis für alles darüber hinaus. Frag dich zuerst, ob dein Fokus auf Speicher oder auf Anwendungen liegt: Für reine Daten greifst du zu TrueNAS oder Unraid, für einen ausgewachsenen Homelab-Server mit vielen Diensten ist Proxmox die richtige Wahl — notfalls mit einem NAS-System als virtuellem Gast obendrauf.</p>
+<p><em>Hinweis: Alle Preise und Lizenzmodelle sind Richtwerte (Stand Anfang 2026) und können sich ändern. Affiliate-Links sind in diesem Artikel nicht enthalten.</em></p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
