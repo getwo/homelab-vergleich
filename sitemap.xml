@@ -64,4 +64,7 @@
   <url><loc>https://homelab.brillianze.de/artikel/homelab-sicherheit-fail2ban-authentik.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/docker-compose-best-practices.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/proxmox-backups-automatisieren.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/immich-vs-google-photos.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/grafana-dashboards.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/energieverbrauch-messen.html</loc><priority>0.7</priority></url>
 </urlset>
