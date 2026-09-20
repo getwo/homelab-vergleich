@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paperless-ngx Backup: So sicherst du deine Dokumente — Homelab Vergleich</title>
+<meta name="description" content="Paperless-ngx Backup: So sicherst du deine Dokumente  Paperless-ngx verwaltet deine wichtigsten Unterlagen: Rechnungen, Verträge, Kontoauszüge und Bes">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Paperless-ngx Backup: So sicherst du deine Dokumente</h1>
+<p>Paperless-ngx verwaltet deine wichtigsten Unterlagen: Rechnungen, Verträge, Kontoauszüge und Bescheide. Genau die willst du bei einem Festplattendefekt oder einer Fehlkonfiguration als Letztes verlieren. Ein gutes Backup macht aus „alles weg&quot; ein kurzes Ärgernis statt eines Totalverlusts.</p>
+<h2>Warum Backups bei Paperless-ngx so wichtig sind</h2>
+<p>Belege haben rechtliche und finanzielle Bedeutung – für Steuererklärung, Gewährleistung oder Versicherung lassen sie sich kaum wiederbeschaffen. Anders als eine reine Dateiablage speichert Paperless-ngx zusätzlich Metadaten wie Tags und Korrespondenten. Geht nur die Datenbank verloren, bleiben deine PDFs unauffindbar; gehen nur die Dateien verloren, bleiben leere Metadaten. Ein vollständiges Backup sichert beides.</p>
+<p>Dazu kommen die typischen Risiken eines selbst gehosteten Systems: defekte Festplatten, fehlgeschlagene Updates oder Ransomware, die auch gemountete Ordner verschlüsselt. Backup ist daher keine Option, sondern Pflicht.</p>
+<h2>Was du sichern musst</h2>
+<p>Paperless-ngx verteilt seine Daten auf mehrere Verzeichnisse. Für ein vollständiges Backup brauchst du mindestens zwei:</p>
+<ul>
+<li><strong><code>data</code>-Volume:</strong> Enthält die SQLite-Datenbank <code>db.sqlite3</code>, den Suchindex und die Konfiguration. Ohne sie fehlen alle Metadaten und Tags.</li>
+<li><strong><code>media</code>-Volume:</strong> Hier liegen die eigentlichen Dokumente – Original-PDFs, Vorschaubilder und Archivversionen. Das ist der Kern deines Archivs.</li>
+<li><strong><code>export</code>-Ordner:</strong> Eine optionale, menschenlesbare Kopie deiner Originaldateien samt Metadaten.</li>
+</ul>
+<p>Die Merkregel: <strong>Datenbank ohne Dateien ist leer, Dateien ohne Datenbank sind blind.</strong> Sichere daher <code>data</code> und <code>media</code> gemeinsam – nur so lässt sich dein Archiv später vollständig wiederherstellen.</p>
+<h2>Backup-Strategien für Paperless-ngx</h2>
+<p>Mehrere Wege lassen sich gut kombinieren – eine einzelne Strategie reicht selten.</p>
+<h2>1. Dokument-Export</h2>
+<p>Der eingebaute Export schreibt PDFs und Metadaten in ein menschenlesbares Verzeichnis. So bleibt dein Archiv auch ohne laufende Paperless-Instanz nutzbar:</p>
+<pre><code>
+docker compose exec webserver document_exporter ../export
+</code></pre>
+<p>Den Export kannst du regelmäßig per Cron-Job ausführen und die Ausgabe offsite kopieren.</p>
+<h2>2. Docker-Volumes sichern</h2>
+<p>Volumes lassen sich direkt packen, unabhängig davon, ob Paperless läuft:</p>
+<pre><code>
+docker run --rm -v paperless-ngx_data:/data -v &quot;$(pwd)&quot;:/backup \
+  alpine tar czf /backup/paperless-data.tar.gz -C /data .
+</code></pre>
+<p>Denselben Befehl wiederholst du für das <code>media</code>-Volume. Nutzt du stattdessen Bind-Mounts unter <code>/srv/paperless</code>, sicherst du die Ordner direkt.</p>
+<h2>3. rsync auf NAS oder zweiten Server</h2>
+<p>Mit rsync spiegelst du deine Verzeichnisse automatisiert auf ein zweites Gerät:</p>
+<pre><code>
+rsync -av --delete /srv/paperless/media backup@nas:/backups/paperless/media
+</code></pre>
+<p>So hast du eine zweite Kopie, die bei einem Hardware-Defekt sofort einsatzbereit ist.</p>
+<h2>4. Offsite nach der 3-2-1-Regel</h2>
+<p>Erst eine externe Kopie macht dein Backup belastbar. Nach der 3-2-1-Regel hältst du <strong>drei Kopien auf zwei Medien, eine davon außerhalb deines Standorts</strong> – etwa verschlüsselt in der Cloud. Das schützt auch vor Brand und Ransomware im eigenen Netz. Im Homelab lohnt dafür ein Blick auf [Proxmox Backup Server](proxmox-backup-server.md).</p>
+<h2>Restore: So stellst du dein Archiv wieder her</h2>
+<p>Ein Backup, das du nie getestet hast, ist nur eine Hoffnung. Plane daher regelmäßig eine Wiederherstellung ein:</p>
+<p>1. <strong>Aus Volumes:</strong> Stoppe den Stack, spiele die gesicherten <code>data</code>- und <code>media</code>-Inhalte zurück und starte ihn neu. Paperless sollte danach exakt den alten Stand zeigen.</p>
+<p>2. <strong>Aus Export:</strong> Mit dem <code>document_importer</code> importierst du ein Export-Verzeichnis in eine frische Installation zurück:</p>
+<pre><code>
+docker compose exec webserver document_importer ../export
+</code></pre>
+<p>Teste den Ablauf mindestens einmal und dokumentiere ihn, damit er im Ernstfall ohne Nachdenken funktioniert.</p>
+<h2>Fazit</h2>
+<p>Ein Paperless-ngx ohne Backup ist ein Aktenregal über dem Abgrund. Sichere Datenbank und Dokumente gemeinsam, kombiniere Export, Volume-Sicherung und Offsite-Kopie und teste die Wiederherstellung regelmäßig. Dann überlebt dein Archiv jeden Defekt.</p>
+<h2>FAQ</h2>
+<p><strong>Reicht der Export-Ordner allein als Backup?</strong></p>
+<p>Nein. Der Export enthält zwar deine Dokumente und Metadaten, aber nicht den Suchindex und die komplette Konfiguration. Für eine schnelle Wiederherstellung des laufenden Systems sichere zusätzlich die Volumes <code>data</code> und <code>media</code>.</p>
+<p><strong>Wie oft sollte ich sichern?</strong></p>
+<p>Das hängt davon ab, wie viele Dokumente du hinzufügst. Ein täglicher automatischer Lauf ist bei regelmäßigem Scan-Aufkommen sinnvoll; bei wenig Bewegung reicht wöchentlich. Wichtig ist die Regelmäßigkeit, nicht die Frequenz.</p>
+<p><strong>Wie teste ich, ob mein Backup funktioniert?</strong></p>
+<p>Stelle es in einer Testinstallation wieder her – etwa in einem separaten Docker-Stack oder einer VM – und prüfe, ob Dokumente, Tags und Suche vollständig erscheinen. Nur so erkennst du stille Fehler, bevor es ernst wird.</p>
+<p><strong>Was schützt mich zusätzlich?</strong></p>
+<p>Eine verschlüsselte Offsite-Kopie nach der 3-2-1-Regel. Sichere außerdem deinen Zugriff ab, etwa über ein [VPN wie WireGuard](wireguard-homelab.md), damit dein Archiv kein Angriffsziel wird.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
