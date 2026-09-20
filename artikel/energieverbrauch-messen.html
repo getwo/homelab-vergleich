@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energieverbrauch messen: Smart-Plug & Prometheus im Homelab — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Energieverbrauch messen: Smart-Plug & Prometheus im Homelab" description: "Stromverbrauch im Homelab messen: Shelly Plug S als Smart-Plug ">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Energieverbrauch messen: Smart-Plug &amp; Prometheus im Homelab&quot;</p>
+<p>description: &quot;Stromverbrauch im Homelab messen: Shelly Plug S als Smart-Plug mit Messfunktion, Daten per Exporter in Prometheus, Grafana-Dashboard und automatische Kostenberechnung.&quot;</p>
+<hr>
+<h1>Energieverbrauch messen: Smart-Plug &amp; Prometheus im Homelab</h1>
+<p>Wer sein Homelab ernsthaft optimieren will, muss zuerst wissen, wo der Strom hingeht. Gefühlt läuft der Server „irgendwie sparsam“ – gemessen wird es konkret. Ein Smart-Plug mit Messfunktion macht aus dem Gefühl eine Zahl, und mit Prometheus und Grafana wird daraus ein dauerhaftes Monitoring. So sehen Sie auf den Cent genau, was der Dauerbetrieb kostet.</p>
+<h2>Warum Stromverbrauch messen?</h2>
+<p>Stromkosten sind der größte laufende Posten eines Homelabs. Bei 0,40 €/kWh kostet ein Mini-PC mit 60 W Dauerlast rund 17 € im Monat, ein 400-Watt-Server über 115 €. Ohne Messung bleibt das eine Rechnung auf Papier – der tatsächliche Verbrauch schwankt je nach Last, Tageszeit und Diensten.</p>
+<p>Messen lohnt sich doppelt: Sie erkennen Stromfresser (alte Netzteile, überflüssige Dienste, Hardware, die nie in den Idle geht) und Sie können die Wirkung jeder Optimierung direkt ablesen. Wer ein Auto-Shutdown einrichtet oder die CPU im Leerlauf heruntertaktet, sieht sofort, wie viele Watt das bringt.</p>
+<h2>Smart-Plug mit Messfunktion: Shelly &amp; Co.</h2>
+<p>Ein Smart-Plug mit Messfunktion wird einfach zwischen Steckdose und Gerät gesteckt und misst Spannung, Strom, Wirkleistung (W) und kumulierte Energie (kWh). Für Homelabs ist der Shelly Plug S beziehungsweise der neuere Shelly Plug Plus die Referenz – kompakt, WLAN-fähig und offen ansprechbar.</p>
+<ul>
+<li><strong>Shelly Plug S / Plus:</strong> misst Leistung in Echtzeit, rund 1 % Genauigkeit, offene HTTP-/MQTT-API</li>
+<li><strong>Alternative mit Tasmota:</strong> günstige Plugs (z. B. Sonoff, Gosund) lassen sich mit der Open-Source-Firmware Tasmota flashen und liefern dieselben Messwerte per MQTT</li>
+<li><strong>Homematic IP / TP-Link Kasa:</strong> fertige Systeme mit eigener Cloud beziehungsweise lokaler Steuerung, wenn bereits vorhanden</li>
+</ul>
+<p>Wichtig für das Monitoring: Der Plug muss eine lokale API sprechen – Cloud-Zwang macht die Prometheus-Anbindung unnötig kompliziert.</p>
+<h2>Daten in Prometheus bringen</h2>
+<p>Prometheus sammelt die Messwerte per Pull über HTTP. Für Shelly gibt es fertige Exporter wie <code>shelly_exporter</code>, die das Webinterface auslesen und in Prometheus-Metriken übersetzen. Alternativ reicht ein kleiner Scrape-Job, der die Shelly-HTTP-API direkt abfragt:</p>
+<pre><code>
+- job_name: shelly
+  metrics_path: /meter/0
+  static_configs:
+    - targets: [&#x27;192.168.1.50&#x27;]
+</code></pre>
+<p>Der Shelly liefert dann unter anderem <code>power</code> (aktuelle Watt) und <code>total</code> (kumulierte kWh). Der Exporter wandelt das in saubere Metriken wie <code>shelly_power_watts</code> und <code>shelly_total_kwh</code> um, die sich wie jede andere Metrik behandeln lassen.</p>
+<h2>Homelab-Verbrauch in Grafana tracken</h2>
+<p>In Grafana entsteht daraus das Dashboard, das den Verbrauch sichtbar macht:</p>
+<ul>
+<li><strong>Aktuelle Leistung:</strong> Ein Stat-Panel mit <code>shelly_power_watts</code> zeigt die Watt-Zahl in Echtzeit</li>
+<li><strong>Tages-/Wochenverlauf:</strong> Ein Zeitreihen-Panel visualisiert Lastspitzen (Backups, Transcoding) und Ruhephasen</li>
+<li><strong>Verbrauch pro Zeitraum:</strong> <code>increase(shelly_total_kwh[24h])</code> liefert die verbrauchte Energie der letzten 24 Stunden</li>
+</ul>
+<h2>Kosten automatisch berechnen</h2>
+<p>Der Clou ist die Kostenrechnung direkt im Dashboard. Ein zusätzliches Panel multipliziert den Verbrauch mit dem Strompreis:</p>
+<pre><code>
+increase(shelly_total_kwh[30d]) * 0.40
+</code></pre>
+<p>So sehen Sie auf einen Blick, was die letzten 30 Tage gekostet haben – ohne Excel und ohne zu schätzen. Bei mehreren Plugs (Server, Netzwerk, NAS) addiert eine Summen-Query alles zu einer Gesamtbilanz. Ändert sich der Strompreis, genügt eine Zahl im Query.</p>
+<h2>Fazit</h2>
+<p>Wer sein Homelab optimieren will, muss es messen. Ein Smart-Plug mit Messfunktion wie der Shelly Plug S kostet um die 20 €, liefert aber exakte Verbrauchsdaten, die sich mit Prometheus und Grafana zu einem vollständigen Strom-Monitoring ausbauen lassen. So werden Stromfresser sichtbar, Optimierungen messbar und die monatlichen Kosten automatisch berechnet – besser als jede Schätzung.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
