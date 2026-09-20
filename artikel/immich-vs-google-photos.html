@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Immich vs Google Photos: Migration, Kosten und Vergleich — Homelab Vergleich</title>
+<meta name="description" content="Immich vs Google Photos: Migration, Kosten und Vergleich  Google Photos ist für Millionen Nutzer die erste Wahl, wenn es um Foto-Backups geht – es ist">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Immich vs Google Photos: Migration, Kosten und Vergleich</h1>
+<p>Google Photos ist für Millionen Nutzer die erste Wahl, wenn es um Foto-Backups geht – es ist bequem, überall verfügbar und „einfach da&quot;. Doch wer Wert auf Datenschutz, Kostenkontrolle und den eigenen Server legt, stößt früher oder später auf Immich, die selbst gehostete Open-Source-Alternative. Dieser Artikel vergleicht beide Dienste ehrlich und zeigt, wie du deine Fotos von Google Photos nach Immich migrierst.</p>
+<h2>Kosten: Abo gegen eigene Hardware</h2>
+<p>Google Photos lockt mit 15 GB kostenlosem Speicher, den du dir allerdings mit Gmail und Google Drive teilen musst. Danach wird es kostenpflichtig: Google One kostet aktuell rund 2 € pro Monat für 100 GB und skaliert bis zu mehreren Terabyte – je mehr Fotos, desto teurer, und zwar dauerhaft.</p>
+<p>Immich ist Open Source und kostet keine Lizenzgebühren. Du zahlst nur für deine eigene Infrastruktur: den Speicher auf deinem NAS oder Server, den Strom und gegebenenfalls eine Cloud-Storage-Box als Backup. Bei steigendem Speicherbedarf wird Immich dadurch langfristig oft günstiger – vor allem, wenn ohnehin schon ein Homelab mit freier Kapazität vorhanden ist.</p>
+<h2>Datenschutz und Kontrolle</h2>
+<p>Der größte Unterschied liegt in der Kontrolle über die eigenen Daten. Bei Google Photos liegen alle Fotos auf Servern eines US-Konzerns, werden automatisch analysiert und fließen unter anderem in die Verbesserung von Google-Diensten ein. Du bist abhängig von den AGB und den Serverstandorten von Google.</p>
+<p>Immich läuft komplett auf deiner eigenen Hardware. Fotos, Metadaten und Gesichtserkennung bleiben lokal – es gibt keine Cloud, keinen Dritten, der mitliest. Das ist vor allem für Familienfotos, private Dokumente und alles, was nicht in fremde Hände gehört, ein entscheidender Vorteil.</p>
+<h2>Funktionen im Vergleich</h2>
+<p>Immich muss sich funktional nicht verstecken. Es bietet eine moderne Web- und Mobile-App, automatisches Backup vom Smartphone, lokale Gesichtserkennung, Suche nach Orten und Objekten, Alben, geteilte Alben und sogar Duplikaterkennung. Google Photos hat mit dem Magic Editor und der tiefen Google-Integration zwar die ausgefeilteren KI-Funktionen – dafür funktionieren bei Immich alle Kernfunktionen ohne Cloud-Zwang.</p>
+<h2>Migration: Von Google Takeout zu Immich</h2>
+<p>Der Umzug ist gut machbar, erfordert aber ein paar Schritte:</p>
+<p>1. <strong>Google Takeout exportieren:</strong> Unter [takeout.google.com](https://takeout.google.com) wählst du „Google Fotos&quot; aus und lässt dir ein Export-Archiv erstellen. Achtung: Für große Bibliotheken kann Google die Daten in mehrere ZIP-Dateien aufteilen – lade alle herunter.</p>
+<p>2. <strong>Archive entpacken:</strong> Entpacke die ZIP-Dateien in einen Ordner. Google legt dabei oft eigene Unterordner und JSON-Metadaten an, die Immich beim Import mitverarbeiten kann.</p>
+<p>3. <strong>Immich CLI installieren:</strong> Die offizielle [immich-cli](https://immich.app/docs/features/command-line-interface) ist die sauberste Lösung für den Import. Sie wird mit <code>npm install -g @immich/cli</code> installiert.</p>
+<p>4. <strong>Import starten:</strong> Nach dem Login in deinen Immich-Server stößt du den Upload an. Die CLI erkennt Ordnerstrukturen und Metadaten und lädt die Fotos in deine Immich-Instanz hoch.</p>
+<p>Wichtig: Nimm dir Zeit und teste den Import zuerst mit einem kleinen Ordner, bevor du die komplette Bibliothek hochlädst. So stellst du sicher, dass Alben und Aufnahmedaten korrekt übernommen werden.</p>
+<h2>Vor- und Nachteile im Überblick</h2>
+<p>| Kriterium | Google Photos | Immich |</p>
+<p>|---|---|---|</p>
+<p>| Kosten | 15 GB gratis, danach Abo | kostenlos, eigene Hardware |</p>
+<p>| Datenschutz | Cloud, US-Konzern | 100 % lokal |</p>
+<p>| Kontrolle | abhängig von Google | volle Kontrolle |</p>
+<p>| Einrichtung | sofort nutzbar | Server/Setup nötig |</p>
+<p>| KI-Funktionen | sehr ausgereift | solide, lokal |</p>
+<p>| Backup-Risiko | Google haftet mit | du haftest selbst |</p>
+<h2>Speicherbedarf einschätzen</h2>
+<p>Vor der Migration lohnt ein Blick auf die Datenmenge. Google Photos speichert Fotos in der „Speicherspar&quot;-Qualität stark komprimiert, in Originalqualität dagegen unkomprimiert. Eine private Bibliothek mit zehn Jahren Handyfotos summiert sich schnell auf 100 GB und mehr. Plane für deinen Immich-Server also ausreichend Plattenplatz ein – plus ein separates Backup nach der 3-2-1-Regel, denn bei Self-Hosting bist du für die Datensicherung selbst verantwortlich.</p>
+<h2>Fazit</h2>
+<p>Immich ist die mit Abstand beste Self-Hosted-Alternative zu Google Photos und für Homelab-Betreiber eine klare Empfehlung: volle Datenkontrolle, keine laufenden Abo-Kosten und ein Funktionsumfang, der dem Platzhirsch kaum nachsteht. Google Photos bleibt die bequemste Wahl für alle, die sich nicht um Server kümmern wollen. Die Migration per Google Takeout und immich-cli ist mit etwas Geduld gut zu bewältigen – und der Lohn ist die volle Hoheit über deine Fotos.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
