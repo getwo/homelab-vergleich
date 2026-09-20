@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pi-hole + WireGuard: Werbefrei und sicher von unterwegs — Homelab Vergleich</title>
+<meta name="description" content="Pi-hole + WireGuard: Werbefrei und sicher von unterwegs  Pi-hole blockiert Werbung zuverlässig – aber nur, solange du im heimischen WLAN bist. Sobald ">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Pi-hole + WireGuard: Werbefrei und sicher von unterwegs</h1>
+<p>Pi-hole blockiert Werbung zuverlässig – aber nur, solange du im heimischen WLAN bist. Sobald du unterwegs im Mobilfunknetz oder in einem fremden Netz surfst, kommen Werbung, Tracker und lästige Banner zurück. Die Lösung ist verblüffend einfach: ein WireGuard-VPN-Tunnel zurück zu deinem Pi-hole im Homelab. So nutzt du deinen Werbeblocker auch von unterwegs – und bekommst nebenbei einen verschlüsselten, sicheren Zugang zu deinem Heimnetz.</p>
+<h2>Warum dein Werbeblocker unterwegs nicht funktioniert</h2>
+<p>Pi-hole arbeitet als lokaler DNS-Server in deinem Netzwerk. Deine Geräte fragen ihn an, er gleicht jede Domain mit Blocklisten ab und verwirft bekannte Werbe- und Tracking-Domains, bevor sie überhaupt geladen werden. Das funktioniert perfekt, solange dein Smartphone oder Laptop den Pi-hole als DNS-Server erreichen kann – also nur innerhalb deines Heimnetzes.</p>
+<p>Unterwegs nutzt dein Gerät automatisch den DNS-Server des Mobilfunkanbieters oder des fremden WLANs. Der Pi-hole ist schlicht nicht erreichbar, und die Werbung ist wieder da. Genau diese Lücke schließt WireGuard: Der VPN-Tunnel stellt eine sichere Verbindung ins Heimnetz her, über die dein Gerät den Pi-hole weiterhin als DNS-Server nutzen kann.</p>
+<h2>Die Kombination: WireGuard als Tunnel, Pi-hole als DNS</h2>
+<p>Das Prinzip ist einfach: WireGuard baut einen verschlüsselten Tunnel von deinem Smartphone oder Laptop zu einem Server in deinem Homelab auf. In der Client-Konfiguration trägst du als DNS-Server die IP-Adresse deines Pi-hole ein. Jede DNS-Anfrage läuft dann durch den Tunnel zu deinem Werbeblocker – egal, wo du gerade bist.</p>
+<p>Der entscheidende Punkt: Der Tunnel muss dafür nicht deinen kompletten Datenverkehr umleiten. Es genügt, wenn nur die DNS-Anfragen und wahlweise der Zugriff aufs Heimnetz durch WireGuard laufen. Surfen und Streaming bleiben über die normale Verbindung schnell, während die Werbeblockade trotzdem aktiv ist.</p>
+<h2>Setup: WireGuard-Server im Homelab einrichten</h2>
+<p>Voraussetzung ist ein Server im Heimnetz – ein Raspberry Pi, ein Mini-PC oder ein Proxmox-Host reichen völlig. Die Installation unter Debian/Ubuntu dauert kaum fünf Minuten:</p>
+<pre><code>
+sudo apt update &amp;&amp; sudo apt install wireguard
+</code></pre>
+<p>Danach erzeugst du die Schlüssel für den Server:</p>
+<pre><code>
+wg genkey | tee server.key | wg pubkey &gt; server.pub
+</code></pre>
+<p>Die Konfiguration legst du unter <code>/etc/wireguard/wg0.conf</code> ab:</p>
+<pre><code>
+[Interface]
+Address = 10.0.0.1/24
+PrivateKey = INHALT-DEINER-server.key
+ListenPort = 51820
+
+[Peer]
+PublicKey = PUBLIC-KEY-DES-CLIENTS
+AllowedIPs = 10.0.0.2/32
+</code></pre>
+<p>Mit <code>sudo wg-quick up wg0</code> startest du das Interface und aktivierst den Dienst mit <code>sudo systemctl enable wg-quick@wg0</code>. Vergiss nicht, den UDP-Port 51820 in deinem Router an den Server weiterzuleiten.</p>
+<h2>Pi-hole als DNS im Tunnel konfigurieren</h2>
+<p>Der Pi-hole läuft in deinem Heimnetz bereits auf einer festen IP-Adresse – üblicherweise <code>192.168.1.x</code>. Diese Adresse trägst du nun in die Client-Konfiguration als DNS-Server ein. Wichtig: Damit der Pi-hole Anfragen aus dem WireGuard-Subnetz beantwortet, muss er auf dem Tunnel-Interface lauschen. In den Pi-hole-Einstellungen wählst du unter „Settings → DNS&quot; die Option, Anfragen auf allen Interfaces zuzulassen.</p>
+<p>Die Client-Konfiguration für dein Smartphone oder deinen Laptop sieht so aus:</p>
+<pre><code>
+[Interface]
+Address = 10.0.0.2/24
+PrivateKey = INHALT-DEINER-client.key
+DNS = 192.168.1.10
+
+[Peer]
+PublicKey = PUBLIC-KEY-DES-SERVERS
+Endpoint = deine-domain.example:51820
+AllowedIPs = 10.0.0.0/24, 192.168.1.0/24
+PersistentKeepalive = 25
+</code></pre>
+<p>Der Eintrag <code>DNS = 192.168.1.10</code> zeigt auf deinen Pi-hole – hier natürlich mit deiner tatsächlichen Pi-hole-IP ersetzen. Mit <code>AllowedIPs</code> begrenzt du den Tunnel auf das VPN- und das Heimnetz-Subnetz, sodass nur DNS-Anfragen und Heimnetz-Zugriffe durch WireGuard laufen. <code>PersistentKeepalive = 25</code> hält die Verbindung hinter NAT zuverlässig offen.</p>
+<h2>Client einrichten: Einmal scannen, fertig</h2>
+<p>Auf dem Smartphone installierst du die offizielle <strong>WireGuard-App</strong> (Android/iOS) und scannst einfach den QR-Code der Client-Konfiguration ein – den generierst du auf dem Server mit <code>qrencode -t ansiutf8 &lt; client.conf</code>. Unter Windows oder macOS nutzt du den WireGuard-Client mit derselben Datei. Sobald der Tunnel steht, werden Werbung und Tracker auch unterwegs geblockt – ohne dass du jedes Mal etwas neu konfigurieren musst.</p>
+<h2>Vorteile der Kombination auf einen Blick</h2>
+<ul>
+<li><strong>Werbefrei unterwegs:</strong> Pi-hole wirkt im Mobilfunknetz, im Hotel-WLAN und im Café genauso wie zuhause – auf allen Geräten, die per WireGuard verbunden sind.</li>
+<li><strong>Mehr Sicherheit in fremden Netzen:</strong> Der verschlüsselte Tunnel schützt deine DNS-Anfragen vor neugierigen Betreibern öffentlicher WLANs.</li>
+<li><strong>Zugriff aufs Heimnetz:</strong> Nebenbei erreichst du Dienste wie Nextcloud, Proxmox oder dein NAS sicher von unterwegs.</li>
+<li><strong>Schnell und schlank:</strong> WireGuard leitet nur die nötigen Adressen um; Surfen und Streaming laufen weiter über die normale Verbindung.</li>
+<li><strong>Einmal einrichten, dauerhaft nutzen:</strong> Nach der Konfiguration genügt ein Tap in der WireGuard-App, um den werbefreien Tunnel zu aktivieren.</li>
+</ul>
+<h2>Fazit</h2>
+<p>Pi-hole und WireGuard ergänzen sich ideal: Der Werbeblocker filtert, das VPN transportiert. Mit einer WireGuard-Instanz im Homelab und einem einzigen DNS-Eintrag in der Client-Konfiguration machst du aus deinem heimischen Pi-hole einen Begleiter für unterwegs – werbefrei, sicher und ohne Kompromisse bei der Geschwindigkeit. In unter einer Stunde ist das Setup erledigt, und du genießt auf jedem Gerät dasselbe saubere Surferlebnis wie zuhause.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
