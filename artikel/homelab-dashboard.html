@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich — Homelab Vergleich</title>
+<meta name="description" content="Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich  Je mehr Dienste in deinem Homelab laufen – Nextcloud, Jellyfin, Pi-hole, Home Assistan">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich</h1>
+<p>Je mehr Dienste in deinem Homelab laufen – Nextcloud, Jellyfin, Pi-hole, Home Assistant, ein Dutzend Docker-Container – desto unübersichtlicher wird der Alltag. Wer merkt sich schon jede IP-Adresse und jeden Port? Genau hier setzt ein Homelab-Dashboard an: eine zentrale Startseite, die alle deine Dienste an einem Ort bündelt. Drei Tools dominieren die Szene: Homarr, Homepage und Heimdall. Dieser Artikel erklärt, was ein Dashboard kann, worin sich die drei unterscheiden und welches zu deinem Setup passt.</p>
+<h2>Was ist ein Homelab-Dashboard?</h2>
+<p>Ein Dashboard ist deine persönliche Kommandozentrale im Browser. Statt dich durch Lesezeichen oder die Port-Liste deines Servers zu klicken, öffnest du eine einzige Seite, auf der alle Dienste als Kacheln oder Widgets liegen. Ein Klick führt direkt zur jeweiligen Anwendung. Gute Dashboards können mehr als nur verlinken: Sie zeigen den Status von Containern, Systemdaten wie CPU- und RAM-Auslastung oder Wetter und Nachrichten als Widgets an. Manche durchsuchen sogar alle deine Dienste über eine integrierte Suchleiste.</p>
+<p>Der Vorteil liegt auf der Hand: weniger Klickerei, mehr Überblick – und eine Seite, die sich auch als Startseite im Browser oder auf einem alten Tablet an der Wand eignet.</p>
+<h2>Die drei Kandidaten im Überblick</h2>
+<p><strong>Homarr</strong> ist der moderne Allrounder. Die Oberfläche wirkt aufgeräumt, Kacheln lassen sich frei auf einem Raster anordnen und mit Widgets kombinieren. Integriert sind unter anderem Systemstatus, Lesezeichen, Wetter, Downloads und die Anbindung an Docker, um Container direkt zu starten oder zu stoppen. Homarr bringt außerdem eine Benutzerverwaltung mit und lässt sich auf mehrere Seiten aufteilen. Der Fokus liegt klar auf Optik und Bedienkomfort.</p>
+<p><strong>Homepage</strong> geht einen anderen Weg: Alles wird über eine einzige YAML-Datei konfiguriert. Jede Kachel, jede Gruppe und jedes Widget definierst du deklarativ im Code. Das wirkt zunächst abschreckend, zahlt sich aber aus: Die Konfiguration ist versionierbar, lässt sich per Git sichern und leicht auf einen zweiten Server übertragen. Homepage glänzt mit einer riesigen Auswahl an Widgets und Dienst-Integrationen – von Pi-hole und Proxmox bis zu Wetter und Kalendern. Wer Konfiguration als Code mag, fühlt sich hier zu Hause.</p>
+<p><strong>Heimdall</strong> ist der Klassiker und bewusst schlicht. Es bietet im Kern genau eines: Links zu deinen Anwendungen, hübsch als Kacheln mit Logo und Beschreibung gruppiert. Dazu kommen ein paar Basis-Widgets und eine einfache Suche. Heimdall verzichtet bewusst auf den Funktionsumfang der beiden anderen – genau das macht es so wartungsarm und einsteigerfreundlich.</p>
+<h2>Installation mit Docker</h2>
+<p>Alle drei laufen als Container und starten am schnellsten über Docker Compose:</p>
+<pre><code>
+services:
+  homarr:
+    image: ghcr.io/homarr-labs/homarr:latest
+    ports:
+      - &quot;7575:7575&quot;
+    volumes:
+      - ./homarr:/app/data/configs
+    restart: unless-stopped
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    ports:
+      - &quot;3000:3000&quot;
+    volumes:
+      - ./homepage:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    ports:
+      - &quot;8080:80&quot;
+    volumes:
+      - ./heimdall:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+    restart: unless-stopped
+</code></pre>
+<p>Homepage bindet über den Docker-Socket auch laufende Container ein; Homarr speichert seine Konfiguration in einem eigenen Ordner. Nach dem Start erreichst du die Oberflächen über <code>http://server-ip:Port</code> – ein Reverse Proxy wie Caddy oder Traefik macht sie anschließend auch von unterwegs per HTTPS erreichbar.</p>
+<h2>Funktionen im Vergleich</h2>
+<p>| Kriterium | Homarr | Homepage | Heimdall |</p>
+<p>|---|---|---|---|</p>
+<p>| Konfiguration | Klick-Oberfläche | YAML-Datei | Klick-Oberfläche |</p>
+<p>| Widgets | viele, visuell | sehr viele, per Code | wenige, einfach |</p>
+<p>| Docker-Integration | ja | ja (über Socket) | nein |</p>
+<p>| Status-Anzeige | ja | ja | eingeschränkt |</p>
+<p>| Suche | ja | ja | ja |</p>
+<p>| Mehrbenutzer | ja | eingeschränkt | nein |</p>
+<p>| Lernkurve | niedrig | mittel bis hoch | sehr niedrig |</p>
+<h2>Empfehlung je Vorliebe</h2>
+<ul>
+<li><strong>Wenig Aufwand, schnelle Links:</strong> Wähle <strong>Heimdall</strong>. Es ist in Minuten eingerichtet und erfüllt den Kernzweck – eine übersichtliche Link-Seite – ohne Schnickschnack.</li>
+<li><strong>Maximale Kontrolle per Code:</strong> Wähle <strong>Homepage</strong>. Wer YAML nicht scheut und seine Konfiguration versionieren will, bekommt das flexibelste und integrationsstärkste Tool.</li>
+<li><strong>Moderner Allrounder mit Komfort:</strong> Wähle <strong>Homarr</strong>. Es verbindet eine ansprechende Oberfläche mit vielen Widgets und ist der beste Kompromiss zwischen Einfachheit und Funktionsumfang.</li>
+</ul>
+<h2>Fazit</h2>
+<p>Ein Homelab-Dashboard ist eine der sinnvollsten Ergänzungen für jedes Selfhosting-Setup – es bringt Ordnung in wachsende Dienstsammlungen und macht den Alltag spürbar bequemer. Heimdall überzeugt durch radikale Einfachheit, Homepage durch maximale Flexibilität und Homarr durch einen gelungenen Mittelweg aus Optik und Funktion. Welches Tool das richtige ist, hängt letztlich davon ab, wie viel Kontrolle und Pflegeaufwand du möchtest: von der wartungsarmen Link-Seite bis zur komplett code-definierten Zentrale ist für jeden etwas dabei.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
