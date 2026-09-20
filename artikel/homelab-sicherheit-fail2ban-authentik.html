@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homelab-Sicherheit: Fail2ban & Authentik einrichten — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Homelab-Sicherheit: Fail2ban & Authentik einrichten" meta_description: "Homelab-Sicherheit praktisch umsetzen: Fail2ban gegen Brute-Force-">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten&quot;</p>
+<p>meta_description: &quot;Homelab-Sicherheit praktisch umsetzen: Fail2ban gegen Brute-Force-Angriffe konfigurieren und Authentik als SSO mit 2FA einrichten – inklusive Zusammenspiel und Checkliste.&quot;</p>
+<p>keywords: [Fail2ban einrichten, Authentik einrichten, Homelab Sicherheit, Brute-Force Schutz, SSO 2FA, Authentik Fail2ban, Reverse Proxy Sicherheit]</p>
+<hr>
+<h1>Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten</h1>
+<p>Sobald Dienste wie Nextcloud, Jellyfin oder ein Reverse-Proxy aus dem Internet erreichbar sind, stehen sie unter Dauerbeschuss. Automatisierte Bots probieren rund um die Uhr Standard-Passwörter und bekannte Schwachstellen aus. Zwei Werkzeuge machen dein Homelab spürbar sicherer: Fail2ban sperrt auffällige IP-Adressen automatisch, Authentik legt eine zentrale Anmeldung mit Zwei-Faktor-Authentifizierung (2FA) vor jeden Dienst.</p>
+<h2>Warum internet-exponierte Dienste abgesichert werden müssen</h2>
+<p>Jeder nach außen geöffnete Port ist eine Einladung. Minuten nach der Freigabe tauchen in den Logs die ersten Login-Versuche auf – meist von Botnetzen, die nichts über dich wissen, aber alles über Standardzugänge. Ein ungeschützter Dienst kann kompromittiert werden, bevor du überhaupt den zweiten Dienst eingerichtet hast. Die Lösung ist zweistufig: verdächtige Quellen automatisch aussperren und den Zugang selbst mit mehreren Faktoren härten.</p>
+<h2>Fail2ban: Brute-Force-Schutz installieren</h2>
+<p>Fail2ban überwacht Logdateien, erkennt wiederholte Fehlversuche und sperrt die verursachende IP-Adresse über die Firewall. Die Installation unter Debian oder Ubuntu ist ein Einzeiler:</p>
+<pre><code>
+sudo apt install fail2ban
+sudo systemctl enable --now fail2ban
+</code></pre>
+<p>Standardmäßig bringt Fail2ban bereits eine Jail für SSH mit. Für die eigenen Dienste lohnt sich eine angepasste Konfiguration in <code>/etc/fail2ban/jail.local</code>:</p>
+<pre><code>
+[DEFAULT]
+bantime  = 1h
+findtime = 10m
+maxretry = 5
+
+[sshd]
+enabled = true
+</code></pre>
+<p>Mit <code>bantime</code> legst du fest, wie lange eine IP gesperrt bleibt, mit <code>maxretry</code>, nach wie vielen Fehlversuchen es so weit ist. Für einen Reverse-Proxy wie Nginx Proxy Manager oder Traefik richtest du eigene Jails ein, die auf dessen Logdateien schauen – so schützt du nicht nur SSH, sondern jede öffentlich erreichbare Webanwendung. Den Status prüfst du jederzeit mit <code>sudo fail2ban-client status</code>.</p>
+<h2>Authentik: SSO mit 2FA einrichten</h2>
+<p>Authentik ist ein Identity-Provider, der Single Sign-on (SSO) und Zwei-Faktor-Authentifizierung bündelt. Statt für jeden Dienst ein eigenes Passwort zu pflegen, meldest du dich einmal bei Authentik an – und alle angeschlossenen Dienste vertrauen dieser Anmeldung. Am schnellsten läuft Authentik als Docker-Container; ein <code>docker-compose.yml</code> mit den drei Diensten Server, Worker und PostgreSQL ist der übliche Weg.</p>
+<p>Nach dem ersten Start richtest du in der Weboberfläche einen Application-Provider ein und verknüpfst ihn mit einem Dienst, etwa per OIDC oder SAML. Für Dienste ohne eigene Authentik-Anbindung nutzt du die Forward-Auth-Funktion: Der Reverse-Proxy fragt bei jeder Anfrage Authentik, ob der Nutzer eingeloggt ist, bevor er ihn überhaupt zum Dienst durchlässt.</p>
+<p>Der wichtigste Schritt folgt direkt danach: Aktiviere unter <em>Flows</em> die Zwei-Faktor-Authentifizierung. Mit TOTP (etwa einer Authenticator-App wie Aegis oder 2FAS) oder WebAuthn (Hardware-Keys) wird die Anmeldung erst mit einem zweiten Faktor abgeschlossen. Ein gestohlenes Passwort allein reicht dann nicht mehr.</p>
+<h2>Das Zusammenspiel der beiden Werkzeuge</h2>
+<p>Fail2ban und Authentik ergänzen sich, weil sie auf verschiedenen Ebenen arbeiten. Fail2ban agiert an der Tür: Es bremst Massenangriffe, indem es auffällige IPs auf Firewall-Ebene sperrt – unabhängig davon, welcher Dienst dahinter liegt. Authentik sichert den Inhalt: Es stellt sicher, dass nur authentifizierte Nutzer mit gültigem zweitem Faktor weiterkommen. Beide zusammen schließen die klassischen Lücken: rohe Brute-Force-Versuche verpuffen an Fail2ban, gezielte Anmeldeangriffe scheitern an 2FA.</p>
+<p>Praktisch heißt das: Authentik hinter den Reverse-Proxy, Fail2ban auf den Host, der sowohl SSH als auch die Proxy-Logs überwacht. So sind alle exponierten Wege abgedeckt, ohne dass du jeden Dienst einzeln nachrüsten musst.</p>
+<h2>Checkliste für die Absicherung</h2>
+<ul>
+<li>[ ] Fail2ban installiert und für den SSH-Dienst aktiviert</li>
+<li>[ ] Jails für Reverse-Proxy-Logs eingerichtet</li>
+<li>[ ] Sperrzeit (<code>bantime</code>) und Fehlversuche (<code>maxretry</code>) angepasst</li>
+<li>[ ] Authentik als Container laufen und erreichbar</li>
+<li>[ ] Mindestens ein Dienst per OIDC, SAML oder Forward Auth angebunden</li>
+<li>[ ] 2FA per TOTP oder WebAuthn für alle Nutzer aktiviert</li>
+<li>[ ] Standard-Passwörter überall ersetzt</li>
+<li>[ ] Firewall-Regeln geprüft und unnötige Ports geschlossen</li>
+</ul>
+<h2>Fazit</h2>
+<p>Homelab-Sicherheit ist kein einmaliges Projekt, sondern die Kombination aus automatischer Abwehr und starker Authentifizierung. Fail2ban hält dir die Bots vom Leib, Authentik sorgt dafür, dass selbst ein bekanntes Passwort ohne zweiten Faktor wertlos ist. Wer diese beiden Bausteine sauber aufsetzt, kann seine Dienste mit deutlich besserem Gewissen ins Netz stellen.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
