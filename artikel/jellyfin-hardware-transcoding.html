@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jellyfin Hardware-Transcoding: Intel Quick Sync vs NVIDIA — Homelab Vergleich</title>
+<meta name="description" content="Jellyfin Hardware-Transcoding: Intel Quick Sync vs NVIDIA  Dein Jellyfin-Server ruckelt, sobald du einen Film aufs Smartphone oder Smart-TV streamst, ">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Jellyfin Hardware-Transcoding: Intel Quick Sync vs NVIDIA</h1>
+<p>Dein Jellyfin-Server ruckelt, sobald du einen Film aufs Smartphone oder Smart-TV streamst, und die CPU-Last schnellt in die Höhe – dabei liegt die Lösung oft schon in deiner Hardware. Hardware-Transcoding verlagert das Umrechnen von Videos auf die Grafikeinheit deines Prozessors oder eine dedizierte GPU. In diesem Artikel erfährst du, was Hardware-Transcoding ist, warum es sich lohnt, wo Intel Quick Sync und NVIDIA NVENC ihre Stärken haben und wie du es in Jellyfin aktivierst.</p>
+<h2>Was ist Hardware-Transcoding?</h2>
+<p>Transcoding bedeutet, ein Video von einem Format in ein anderes umzurechnen. Jellyfin macht das immer dann, wenn das Ausgabegerät das Original nicht direkt abspielen kann – etwa weil der Codec nicht unterstützt wird, die Bitrate für unterwegs zu hoch ist oder Untertitel eingebrannt werden müssen.</p>
+<p>Beim <strong>Software-Transcoding</strong> erledigt die CPU diese Rechenarbeit vollständig. Beim <strong>Hardware-Transcoding</strong> übernimmt stattdessen ein spezialisierter Baustein die Umrechnung: bei Intel die integrierte GPU (iGPU) mit Quick Sync, bei NVIDIA die NVENC-Einheit der Grafikkarte. Der Unterschied ist massiv, weil diese Einheiten genau für Videokodierung gebaut wurden – schneller und deutlich energieeffizienter als ein Allzweck-Prozessor.</p>
+<h2>Warum Hardware-Transcoding?</h2>
+<p>Zwei Hauptgründe sprechen dafür:</p>
+<ul>
+<li><strong>CPU entlasten:</strong> Ein einzelner 4K-Stream kann eine schwache CPU im Software-Transcoding vollständig auslasten. Mit Hardware-Transcoding bleibt der Prozessor frei für andere Dienste in deinem Homelab.</li>
+<li><strong>Flüssiges Abspielen:</strong> Transcoding muss in Echtzeit passieren. Schafft die CPU das nicht, ruckelt der Stream oder bricht ab. Die Hardware-Beschleunigung hält mehrere parallele Streams flüssig – auch bei hohen Auflösungen.</li>
+</ul>
+<p>Vor allem wenn mehrere Personen gleichzeitig streamen oder 4K auf ältere Geräte heruntergerechnet werden muss, ist Hardware-Transcoding der Unterschied zwischen „läuft“ und „hängt“.</p>
+<h2>Intel Quick Sync vs NVIDIA NVENC</h2>
+<p>Beide Technologien lösen dasselbe Problem, unterscheiden sich aber deutlich in Kosten und Einsatzzweck:</p>
+<p>| Kriterium | Intel Quick Sync | NVIDIA NVENC |</p>
+<p>|---|---|---|</p>
+<p>| Hardware | integrierte GPU (iGPU) im Prozessor | dedizierte Grafikkarte |</p>
+<p>| Anschaffung | meist schon vorhanden, keine Zusatzkosten | eigene GPU nötig |</p>
+<p>| Stromverbrauch | sehr niedrig, Teil der CPU | deutlich höher im Leerlauf und Betrieb |</p>
+<p>| Parallel-Streams | viele gleichzeitig (je nach Generation) | sehr viele, hohe Leistung |</p>
+<p>| Qualität | sehr gut bei neueren Generationen | exzellent, besonders bei niedrigen Bitraten |</p>
+<p>| Einrichtung | /dev/dri durchreichen | NVIDIA-Treiber + Container-Runtime |</p>
+<p><strong>Intel Quick Sync</strong> ist für die meisten Homelabs die klare Empfehlung: Jeder halbwegs moderne Intel-Prozessor ab Broadwell (2015) bringt die Einheit mit, kostet nichts extra und verbraucht kaum zusätzlichen Strom. Neuere Generationen (ab Intel Core der 8. Generation) kodieren auch HEVC/H.265 in Hardware und liefern eine Qualität, die fürs Streaming völlig ausreicht.</p>
+<p><strong>NVIDIA NVENC</strong> lohnt sich, wenn du bereits eine GeForce- oder Quadro-Karte im System hast oder sehr viele parallele Streams und bestmögliche Qualität brauchst. Der Preis dafür ist ein deutlich höherer Stromverbrauch – im Dauerbetrieb ein echter Faktor. Für ein 24/7 laufendes Homelab ist die iGPU meist die wirtschaftlichere Wahl.</p>
+<h2>Hardware-Anforderungen</h2>
+<ul>
+<li><strong>Intel:</strong> CPU mit Quick Sync (Broadwell oder neuer, ideal ab 8. Generation für HEVC). Die iGPU muss im BIOS aktiviert sein.</li>
+<li><strong>NVIDIA:</strong> Karte mit NVENC (GeForce GTX ab 1650 Super bzw. GTX 1000-Serie mit Einschränkungen, oder Quadro/Tesla). Achtung: Consumer-Karten sind per Treiber auf wenige parallele Streams begrenzt.</li>
+<li><strong>RAM und CPU:</strong> Beim Transcoding kaum belastet – ein Mini-PC mit aktuellem Intel-Prozessor reicht für mehrere Streams völlig aus.</li>
+</ul>
+<h2>Jellyfin einrichten: Transcoding aktivieren</h2>
+<p>In der Docker-Compose-Datei reichst du die Gerätedatei in den Container durch:</p>
+<pre><code>
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - &quot;44&quot; # video-Gruppe für Zugriff auf /dev/dri
+    volumes:
+      - ./config:/config
+      - ./media:/media:ro
+    ports:
+      - &quot;8096:8096&quot;
+    restart: unless-stopped
+</code></pre>
+<p>Danach aktivierst du die Beschleunigung in der Weboberfläche: <strong>Dashboard → Wiedergabe → Transcoding</strong>. Wähle bei „Hardware-Beschleunigung“ den passenden Eintrag – <strong>Quick Sync</strong> für Intel, <strong>NVENC</strong> für NVIDIA. Darunter kannst du zusätzlich die hardwarebeschleunigte Kodierung aktivieren, damit auch ausgehende Streams die GPU nutzen. Ein Neustart des Containers schließt die Einrichtung ab.</p>
+<p>Ob es funktioniert, prüfst du direkt im Dashboard: Beim Abspielen eines Videos zeigt Jellyfin im Wiedergabe-Infomenü an, ob der Stream per Hardware transkodiert wird.</p>
+<h2>Empfehlung</h2>
+<p>Für die allermeisten Homelabs ist <strong>Intel Quick Sync die beste Wahl</strong>: keine Zusatzkosten, minimaler Stromverbrauch und völlig ausreichende Leistung für mehrere parallele Streams. <strong>NVIDIA NVENC</strong> ist nur dann sinnvoll, wenn die Grafikkarte ohnehin schon da ist oder du gezielt maximale Stream-Anzahl und Qualität brauchst – und bereit bist, den Stromverbrauch dafür zu tragen. Wer bereits ein [Homelab betreibt](homelab-einrichten-guide.md) und [Docker beherrscht](docker-einsteiger.md), aktiviert Hardware-Transcoding in unter einer Stunde und streamt danach flüssig, ohne die CPU an ihre Grenzen zu treiben.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
