@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdGuard Home vs Pi-hole: Welcher Werbeblocker ist besser? — Homelab Vergleich</title>
+<meta name="description" content="AdGuard Home vs Pi-hole: Welcher Werbeblocker ist besser?  Werbung nervt – auf jedem Gerät im Haus. Einzelne Browser-Erweiterungen helfen nur auf dem ">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>AdGuard Home vs Pi-hole: Welcher Werbeblocker ist besser?</h1>
+<p>Werbung nervt – auf jedem Gerät im Haus. Einzelne Browser-Erweiterungen helfen nur auf dem Rechner, auf dem sie installiert sind, und am Smart-TV, an der Spielekonsole oder am Smartphone greifen sie ohnehin nicht. Genau hier setzen DNS-basierte Werbeblocker wie AdGuard Home und Pi-hole an: Sie filtern Werbung, Tracker und Malware zentral für das gesamte Netzwerk. Doch welches der beiden Tools ist das bessere? Dieser Artikel vergleicht Funktionen, Installation und Einsatzzwecke ehrlich miteinander.</p>
+<h2>Was beide tun: Werbeblocker fürs ganze Netzwerk</h2>
+<p>AdGuard Home und Pi-hole verfolgen dasselbe Grundprinzip. Du betreibst auf eigener Hardware einen eigenen DNS-Server. Statt dass deine Geräte Anfragen direkt an den DNS-Server deines Providers schicken, laufen sie über deinen Werbeblocker. Der gleicht jede angefragte Domain mit einer Liste bekannter Werbe- und Tracking-Domains ab – steht sie auf der Liste, wird die Anfrage verworfen und der Werbeserver wird nie kontaktiert.</p>
+<p>Der große Vorteil: Die Blockade gilt für <strong>alle Geräte im Netzwerk</strong> gleichzeitig, egal ob Smartphone, Laptop, Smart-TV, Streaming-Box oder IoT-Gerät. Kein Client braucht dafür eine eigene App oder Erweiterung – es reicht, den DNS-Server deines Werbeblockers im Router oder pro Gerät einzutragen. Da Werbung bereits auf DNS-Ebene blockiert wird, bevor sie überhaupt geladen wird, spart das nebenbei Datenvolumen und beschleunigt spürbar das Surfen.</p>
+<h2>Der entscheidende Unterschied: modernes Komplettpaket oder schlanker Klassiker</h2>
+<p><strong>AdGuard Home</strong> ist das modernere Gesamtpaket. Es bringt eine aufgeräumte Weboberfläche mit, die deutlich mehr Komfort bietet als Pi-hole: Statistiken, Protokolle, Client-Übersicht und die Verwaltung von Blocklisten sind direkt und intuitiv eingebaut. Vor allem aber sind <strong>DNS-over-HTTPS (DoH)</strong> und <strong>DNS-over-TLS (DoT)</strong> ab Werk integriert – ohne zusätzliche Software. Damit verschlüsselt AdGuard Home deine DNS-Anfragen, sodass dein Provider nicht mehr mitlesen kann, welche Seiten du aufrufst. Auch eine eigene DHCP-Server-Funktion ist an Bord.</p>
+<p><strong>Pi-hole</strong> ist der etablierte Klassiker, der seit Jahren die Referenz unter den Self-Hosted-Werbeblockern ist. Er ist bewusst schlank und leichtgewichtig gehalten und läuft auch auf älterer Hardware oder einem Raspberry Pi der ersten Generationen noch flott. Die riesige Community, unzählige Anleitungen und die ausgereifte Stabilität sind seine größten Stärken. Verschlüsseltes DNS (DoH/DoT) lässt sich auch hier nachrüsten, benötigt aber Zusatzdienste wie <code>cloudflared</code> und damit etwas mehr Handarbeit.</p>
+<h2>Installation mit Docker</h2>
+<p>Beide Tools starten am einfachsten als Docker-Container. Für Pi-hole genügt ein einzelner Container:</p>
+<pre><code>
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    ports:
+      - &quot;53:53/tcp&quot;
+      - &quot;53:53/udp&quot;
+      - &quot;80:80/tcp&quot;
+    environment:
+      TZ: &quot;Europe/Berlin&quot;
+      WEBPASSWORD: &quot;geheim&quot;
+    volumes:
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+    restart: unless-stopped
+</code></pre>
+<p>AdGuard Home ist ebenso einfach als Container verfügbar:</p>
+<pre><code>
+services:
+  adguardhome:
+    image: adguard/adguardhome:latest
+    container_name: adguardhome
+    ports:
+      - &quot;53:53/tcp&quot;
+      - &quot;53:53/udp&quot;
+      - &quot;3000:3000/tcp&quot;
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+    restart: unless-stopped
+</code></pre>
+<p>Wichtig bei beiden: Port 53 muss im Container frei sein, und am besten vergibst du der Instanz im Router eine feste IP-Adresse. Anschließend trägst du diese IP als DNS-Server in deinem Router ein – fertig ist der netzwerkweite Schutz.</p>
+<h2>Funktionen im direkten Vergleich</h2>
+<p>| Kriterium | AdGuard Home | Pi-hole |</p>
+<p>|---|---|---|</p>
+<p>| Weboberfläche | modern, intuitiv | funktional, schlichter |</p>
+<p>| DNS-over-HTTPS (DoH) | integriert | per Zusatzdienst |</p>
+<p>| DNS-over-TLS (DoT) | integriert | per Zusatzdienst |</p>
+<p>| Blocklisten-Verwaltung | komfortabel, viele Filter | flexibel, per Adlists |</p>
+<p>| Client-Verwaltung | übersichtlich, eigene Regeln je Client | möglich, weniger komfortabel |</p>
+<p>| Eigener DHCP-Server | integriert | integriert |</p>
+<p>| Ressourcenbedarf | gering bis mittel | sehr gering |</p>
+<p>| Community &amp; Anleitungen | groß, wachsend | sehr groß, etabliert |</p>
+<p>Bei den Blocklisten nehmen sich beide kaum etwas: Beide unterstützen gängige Listen wie die von OISD, StevenBlack oder EasyList und lassen sich beliebig erweitern. Auch die Statistik-Seiten zeigen beide an, was blockiert wurde und welcher Client am meisten „Lärm&quot; verursacht.</p>
+<h2>Empfehlung je Anwendungsfall</h2>
+<ul>
+<li><strong>Bequemlichkeit und moderner Look:</strong> Wähle <strong>AdGuard Home</strong>. Die integrierte DoH/DoT-Unterstützung und die komfortable Client-Verwaltung sparen dir Zeit und Zusatzdienste.</li>
+<li><strong>Verschlüsseltes DNS ohne Bastelarbeit:</strong> Wähle <strong>AdGuard Home</strong> – hier ist DoH/DoT ab Werk dabei.</li>
+<li><strong>Schwache Hardware oder Raspberry Pi:</strong> Wähle <strong>Pi-hole</strong>. Er ist extrem ressourcenschonend und läuft auch auf älterer Technik stabil.</li>
+<li><strong>Maximale Community und Stabilität:</strong> Wähle <strong>Pi-hole</strong>. Jahrelange Entwicklung und unzählige Tutorials machen ihn zur sicheren Bank.</li>
+<li><strong>Umsteiger von Pi-hole:</strong> Probier <strong>AdGuard Home</strong> aus – viele schätzen die modernere Oberfläche und den geringeren Konfigurationsaufwand für verschlüsseltes DNS.</li>
+</ul>
+<h2>Fazit</h2>
+<p>AdGuard Home und Pi-hole sind beides hervorragende DNS-Werbeblocker, und mit keinem der beiden machst du etwas falsch. Pi-hole punktet mit Schlankheit, Stabilität und einer riesigen Community; AdGuard Home überzeugt mit moderner Oberfläche, integriertem DoH/DoT und komfortabler Client-Verwaltung. Wer es einfach und verschlüsselt haben will, greift zu AdGuard Home – wer einen bewährten, leichtgewichtigen Klassiker sucht, bleibt bei Pi-hole. In einem Homelab, das ohnehin per Docker läuft, lässt sich im Zweifel beides schnell nebeneinander testen.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
