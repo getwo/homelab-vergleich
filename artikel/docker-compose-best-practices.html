@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets — Homelab Vergleich</title>
+<meta name="description" content="Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets  Ein Homelab wächst schnell: Irgendwann laufen Pihole, Home Assistant, Jel">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets</h1>
+<p>Ein Homelab wächst schnell: Irgendwann laufen Pihole, Home Assistant, Jellyfin, Nextcloud und ein Dutzend weitere Dienste parallel – und jeder davon braucht eine eigene Konfiguration. Genau hier entscheidet sich, ob dein Setup wartbar bleibt oder zum undurchschaubaren Flickenteppich wird. Der Schlüssel liegt in sauberen <code>docker-compose.yml</code>-Dateien. Dieser Guide zeigt die wichtigsten Best Practices, mit denen deine Stacks übersichtlich, sicher und nachvollziehbar bleiben.</p>
+<h2>Sprechende Namen: Container und Services klar benennen</h2>
+<p>Der erste Schritt zu einem wartbaren Stack sind eindeutige Namen. Docker vergibt sonst automatisch Namen wie <code>eager_banach</code> – die helfen niemandem. Setze daher immer einen sprechenden Servicenamen und einen Container-Namen:</p>
+<pre><code>
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+</code></pre>
+<p>Faustregel: Der Service-Name ist zugleich die Rolle im Stack, der <code>container_name</code> macht den Container in <code>docker ps</code> und im Portainer sofort identifizierbar. Vermeide Sonderzeichen und Großbuchstaben – Kleinbuchstaben mit Bindestrichen sind der gängige Standard.</p>
+<h2>Volumes: Daten außerhalb des Containers ablegen</h2>
+<p>Der wichtigste Grundsatz überhaupt: <strong>Ein Container ist vergänglich, seine Daten nicht.</strong> Alles, was nach einem Update erhalten bleiben soll, gehört in ein Volume oder ein gebundenes Verzeichnis – niemals in das Container-Dateisystem.</p>
+<pre><code>
+volumes:
+  - pihole_data:/etc/pihole
+  - ./config/pihole:/etc/dnsmasq.d
+</code></pre>
+<p>Benannte Volumes wie <code>pihole_data</code> verwaltet Docker selbst und eignen sich für Datenbanken und interne Zustände. Gebundene Verzeichnisse (<code>./config/...</code>) nutzt du, wenn du Konfigurationsdateien direkt im Dateisystem bearbeiten willst. Beide Varianten überstehen <code>docker compose down</code> und Image-Updates unbeschadet.</p>
+<h2>Netzwerke: Dienste gezielt verbinden</h2>
+<p>Ein eigenes Netzwerk pro Stack isoliert deine Dienste sauber vom Rest und verhindert, dass alles unkontrolliert im Standard-Netzwerk hängt. Compose legt pro Datei automatisch ein Netzwerk an – explizit definiert wird es übersichtlicher:</p>
+<pre><code>
+networks:
+  proxy:
+    external: true
+  internal:
+</code></pre>
+<p>Ein externes Netzwerk <code>proxy</code> teilst du mit deinem Reverse-Proxy (etwa Traefik oder Nginx Proxy Manager), damit er auf deine Dienste zugreifen kann. Das interne Netzwerk <code>internal</code> bleibt für Dienste wie eine Datenbank reserviert, die von außen gar nicht erreichbar sein müssen. So verkleinerst du die Angriffsfläche erheblich.</p>
+<h2>Umgebungsvariablen und .env: Secrets nie ins Repo</h2>
+<p>Passwörter, API-Keys und Zugangsdaten gehören <strong>nicht</strong> in die <code>docker-compose.yml</code> – schon gar nicht, wenn du sie mit Git versionierst. Lagere sie stattdessen in einer <code>.env</code>-Datei im selben Verzeichnis:</p>
+<pre><code>
+# .env
+PUID=1000
+PGID=1000
+TZ=Europe/Berlin
+DB_PASSWORD=mein-sicheres-passwort
+</code></pre>
+<p>Compose liest diese Datei automatisch ein. In der Compose-Datei referenzierst du die Werte mit <code>${VARIABLE}</code>:</p>
+<pre><code>
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env
+</code></pre>
+<p>Die <code>.env</code> selbst nimmst du in die <code>.gitignore</code> auf und legst zusätzlich eine <code>.env.example</code> mit Platzhaltern ins Repo – so wissen auch andere, welche Variablen nötig sind.</p>
+<h2>Healthchecks: Ausfall automatisch erkennen</h2>
+<p>Ein Healthcheck prüft in festen Abständen, ob ein Dienst tatsächlich funktioniert – nicht nur, ob der Prozess läuft. Besonders wertvoll ist das bei Diensten, die erst nach einer Weile bereit sind, etwa Datenbanken:</p>
+<pre><code>
+services:
+  db:
+    image: mariadb:11
+    healthcheck:
+      test: [&quot;CMD&quot;, &quot;healthcheck.sh&quot;, &quot;--connect&quot;, &quot;--innodb_initialized&quot;]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+</code></pre>
+<p>Der <code>start_period</code> gibt dem Container Zeit zum Hochfahren, bevor der Check greift. Ein fehlgeschlagener Healthcheck markiert den Container als <code>unhealthy</code> – und in Kombination mit einem Monitoring wie Uptime-Kuma bekommst du den Ausfall sofort gemeldet. Vor allem für abhängige Dienste kannst du mit <code>depends_on</code> und <code>condition: service_healthy</code> erzwingen, dass ein Service erst startet, wenn der andere bereit ist.</p>
+<h2>Restart-Policies: Dienste automatisch wiederbeleben</h2>
+<p>Die Restart-Policy legt fest, was nach einem Absturz oder Neustart des Hosts passiert. Für fast alle Homelab-Dienste ist <code>unless-stopped</code> die richtige Wahl:</p>
+<pre><code>
+restart: unless-stopped
+</code></pre>
+<p>Damit startet der Container bei jedem Neustart des Servers automatisch – außer du hast ihn bewusst gestoppt. Die Alternative <code>always</code> ignoriert sogar ein manuelles <code>docker stop</code> und startet den Container beim nächsten Daemon-Start erneut. Für temporäre oder einmalige Dienste genügt <code>no</code>, die Vorgabe.</p>
+<h2>Ordnerstruktur: Ein Stack, ein Verzeichnis</h2>
+<p>Eine klare Struktur macht dein Homelab durchsuchbar und backuppbar. Bewährt hat sich pro Dienst ein eigenes Verzeichnis mit allem, was dazugehört:</p>
+<pre><code>
+docker/
+├── pihole/
+│   ├── docker-compose.yml
+│   ├── .env
+│   └── config/
+├── nextcloud/
+│   ├── docker-compose.yml
+│   ├── .env
+│   └── config/
+└── traefik/
+    ├── docker-compose.yml
+    └── config/
+</code></pre>
+<p>Jeder Stack besitzt seine eigene <code>docker-compose.yml</code>, seine <code>.env</code> und einen <code>config/</code>-Ordner für gebundene Dateien. So lässt sich ein Dienst einzeln starten, sichern oder umziehen – und das gesamte Verzeichnis <code>docker/</code> versionierst du als Ganzes mit Git. Das ist zugleich dein Backup für die Konfiguration.</p>
+<h2>Vollständiges Beispiel: alles zusammen</h2>
+<p>Die Best Practices in einem kompakten Stack, der eine Webanwendung mit Datenbank verbindet:</p>
+<pre><code>
+services:
+  app:
+    image: mein-dienst:latest
+    container_name: mein-dienst
+    restart: unless-stopped
+    environment:
+      - DB_HOST=db
+      - DB_PASSWORD=${DB_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - ./config:/config
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11
+    container_name: mein-dienst-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - internal
+    healthcheck:
+      test: [&quot;CMD&quot;, &quot;healthcheck.sh&quot;, &quot;--connect&quot;]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  db_data:
+
+networks:
+  internal:
+</code></pre>
+<p>Start und Verwaltung bleiben dabei denkbar einfach:</p>
+<pre><code>
+docker compose up -d      # Stack starten
+docker compose ps         # Status anzeigen
+docker compose down       # Stack stoppen
+docker compose pull       # Images aktualisieren
+</code></pre>
+<h2>Fazit</h2>
+<p>Saubere Docker-Compose-Dateien sind keine Kosmetik, sondern die Grundlage eines wartbaren Homelabs: Sprechende Namen, persistente Volumes, klar getrennte Netzwerke und ausgelagerte Secrets machen jeden Stack verständlich und sicher. Healthchecks und Restart-Policies sorgen dafür, dass deine Dienste Ausfälle selbst überstehen – und eine konsequente Ordnerstruktur macht das gesamte Setup reproduzierbar und einfach zu sichern. Wer diese Best Practices von Anfang an beherzigt, spart sich später Stunden an Fehlersuche.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
