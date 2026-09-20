@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energie sparen im Homelab: Stromverbrauch senken — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Energie sparen im Homelab: Stromverbrauch senken" description: "Homelab Stromverbrauch senken: Idle-Optimierung, Auto-Shutdown, Wake-on-LA">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Energie sparen im Homelab: Stromverbrauch senken&quot;</p>
+<p>description: &quot;Homelab Stromverbrauch senken: Idle-Optimierung, Auto-Shutdown, Wake-on-LAN und sparsame Mini-PC/ARM-Hardware – mit Rechenbeispielen, wie viel Sie bei 0,40 €/kWh wirklich sparen.&quot;</p>
+<hr>
+<h1>Energie sparen im Homelab: Stromverbrauch senken</h1>
+<p>Ein Homelab läuft rund um die Uhr – und genau darin liegt der Hebel fürs Stromsparen. Während ein einzelner Dienst kaum ins Gewicht fällt, summiert sich ein Server, der 24/7 läuft, schnell zu dreistelligen Jahresbeträgen. Die gute Nachricht: Mit ein paar gezielten Maßnahmen lässt sich der Verbrauch oft um 50 bis 80 Prozent senken, ohne auf Funktion zu verzichten. Dieser Artikel zeigt, wo der Strom tatsächlich hingeht und wie Sie ihn zurückholen.</p>
+<h2>Idle vs. Last: Wo der Strom wirklich fließt</h2>
+<p>Der wichtigste Irrtum beim Homelab-Stromverbrauch: Die Nennleistung des Netzteils sagt nichts über die Kosten aus. Entscheidend ist, wie viel das System tatsächlich zieht – und zwar im Leerlauf, denn dort verbringt ein typisches Homelab die meiste Zeit. Viele Dienste wie ein NAS, ein Media-Server oder Home Assistant laufen dauerhaft, brauchen aber nur sporadisch Rechenleistung.</p>
+<p>Ein gebrauchter Desktop-PC zieht im Idle oft 30–50 W, obwohl sein Netzteil für 300 W ausgelegt ist. Ein alter Server mit Xeon-CPU kommt im Leerlauf leicht auf 100–150 W. Ein sparsamer Mini-PC begnügt sich dagegen mit 6–12 W. Bei 0,40 €/kWh bedeutet jede dauerhaft anliegende 10 W über das Jahr gerechnet rund 35 € – im Leerlauf, wohlgemerkt, ohne dass das System nennenswert arbeitet.</p>
+<h2>Welche Komponenten am meisten ziehen</h2>
+<p>Nicht jede Hardware belastet die Stromrechnung gleich. Die Reihenfolge der größten Verbraucher:</p>
+<ul>
+<li><strong>GPU (Grafikkarte):</strong> Der mit Abstand größte Posten. Eine Mittelklasse-Karte zieht im Idle 10–20 W, unter Last schnell 150–300 W. Für lokale KI oder Transcoding gedacht, sollte sie nur dann laufen, wenn sie wirklich gebraucht wird.</li>
+<li><strong>CPU:</strong> Moderne Prozessoren takten im Idle stark herunter, bleiben aber je nach Modell und Plattform bei 10–80 W. Ältere Server-CPUs ohne aktive C-States verbrauchen auch im Leerlauf viel.</li>
+<li><strong>Festplatten:</strong> Eine 3,5-Zoll-HDD braucht 5–10 W, im Spindown nur 0,5–1 W. Eine SSD liegt bei 0,5–2 W. Bei vier bis acht Platten im RAID macht der Unterschied schnell 20–60 W aus – ein unterschätzter Dauerposten.</li>
+<li><strong>Netzteil &amp; Lüfter:</strong> Ein ineffizientes Netzteil verheizt gerade im Teillastbereich Strom; 80-Plus-Gold-Netzteile arbeiten dort deutlich sparsamer.</li>
+</ul>
+<h2>Auto-Shutdown &amp; Idle-Optimierung</h2>
+<p>Der effektivste Hebel ist, das System gar nicht erst sinnlos laufen zu lassen. Zwei Maßnahmen greifen ineinander:</p>
+<ul>
+<li><strong>Auto-Shutdown:</strong> Fährt den Server nachts oder bei Abwesenheit herunter. Wer ein Homelab nur abends und am Wochenende nutzt, spart so oft die Hälfte der Laufzeit.</li>
+<li><strong>Idle-Optimierung:</strong> Damit die CPU im Leerlauf wirklich spart, müssen C-States, ASPM (PCIe-Energieverwaltung) und unter Linux <code>powertop</code> aktiviert sein. Ohne diese Einstellungen bleibt der Prozessor auch ohne Last auf hohem Takt – ein stiller Stromfresser.</li>
+</ul>
+<h2>Wake-on-LAN: Sparen ohne Komfortverlust</h2>
+<p>Auto-Shutdown allein wirkt nur halb, wenn der Server danach nicht zuverlässig wieder aufwacht. <strong>Wake-on-LAN (WOL)</strong> löst genau das: Ein verschlüsselter „Magic Packet“ aus dem Netzwerk weckt den Rechner bei Bedarf – etwa per App, per Smart-Home-Automation oder beim Start eines Backups.</p>
+<p>Wichtig: WOL muss im BIOS aktiviert und im Betriebssystem konfiguriert sein. Auch der Router muss das Magic Packet an den richtigen Port weiterleiten, wenn das Aufwecken von außerhalb des Heimnetzes kommen soll. Die Einrichtung dauert wenige Minuten und macht den Auto-Shutdown erst alltagstauglich: Der Server ist aus, wenn niemand ihn braucht, und da, sobald er gebraucht wird.</p>
+<h2>Effiziente Hardware: Mini-PC und ARM</h2>
+<p>Wer die Wahl hat, entscheidet schon beim Kauf über den Verbrauch. Zwei Geräteklassen dominieren beim sparsamen Homelab:</p>
+<ul>
+<li><strong>Mini-PCs (Intel N100, AMD oder ältere Tiny-Klasse):</strong> 6–15 W im Idle, reichlich Leistung für NAS, Docker, Home Assistant und leichte Virtualisierung. Viele Modelle sind gebraucht für 100–200 € zu haben.</li>
+<li><strong>ARM-Boards (Raspberry Pi 4/5, Odroid, RK3588):</strong> 3–8 W im Idle – der sparsamste Weg für leichte Dienste. Die Grenze liegt bei speicher- und CPU-intensiven Workloads wie lokalen LLMs oder Transcoding.</li>
+</ul>
+<p>Der Umstieg lohnt sich selbst dann, wenn die alte Hardware „kostenlos“ da steht: Ein 400-Watt-Server kostet im Jahr über 1.400 € Strom, ein 10-Watt-Mini-PC rund 35 €. Die Ersparnis amortisiert neue, sparsame Hardware oft innerhalb eines Jahres.</p>
+<h2>Beispielrechnung: So viel sparen Sie wirklich</h2>
+<p>Ein Beispiel bei 0,40 €/kWh: Ein alter Server läuft 24/7 mit durchschnittlich 180 W. Das ergibt 0,18 kW × 24 h × 365 Tage = 1.576 kWh im Jahr – rund 630 € Stromkosten.</p>
+<p>Drei Maßnahmen greifen:</p>
+<ul>
+<li><strong>Umstieg auf einen Mini-PC (10 W Idle):</strong> 0,01 kW × 24 h × 365 = 87,6 kWh, also rund 35 € im Jahr. <strong>Ersparnis: etwa 595 €.</strong></li>
+<li><strong>Auto-Shutdown über Nacht (8 h):</strong> Selbst ohne Hardwarewechsel sinkt die Laufzeit um ein Drittel. Aus 1.576 kWh werden rund 1.050 kWh – <strong>Ersparnis: etwa 210 €.</strong></li>
+<li><strong>Festplatten-Spindown und SSD-Umbau:</strong> Fünf HDDs (je 7 W) gegen SSDs (je 1,5 W) getauscht sparen dauerhaft rund 27 W – über das Jahr gut <strong>95 €</strong>.</li>
+</ul>
+<p>Kombiniert – sparsame Hardware plus nächtlicher Shutdown – fällt ein 630-€-Server auf unter 50 € Jahreskosten. Der größte Hebel ist dabei fast immer die Hardwarewahl, der zweitgrößte die Laufzeit.</p>
+<h2>Fazit</h2>
+<p>Homelab-Energiesparen ist keine Frage teurer Technik, sondern konsequenter Maßnahmen: die richtige Hardware wählen, den Leerlauf optimieren und Laufzeiten auf den tatsächlichen Bedarf reduzieren. Wer Mini-PC oder ARM statt eines alten Servers einsetzt, Idle-States aktiviert und per Auto-Shutdown plus Wake-on-LAN nur dann rechnet, wenn es nötig ist, senkt den Verbrauch meist um 70 bis 90 Prozent – bei vollem Funktionsumfang.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
