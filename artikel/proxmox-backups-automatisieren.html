@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxmox Backups automatisieren: Zeitplan & Retention — Homelab Vergleich</title>
+<meta name="description" content="--- title: "Proxmox Backups automatisieren: Zeitplan & Retention" description: "Proxmox Backups automatisieren mit vzdump: Backup-Zeitpläne einrichten">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<hr>
+<p>title: &quot;Proxmox Backups automatisieren: Zeitplan &amp; Retention&quot;</p>
+<p>description: &quot;Proxmox Backups automatisieren mit vzdump: Backup-Zeitpläne einrichten, Retention (Aufbewahrung) richtig konfigurieren, Offsite-Kopie nach der 3-2-1-Regel und Wiederherstellung regelmäßig testen.&quot;</p>
+<hr>
+<h1>Proxmox Backups automatisieren: Zeitplan &amp; Retention</h1>
+<p>Ein Backup, das nur dann läuft, wenn du daran denkst, ist kein Backup. Proxmox VE bringt mit <code>vzdump</code> ein eingebautes Werkzeug mit, das sich vollständig automatisieren lässt. Dieser Artikel zeigt, wie du sinnvolle Zeitpläne einrichtest, die Aufbewahrung (Retention) konfigurierst und deine Backups mit einer Offsite-Kopie und einem echten Restore-Test absicherst.</p>
+<h2>Backup-Zeitpläne mit vzdump einrichten</h2>
+<p>Der einfachste Weg führt über die Weboberfläche: <strong>Datacenter → Backup → Add</strong>. Dort wählst du den Speicher, den Modus (für die meisten Container <code>snapshot</code>, für Gäste auf LVM-Thin ohne Snapshot-Support <code>suspend</code>) und die Kompression – <code>zstd</code> ist schnell und spart Platz. Den Zeitplan gibst du im Format <code>Tag HH:MM</code> an, zum Beispiel <code>daily 02:00</code> für einen täglichen Lauf oder <code>sun 03:00</code> für einen wöchentlichen am Sonntag.</p>
+<p>Mehrere Jobs für unterschiedliche Frequenzen sind sinnvoll: ein täglicher Lauf für häufig genutzte Dienste und ein wöchentlicher als gröberes Sicherheitsnetz. Auf der Kommandozeile erreichst du dasselbe direkt mit <code>vzdump</code>:</p>
+<pre><code>
+vzdump 100 --compress zstd --mode snapshot --dumpdir /mnt/backup/vzdump
+</code></pre>
+<h2>Retention: Wie viele Backups aufheben?</h2>
+<p>Jeder Backup-Job in Proxmox hat einen <strong>Retention</strong>-Bereich, der nach dem Lauf alte Sicherungen automatisch aufräumt. Die wichtigsten Optionen:</p>
+<ul>
+<li><strong>keep-last:</strong> behält die N zuletzt erstellten Backups,</li>
+<li><strong>keep-daily / keep-weekly / keep-monthly / keep-yearly:</strong> behält das älteste Backup je Zeitraum,</li>
+<li><strong>keep-hourly:</strong> für sehr kurze Intervalle.</li>
+</ul>
+<p>Die Regeln wirken zusammen: Ein Job mit <code>keep-last 7, keep-weekly 4, keep-monthly 12</code> hält die letzten sieben Sicherungen, zusätzlich eine pro Woche für vier Wochen und eine pro Monat für ein Jahr. So bekommst du aktuelle Stände <em>und</em> historische Schnappschüsse, ohne dass die Platte vollläuft.</p>
+<h2>Aufbewahrungs-Strategie fürs Homelab</h2>
+<p>Orientiere dich an der <strong>GFS-Methode</strong> (Großvater-Vater-Sohn): tägliche Backups für die aktuelle Woche, wöchentliche für den aktuellen Monat, monatliche für das laufende Jahr. Für ein typisches Homelab reicht meist ein täglicher Job mit <code>keep-last 7</code> plus ein wöchentlicher mit <code>keep-last 4</code>. Wer Dienste mit vielen Änderungen betreibt, ergänzt eine monatliche Ebene.</p>
+<p>Wichtiger als jede Zahl ist die Frage: Wie viel Datenverlust kannst du verkraften? Daran misst sich, wie eng die Intervalle liegen müssen.</p>
+<h2>Offsite-Kopie nach der 3-2-1-Regel</h2>
+<p>Backups, die auf derselben Maschine wie die Originale liegen, schützen nicht vor Hardware-Defekt, Brand oder Ransomware. Die <strong>3-2-1-Regel</strong> hilft: drei Kopien, auf zwei verschiedenen Medien, eine davon außerhalb des Standorts. Für die Offsite-Kopie bieten sich ein verschlüsselter Cloud-Speicher (etwa per <code>rclone</code>) oder ein zweiter Proxmox Backup Server an einem anderen Standort an. Mehr dazu in unserem Artikel zum [Proxmox Backup Server](proxmox-backup-server.md).</p>
+<h2>Wiederherstellung testen</h2>
+<p>Ein ungetestetes Backup ist nur eine Hoffnung. Plane regelmäßig einen <strong>Restore-Test</strong> ein: Stelle einen Container oder eine VM in einem isolierten Bereich wieder her und prüfe, ob die Dienste starten. In der Oberfläche geht das unter <strong>Datacenter → Backups → Restore</strong>; wähle einen Ziel-Storage, der nicht deine Produktivsysteme überschreibt. Nur der echte Restore deckt stille Fehler auf – etwa defekte Archive oder fehlende Abhängigkeiten.</p>
+<h2>Fazit</h2>
+<p>Proxmox macht automatisierte Backups einfach: Zeitplan und Retention sind in wenigen Minuten eingerichtet, <code>vzdump</code> erledigt den Rest. Die eigentliche Disziplin liegt in der Strategie dahinter – eine durchdachte Aufbewahrung, eine Offsite-Kopie und ein regelmäßiger Restore-Test machen aus einer Sicherung echte Datensicherheit.</p>
+<h2>FAQ</h2>
+<p><strong>Was ist der Unterschied zwischen vzdump und Proxmox Backup Server?</strong></p>
+<p><code>vzdump</code> ist das eingebaute Werkzeug für vollständige Backups und passt gut für kleinere Setups. Der [Proxmox Backup Server](proxmox-backup-server.md) ergänzt Deduplizierung und inkrementelle Sicherungen und lohnt sich bei vielen Gästen und großen Datenmengen.</p>
+<p><strong>Wie oft sollte ich ein Homelab sichern?</strong></p>
+<p>Für die meisten Homelabs ist ein täglicher Lauf mit kurzer Retention plus ein wöchentlicher mit längerer Aufbewahrung ein guter Start. Entscheidend ist die Regelmäßigkeit, nicht die maximale Frequenz.</p>
+<p><strong>Wie teste ich, ob mein Backup wirklich funktioniert?</strong></p>
+<p>Stelle einen Gast in einem separaten Bereich wieder her und prüfe, ob die Dienste starten. Teste das mindestens einmal pro Quartal – oder nach jeder größeren Änderung an deiner Backup-Konfiguration.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
