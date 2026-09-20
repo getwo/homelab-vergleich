@@ -44,4 +44,7 @@
   <url><loc>https://homelab.brillianze.de/artikel/homelab-monitoring.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/vaultwarden-passwortmanager.html</loc><priority>0.7</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/navidrome-musik-streaming.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/wake-on-lan.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/cloudflare-tunnel-vs-reverse-proxy.html</loc><priority>0.7</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/photoprism-vs-immich.html</loc><priority>0.7</priority></url>
 </urlset>
