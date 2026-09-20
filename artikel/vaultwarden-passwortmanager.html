@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vaultwarden: Passwort-Manager selbst hosten — Homelab Vergleich</title>
+<meta name="description" content="Vaultwarden: Passwort-Manager selbst hosten  Ein Passwort-Manager gehört heute zur Grundausstattung jedes Homelabs – und Vaultwarden ist die beliebtes">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Vaultwarden: Passwort-Manager selbst hosten</h1>
+<p>Ein Passwort-Manager gehört heute zur Grundausstattung jedes Homelabs – und Vaultwarden ist die beliebteste Self-Hosted-Lösung dafür. Statt deine Zugangsdaten einem Cloud-Anbieter anzuvertrauen, betreibst du deinen eigenen, verschlüsselten Passwort-Tresor auf eigener Hardware. In diesem Guide erklären wir, was Vaultwarden genau ist, warum sich das Selbsthosten lohnt und wie du den Dienst per Docker installierst, einrichtest und sicherst.</p>
+<h2>Was ist Vaultwarden?</h2>
+<p>Vaultwarden ist eine schlanke, quelloffene Neuimplementierung des Bitwarden-Servers. Der entscheidende Vorteil: Der Dienst ist vollständig kompatibel mit den offiziellen Bitwarden-Clients. Du kannst also die bekannten Browser-Erweiterungen und Smartphone-Apps von Bitwarden weiterverwenden – nur der Server dahinter läuft bei dir.</p>
+<p>Der Unterschied zum Original liegt in den Ressourcen. Während der offizielle Bitwarden-Server eine Microsoft-SQL-Datenbank und mehrere Gigabyte Arbeitsspeicher benötigt, kommt Vaultwarden mit einer einzelnen, in Rust geschriebenen Binärdatei und einer SQLite-Datenbank aus. Damit läuft er problemlos auf einem Raspberry Pi oder einem kleinen Mini-PC – ein idealer Dienst für den Einstieg ins Self-Hosting.</p>
+<h2>Warum selbst hosten?</h2>
+<p>Der wichtigste Grund ist Kontrolle: Deine Passwörter verlassen niemals dein Netzwerk. Beim Cloud-Anbieter vertraust du darauf, dass dessen Server nicht kompromittiert werden; beim Selbsthosten entscheidest du selbst über Updates, Zugriffe und den Speicherort deiner Daten.</p>
+<p>Dazu kommen weitere Vorteile:</p>
+<ul>
+<li><strong>Keine laufenden Kosten:</strong> Vaultwarden ist kostenlos, auch Premium-Funktionen wie Zwei-Faktor-Authentifizierung oder Notfall-Zugriff sind ohne Abo nutzbar.</li>
+<li><strong>Keine Nutzerbegrenzung:</strong> Du kannst beliebig viele Konten für Familie oder Freunde anlegen.</li>
+<li><strong>Volle Datenhoheit:</strong> Der verschlüsselte Tresor liegt ausschließlich auf deiner eigenen Hardware.</li>
+</ul>
+<p>Den Preis dafür zahlst du in Verantwortung: Du bist selbst für Updates, Sicherheit und Backups zuständig. Wer sein Homelab ohnehin betreibt, hat diese Aufgaben aber längst zur Routine gemacht.</p>
+<h2>Installation per Docker</h2>
+<p>Der schnellste Weg führt über Docker. Eine <code>docker-compose.yml</code> genügt, um den Dienst inklusive persistentem Datenverzeichnis zu starten:</p>
+<pre><code>
+version: &quot;3.9&quot;
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    volumes:
+      - ./vw-data:/data
+    ports:
+      - &quot;8080:80&quot;
+</code></pre>
+<p>Gestartet wird der Stack wie gewohnt mit:</p>
+<pre><code>
+docker compose up -d
+</code></pre>
+<p>Danach erreichst du die Weboberfläche unter <code>http://deine-ip:8080</code>. Wie Docker grundsätzlich funktioniert, erklärt unser [Docker-Einsteiger-Guide](docker-einsteiger.md). Wichtig: Ersetze die Ports und das Datenverzeichnis nach deinen Bedürfnissen – das <code>vw-data</code>-Verzeichnis enthält später deinen verschlüsselten Tresor.</p>
+<h2>Erste Schritte</h2>
+<p>Beim ersten Aufruf legst du dein Hauptkonto an. Nutze dafür ein starkes Master-Passwort, das du dir gut merkst: Es verschlüsselt alle weiteren Zugangsdaten und lässt sich nicht wiederherstellen. Wer vergisst, verliert den Zugriff auf den kompletten Tresor.</p>
+<p>Danach richtest du in der Admin-Oberfläche die Grundeinstellungen ein:</p>
+<p>1. <strong>Registrierung einschränken:</strong> Sobald du dein Konto hast, deaktiviere die offene Registrierung, damit sich niemand Fremdes anmeldet.</p>
+<p>2. <strong>Zwei-Faktor-Authentifizierung aktivieren:</strong> Schütze dein Konto zusätzlich per TOTP oder WebAuthn.</p>
+<p>3. <strong>HTTPS einrichten:</strong> Stelle den Dienst hinter einen Reverse-Proxy mit SSL-Zertifikat, etwa Nginx Proxy Manager oder Traefik.</p>
+<h2>Browser- und App-Erweiterungen</h2>
+<p>Weil Vaultwarden Bitwarden-kompatibel ist, nutzt du die offiziellen Clients. Installiere einfach die Bitwarden-Browser-Erweiterung für Chrome, Firefox oder Edge sowie die App für Android oder iOS. In den Einstellungen trägst du statt <code>bitwarden.com</code> die Adresse deines eigenen Servers als benutzerdefinierte Server-URL ein – fertig.</p>
+<p>Ab jetzt synchronisieren sich deine Passwörter automatisch über alle Geräte, bleiben aber vollständig auf deiner Hardware. Für den Zugriff von unterwegs empfiehlt sich ein VPN wie [WireGuard](wireguard-homelab.md), statt deinen Vaultwarden-Server ungeschützt ins Internet zu stellen.</p>
+<h2>Sicherheit</h2>
+<p>Selbst gehostet bedeutet selbst gesichert. Diese Grundregeln solltest du beachten:</p>
+<ul>
+<li><strong>Updates zeitnah einspielen:</strong> Vaultwarden wird aktiv weiterentwickelt; ziehe regelmäßig neue Images mit <code>docker compose pull</code> und starte den Container neu.</li>
+<li><strong>HTTPS erzwingen:</strong> Ohne TLS würden Master-Passwort und Daten unverschlüsselt übertragen – ein No-Go.</li>
+<li><strong>Zugriff begrenzen:</strong> Beschränke den Zugang per Firewall auf dein lokales Netzwerk oder dein VPN.</li>
+<li><strong>Starke Master-Passwörter:</strong> Auch für weitere Nutzerkonten gilt: ohne gutes Master-Passwort hilft die beste Verschlüsselung nichts.</li>
+</ul>
+<p>Weitere grundlegende Maßnahmen findest du in unserem [Homelab-Sicherheitsguide](homelab-sicherheit-guide.md).</p>
+<h2>Backup der Datenbank</h2>
+<p>Das wichtigste Backup ist schnell erklärt: Vaultwarden speichert alle Daten in der SQLite-Datei im <code>vw-data</code>-Verzeichnis. Ein regelmäßiges Backup dieses Verzeichnisses sichert deinen kompletten Tresor.</p>
+<p>Am saubersten läuft das über den integrierten Backup-Endpunkt. In der Admin-Oberfläche unter „Backup&quot; kannst du ein verschlüsseltes Backup direkt herunterladen – ideal für automatische Skripte. Zusätzlich lohnt sich ein Datei-Backup des gesamten <code>vw-data</code>-Ordners, etwa per Cron-Job oder mit einem Tool wie Borg oder Restic.</p>
+<p>Wichtig: Teste die Wiederherstellung regelmäßig. Ein Backup, das nie wiederhergestellt wurde, ist nur eine Vermutung.</p>
+<h2>Fazit</h2>
+<p>Vaultwarden ist der ideale Einstieg ins Self-Hosting von Passwort-Managern: schlank, kostenlos und voll kompatibel mit den offiziellen Bitwarden-Apps. Wer die Kontrolle über seine Zugangsdaten behalten will, bekommt hier eine robuste Lösung, die selbst auf einem Raspberry Pi läuft. Mit Docker-Compose ist die Installation in Minuten erledigt – den Rest erledigen Gewohnheit und ein konsequentes Backup.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
