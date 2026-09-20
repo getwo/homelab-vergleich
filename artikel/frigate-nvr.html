@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frigate NVR: Überwachungskameras lokal statt Cloud — Homelab Vergleich</title>
+<meta name="description" content="Frigate NVR: Überwachungskameras lokal statt Cloud  Wer sein Zuhause per Überwachungskamera im Blick behalten will, muss sich heute nicht mehr in eine">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+<h1>Frigate NVR: Überwachungskameras lokal statt Cloud</h1>
+<p>Wer sein Zuhause per Überwachungskamera im Blick behalten will, muss sich heute nicht mehr in eine Hersteller-Cloud zwingen lassen. Frigate ist ein quelloffener Netzwerk-Videorekorder (NVR), der Kamerabilder vollständig lokal verarbeitet – inklusive KI-gestützter Objekterkennung, die Personen, Autos oder Tiere zuverlässig erkennt. In diesem Artikel erfährst du, was Frigate kann, warum du auf die Cloud verzichten solltest und wie du es mit Docker, RTSP-Kameras und Home Assistant einrichtest.</p>
+<h2>Was ist Frigate?</h2>
+<p>Frigate ist ein selbst gehosteter NVR mit eingebauter KI-Objekterkennung. Anders als ein klassischer Rekorder, der nur durchgehend aufzeichnet, analysiert Frigate jeden Kamerastream in Echtzeit und erkennt Objekte wie Personen, Fahrzeuge, Hunde oder Katzen. Nur relevante Ereignisse – etwa „Person betritt den Hof&quot; – werden als Clip und Schnappschuss gespeichert. Das spart massiv Speicherplatz und macht die Aufnahmen durchsuchbar.</p>
+<p>Die Software kombiniert dafür OpenCV zur Bewegungserkennung mit einem TensorFlow-Lite-Modell zur Objekterkennung. Das Ergebnis: eine leistungsfähige Videoüberwachung, die auf einem Raspberry Pi, einem Mini-PC oder jedem bestehenden Homeserver läuft – ohne teure Spezialhardware.</p>
+<h2>Warum lokal statt Cloud?</h2>
+<p>Die meisten fertigen Überwachungskameras drängen dich in ein Cloud-Abo: Aufnahmen landen auf Servern des Herstellers, und wer mehr als ein paar Tage Historie oder zusätzliche Kameras will, zahlt monatlich. Frigate dreht dieses Modell um.</p>
+<ul>
+<li><strong>Datenschutz:</strong> Deine Kamerabilder verlassen nie dein Netzwerk. Niemand außer dir kann auf die Aufnahmen zugreifen – kein Hersteller, keine Datenlecks in fremden Rechenzentren.</li>
+<li><strong>Keine Abo-Kosten:</strong> Frigate ist Open Source und kostenlos. Du zahlst einmalig für die Hardware und sonst nichts.</li>
+<li><strong>Herstellerunabhängig:</strong> Du kombinierst beliebige IP-Kameras verschiedener Marken über den offenen RTSP-Standard.</li>
+<li><strong>Funktioniert offline:</strong> Die Erkennung läuft auch bei Internetausfall weiter, denn alles passiert lokal auf deiner Maschine.</li>
+</ul>
+<p>Gerade für ein Homelab ist Frigate damit die logische Wahl: Überwachung gehört in die eigenen Hände, nicht in fremde Clouds.</p>
+<h2>Installation per Docker</h2>
+<p>Am einfachsten startest du Frigate als Docker-Container. Eine minimale <code>docker-compose.yml</code> sieht so aus:</p>
+<pre><code>
+services:
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:stable
+    container_name: frigate
+    restart: unless-stopped
+    shm_size: &quot;128mb&quot;
+    devices:
+      - /dev/bus/usb:/dev/bus/usb  # nur bei Coral-USB-Beschleuniger
+    volumes:
+      - ./config:/config
+      - /pfad/zu/speicher:/media/frigate
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - &quot;5000:5000&quot;
+      - &quot;1935:1935&quot;
+</code></pre>
+<p>Anschließend legst du in <code>./config</code> eine Datei <code>config.yml</code> an, in der Kameras und Erkennung konfiguriert werden. Nach <code>docker compose up -d</code> erreichst du die Weboberfläche unter <code>http://DEIN-SERVER:5000</code>.</p>
+<h2>Kamera anbinden per RTSP</h2>
+<p>IP-Kameras bindest du über ihren RTSP-Stream ein. In der <code>config.yml</code> trägst du jede Kamera samt Stream-URL ein:</p>
+<pre><code>
+cameras:
+  hofkamera:
+    ffmpeg:
+      inputs:
+        - path: rtsp://benutzer:passwort@192.168.1.50:554/stream1
+          roles:
+            - detect
+            - record
+</code></pre>
+<p>Die Rolle <code>detect</code> liefert den Stream an die Objekterkennung, <code>record</code> speichert die Aufnahme. Fast jede IP-Kamera bietet RTSP an; die genaue URL findest du in der Dokumentation oder in den Einstellungen deiner Kamera.</p>
+<h2>KI-Erkennung: Coral oder CPU</h2>
+<p>Für die Objekterkennung hast du zwei Wege. Ohne Zusatzhardware läuft das TensorFlow-Lite-Modell auf der CPU – das funktioniert überall, kostet aber spürbar Rechenleistung, besonders bei mehreren Kameras.</p>
+<p>Deutlich effizienter ist ein <strong>Google Coral USB-Beschleuniger</strong> (Edge TPU). Er übernimmt die Inferenz und entlastet die CPU fast vollständig, sodass selbst ein Raspberry Pi mehrere Kameras gleichzeitig verarbeiten kann. In der <code>config.yml</code> wählst du den Detektor aus:</p>
+<pre><code>
+detectors:
+  coral:
+    type: edgetpu
+    device: usb
+</code></pre>
+<p>Ohne Coral lässt du den Abschnitt einfach weg und nutzt die Standard-CPU-Erkennung – für den Einstieg völlig ausreichend.</p>
+<h2>Integration mit Home Assistant</h2>
+<p>Frigate und Home Assistant ergänzen sich perfekt. Über die offizielle Frigate-Integration erscheinen Kameras, erkannte Objekte und Ereignisse direkt in deinem Smart-Home-Dashboard. Livebilder mit Einblendung der erkannten Objekte siehst du sofort in der Oberfläche.</p>
+<p>Die Kommunikation läuft per MQTT: Frigate veröffentlicht erkannte Objekte, Home Assistant reagiert darauf. So baust du Automatisierungen wie „Wenn nachts eine Person vor der Haustür erkannt wird, schalte das Licht ein und sende eine Benachrichtigung&quot;. Dafür aktivierst du in der <code>config.yml</code> den MQTT-Endpunkt und richtest in Home Assistant den MQTT-Broker sowie die Frigate-Integration ein.</p>
+<h2>Fazit</h2>
+<p>Frigate macht aus einfachen IP-Kameras eine leistungsfähige, datenschutzfreundliche Überwachung – komplett lokal, ohne Abo und ohne Cloud-Zwang. Die KI-Objekterkennung spart Speicher und macht Ereignisse durchsuchbar, der Coral-Beschleuniger hält auch schwache Hardware flott. Zusammen mit Home Assistant entsteht ein rundum lokales Sicherheitssystem, das dir allein gehört.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
+</body>
+</html>
