@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smarte Sensor-Kits (ESPHome) — Plug-and-Play, lokal &amp; DSGVO-konform · BsN</title>
+<meta name="description" content="Fertig konfigurierte Smart-Home-Sensoren auf ESPHome-Basis: Temperatur, Luftfeuchte, Bewegung, Tür/Fenster und Luftqualität. Plug-and-Play mit Home Assistant — ohne Cloud-Zwang, DSGVO-konform, lokal. Pakete ab 129 €.">
+<link rel="stylesheet" href="style.css">
+<style>
+  .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin: 28px 0; }
+  .plan { border: 1px solid var(--border, #333); border-radius: 10px; padding: 20px; }
+  .plan h3 { margin: 0 0 4px; }
+  .plan .preis { font-size: 1.6em; font-weight: 700; color: var(--accent, #4f8cff); margin: 6px 0; }
+  .plan .dauer { color: var(--muted-foreground, #999); font-size: 0.9em; margin-bottom: 12px; }
+  .plan ul { padding-left: 18px; font-size: 0.95em; line-height: 1.6; }
+  .plan.featured { border-color: var(--accent, #4f8cff); }
+  .plan .badge { display: inline-block; background: var(--accent, #4f8cff); color: #0d1117; font-size: 0.75em; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-bottom: 6px; }
+  .cta { background: var(--card, #1a1a1a); border-radius: 10px; padding: 22px; margin: 24px 0; text-align: center; }
+  .cta a { display: inline-block; background: var(--accent, #4f8cff); color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+  .vorteile { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 20px 0; }
+  .vorteil { border: 1px solid var(--border, #333); border-radius: 10px; padding: 16px; }
+  .vorteil h3 { margin: 0 0 6px; font-size: 1.05rem; color: var(--accent, #4f8cff); }
+  .vorteil p { margin: 0; font-size: 0.92em; color: var(--muted, #999); }
+  details.faq { border: 1px solid var(--border, #333); border-radius: 8px; padding: 14px 16px; margin: 10px 0; }
+  details.faq summary { cursor: pointer; font-weight: 600; }
+  details.faq p { margin: 10px 0 0; color: var(--muted, #999); font-size: 0.95em; }
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<main class="wrap">
+  <div class="content">
+    <h1>Smarte Sensor-Kits — fertig konfiguriert, Plug-and-Play, ohne Cloud.</h1>
+    <p>Raus aus der Cloud, rein ins eigene Heim: <strong>fertig konfigurierte Smart-Home-Sensoren</strong> auf ESPHome-Basis — Temperatur, Luftfeuchte, Bewegung, Tür/Fenster und Luftqualität. Auspacken, einstecken, in Home Assistant ansehen. <strong>Ohne Cloud-Zwang, ohne Abo, ohne Datenabfluss.</strong> Ihre Daten bleiben bei Ihnen.</p>
+
+    <h2>Warum smarte Sensoren von BsN?</h2>
+    <div class="vorteile">
+      <div class="vorteil"><h3>🔒 Kein Cloud-Zwang</h3><p>Alle Sensoren laufen lokal über Home Assistant — keine fremde Cloud, keine App-Pflicht, keine Server in Übersee.</p></div>
+      <div class="vorteil"><h3>🇪🇺 DSGVO &amp; Datenhoheit</h3><p>Messwerte bleiben in Ihrem Netzwerk. Kein Anbieter sammelt mit — voll DSGVO-konform, ideal auch für Büros und Praxen.</p></div>
+      <div class="vorteil"><h3>🔌 Plug-and-Play</h3><p>Vorkonfiguriert und getestet. Anstecken, ins WLAN einbinden (machen wir für Sie), fertig — ohne Löten, ohne Programmieren.</p></div>
+      <div class="vorteil"><h3>💶 Energie sparen</h3><p>Heizung und Lüften gezielt steuern, Fenster-Offen-Erkennung, Luftfeuchte-Überwachung — spürbar weniger Heiz- und Stromkosten.</p></div>
+      <div class="vorteil"><h3>⚡ Günstig &amp; erweiterbar</h3><p>Günstige Hardware (ESP32/D1 Mini) statt teurer Marken-Sensoren — und jederzeit beliebig erweiterbar, ohne Hersteller-Lock-in.</p></div>
+    </div>
+
+    <h2>Unsere Pakete</h2>
+    <div class="pricing">
+      <div class="plan">
+        <h3>Starter</h3>
+        <div class="preis">129 €</div>
+        <div class="dauer">Festpreis · inkl. MwSt. · ideal zum Einstieg</div>
+        <ul>
+          <li>2× Temperatur- &amp; Luftfeuchte-Sensor (BME280)</li>
+          <li>1× Tür-/Fenster-Kontakt</li>
+          <li>Home Assistant-Einbindung (bestehende Instanz)</li>
+          <li>Komplett vorkonfiguriert &amp; getestet</li>
+          <li>Kurzanleitung auf Deutsch</li>
+        </ul>
+      </div>
+      <div class="plan featured">
+        <span class="badge">Meistgewählt</span>
+        <h3>Standard</h3>
+        <div class="preis">249 €</div>
+        <div class="dauer">Festpreis · inkl. MwSt. · ganze Wohnung</div>
+        <ul>
+          <li>4× Temperatur- &amp; Luftfeuchte-Sensor</li>
+          <li>2× Tür-/Fenster-Kontakt</li>
+          <li>1× Bewegungsmelder (PIR)</li>
+          <li>Home Assistant-Einrichtung (Raspberry Pi / Mini-PC)</li>
+          <li>Einrichtung vor Ort oder per Fernwartung</li>
+          <li>30 Tage Support inklusive</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <h3>Pro</h3>
+        <div class="preis">449 €</div>
+        <div class="dauer">Festpreis · inkl. MwSt. · Haus / Büro</div>
+        <ul>
+          <li>6× Temperatur- &amp; Luftfeuchte-Sensor</li>
+          <li>3× Tür-/Fenster-Kontakt</li>
+          <li>2× Bewegungsmelder (PIR)</li>
+          <li>1× Luftqualität (CO₂ / TVOC)</li>
+          <li>Home Assistant inkl. Hardware (Green / Mini-PC)</li>
+          <li>Automatisierungen nach Wunsch (Lüften, Heizen, Alarm)</li>
+          <li>90 Tage Support inklusive</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Häufige Fragen</h2>
+    <details class="faq"><summary>Brauche ich technische Vorkenntnisse?</summary><p>Nein. Die Sensoren kommen fertig konfiguriert und getestet. Sie stecken sie nur noch an und sehen die Werte in Home Assistant — auf Wunsch richten wir alles komplett für Sie ein.</p></details>
+    <details class="faq"><summary>Was ist Home Assistant?</summary><p>Die lokale Smart-Home-Zentrale, die auf Ihrer eigenen Hardware läuft (z. B. ein Raspberry Pi oder Mini-PC). Sie bündelt alle Sensoren und Automatisierungen — ganz ohne Cloud. Im Pro-Paket ist die Hardware inklusive.</p></details>
+    <details class="faq"><summary>Funktioniert das auch ohne Internet?</summary><p>Ja. Alle Sensoren und Automatisierungen laufen lokal in Ihrem Netzwerk. Fällt das Internet aus, messen, loggen und schalten Ihre Sensoren trotzdem weiter.</p></details>
+    <details class="faq"><summary>Was kostet mich das im Betrieb?</summary><p>Praktisch nichts. Jeder Sensor verbraucht unter einem Watt — das sind wenige Euro Strom im Jahr. Laufende Abo-Kosten gibt es nicht; optional bieten wir Support-Pakete an.</p></details>
+    <details class="faq"><summary>Kann ich das System später erweitern?</summary><p>Ja, beliebig. Sie sind an keinen Hersteller gebunden — zusätzliche Sensoren (Wasser, Luftdruck, Garagentor …) ergänzen wir jederzeit nach Bedarf.</p></details>
+    <details class="faq"><summary>Sind die Sensoren DSGVO-konform?</summary><p>Ja. Da alle Daten lokal bleiben und kein Anbieter mitschneidet, ist der Betrieb datenschutzfreundlich — gerade für Büros, Praxen und vermietete Objekte relevant.</p></details>
+
+    <div class="cta">
+      <p><strong>Bereit fürs eigene Smart Home?</strong> Fordern Sie jetzt ein unverbindliches Angebot an — wir beraten Sie, welches Paket zu Ihrem Zuhause passt.</p>
+      <a href="mailto:kontakt@brillianze.de?cc=brillianze.de@gmail.com&subject=Anfrage%20Smarte%20Sensor-Kits">Jetzt anfragen →</a>
+      <p style="margin-top:10px;color:var(--muted-foreground,#999)">Kostenloses Erstgespräch · 15 Minuten · ohne Verpflichtung</p>
+    </div>
+
+    <p style="font-size:0.85em;color:var(--muted-foreground,#999)">Alle Preise verstehen sich als Richtwerte für Einzelunternehmen (BsN) in Deutschland, inkl. MwSt. Individuelle Angebote nach Aufwand — z. B. bei Sonderwünschen oder mehreren Etagen.</p>
+  </div>
+</main>
+<footer><div class="wrap"><p>© 2026 BsN · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></p></div></footer>
+</body>
+</html>
