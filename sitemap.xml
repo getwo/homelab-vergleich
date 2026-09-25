@@ -40,6 +40,9 @@
   <url><loc>https://homelab.brillianze.de/checkliste.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/ki-beratung.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/dienstleistungen.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/produkt-sensorkits.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/produkt-haustierportrait.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/produkt-pihole-box.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/ebook-lokale-ki-homelab.pdf</loc><priority>0.5</priority></url>
   <url><loc>https://homelab.brillianze.de/impressum.html</loc><priority>0.3</priority></url>
   <url><loc>https://homelab.brillianze.de/datenschutz.html</loc><priority>0.3</priority></url>
