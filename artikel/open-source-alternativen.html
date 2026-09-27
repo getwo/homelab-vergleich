@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die 5 besten Open-Source-Alternativen zu gängigen Cloud-Diensten</title>
+<meta name="description" content="Cloud-Dienste fürchten? Diese 5 Open-Source-Alternativen laufen selbst gehostet – mit voller Datenhoheit, ohne Abos und ohne Trackings. Ein Homelab-Leitfaden.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Die 5 besten Open-Source-Alternativen zu gängigen Cloud-Diensten</h1>
+<p>Wer heute einen Cloud-Dienst nutzt, mietet nicht nur Software – er überträgt Kontrolle über seine Daten, sein Arbeitsumfeld und oft auch seine Identität an einen Anbieter, über den er wenig weiß und der jederzeit Preise ändern, Funktionen abbauen oder Konten sperren kann. Die Antwort auf dieses Machtgefälle heißt nicht zwingend vollständige Digital-Enteignung: Sie heißt <strong>Open-Source-Selbsthosting</strong>. Mit der richtigen Software und einem günstigen Atom-Miner-Rechner aus dem Schlafschrank lässt sich eine private Infrastruktur aufsetzen, die besser, günstiger und datenschutzfreundlicher ist als das, was die Cloud anbietet.</p>
+<p>Dieser Artikel stellt fünf bewährte Open-Source-Alternativen vor – jeweils für einen der Dienste, von dem die meisten Nutzer glauben, man könne gar nicht weg. Alle genannten Projekte sind maturiert, aktiv gepflegt und auf Docker-Deployment ausgelegt.</p>
+<hr>
+<h2>1. Nextcloud – die Suite statt Google Drive, Dropbox und iCloud</h2>
+<p><strong>Empfohlener Ersatz für:</strong> Google Drive + Google Photos + iCloud + Dropbox</p>
+<p>Nextcloud ist die bekannteste und umfassendste Antwort auf die Cloud-Speicherkrise. Mit der Core-Installation kommen Datei-Sync, Freigabe, Kalender, Kontakte und ein Video-Streaming-Modul mit. Über tausend Integrations-Apps erweitern das Ökosystem bis hin zu Office-Suite (Collabora oder OnlyOffice), Messaging und sogar Machine-Learning-basierter Bildtagging.</p>
+<p>Das entscheidende Argument: Alle Daten bleiben auf dem eigenen Server. Ein Nextcloud-Instanz auf einem Raspberry Pi 5, einem Intel NUC oder einem lahmen VPS mit 4 GB RAM ist für eine typische Familie oder einen Einzelnutzer völlig ausreichend. Die offizielle Docker-Installation sowie die Anleitung von Cloudron oder Yunohost reduzieren den Aufwand auf wenige Minuten Grok-Programmierung.</p>
+<p><strong>Besonderheiten:</strong></p>
+<ul>
+<li><strong>E2E-verschlüsselte Dateifreigabe</strong> mit Passwortschutz und Ablaufdatum</li>
+<li><strong>Nextcloud Flow</strong> für automatisierte Regeln (neue Datei → Webhook → Fernabspann)</li>
+<li><strong>Deck</strong> als productivity-Ersatz für Notion/Trello-Erwachsene</li>
+</ul>
+<hr>
+<h2>2. Vaultwarden – der schlanke Bitwarden-Server</h2>
+<p><strong>Empfohlener Ersatz für:</strong> LastPass, 1Password, Bitwarden Cloud</p>
+<p>Dass Passwort-Manager in die Cloud ausgelagert werden, ist eines der riskantesten Architectur-Entscheidungen im Alltag. Vaultwarden ist eine komplette Rust-Implementation des Bitwarden-Servers, die auf einem Rechner mit 512 MB RAM läuft. Das bedeutet: Der eigene Vault mit allen Passwörtern, sicherer Notizen und geschäftlichen Zugangsdaten läuft selbstständig – mit voller Kontrolle über Backups, Zugriffsprotokolle und nichts, was an einen externen Anbieter geht.</p>
+<p>Kompatibel mit allen offiziellen Bitwarden-Clients (Browser, Desktop, Mobil), unterstützt ES256/RS256 für SSO und TOTP-Generierung direkt im Vault. Für Familien und kleine Teams sind Shared-Organisations-Ordner verfügbar, und Admins können Richtlinien setzen.</p>
+<p><strong>Kein Grund zur Sorge:</strong> Der Quellcode ist auditsicher, die Community aktiv, und selbst wenn der Server mal down ist – die Daten liegen lokal, nicht bei einem Anbieter, der ein Datenleck versteckt.</p>
+<hr>
+<h2>3. Jellyfin – Streaming ohne Abos und ohne Preispläne</h2>
+<p><strong>Empfohlener Ersatz für:</strong> Netflix, Amazon Prime Video, YouTube Premium (für eigene Medien)</p>
+<p>Jellyfin ist der Open-Source-Filme- und Serien-Streaming-Server ohne Katz&#x27; im Sack: Kein freemium-Trap, keine Werbung, kein Trackings, keine Lizenznetzwerk-Abhängigkeit. Der Server hostet eigene Film-, Serien- und Musikbibliotheken und streamt sie in jeder Bildschirmgröße an jedes Gerät – Smart-TV mit Jellyfin-App, Kodi, 있었고-Phone, Browser.</p>
+<p>Besonders hervorzuheben: Die <strong>Jellyfin-for-Android TV</strong>-Anwendung ist eine der besten TV-Erfahrungen, die kostenlose Software bieten kann. Untertitel, Mehrsprachigkeit, personalisierte Empfehlungen basierend auf eigenen Nutzungsdaten – und alle Basis-Funktionen des Premium-Modells von kommerziellen Diensten sind in Jellyfin ohne Einschränkung dabei.</p>
+<p>Einziger Haken: Man braucht eigene Medien. Jellyfin ersetzt keine Lizenzierung, aber es bezwingt das Problem, dass sonst ein Algorithmus entscheidet, was man sieht.</p>
+<hr>
+<h2>4. Pi-hole + AdGuard Home – DNS-basierte Blockierung selbst gemacht</h2>
+<p><strong>Empfohlener Ersatz für:</strong> Cloud-basierte Werbe- und Trackerblocker (NextDNS, AdGuard DNS, etc.)</p>
+<p>Wer sein Netzwerk auf der DNS-Ebene schützt, schützt jedes Gerät im Haushalt – ohne App-Installation auf jedem Endgerät, ohne Batterie-Verlust, ohne Privacy-Bedenken gegenüber einem externen DNS-Anbieter. Pi-hole ist der Klassiker: der ursprüngliche Werbeblocker, der über 15 Jahre im Home-Network-Umfeld gewachsen ist. AdGuard Home bietet eine moderne Alternative mit ähnlichem Featureumfang (DNS-Crypt, DoH-Unterstützung, nette Dashboards).</p>
+<p>Beide laufen auf extrem schwacher Hardware: ein Raspberry Pi Zero reicht für Pi-hole. Die Blocklisten (OISD, StevenBlack, etc.) werden regelmäßig aktualisiert, Custom-Blockierung per Regex möglich und alle Anfragen sind im Log einsehbar.</p>
+<p><strong>Einsatz-Szenarien:</strong></p>
+<ul>
+<li><strong>Smart Home:</strong> IoT-Geräte blockieren nachts</li>
+<li><strong>Kindergeräte:</strong> DNS-Filterung ohne root/profiling</li>
+<li><strong>Eigenen DNS-Server:</strong> Selbst gehostetes DoH/DoT-zu-Cloud-Überbrückung für Geräte, die keine DNS-Einstellungen können</li>
+</ul>
+<hr>
+<h2>5. Home Assistant – Smart Home ohne Cloud-Abhängigkeit</h2>
+<p><strong>Empfohlener Ersatz für:</strong> Alexa Routinen, Google Home Automatisierung, Philips Hue Cloud, Apple HomeKit (als Cloud-Pendant)</p>
+<p>Home Assistant ist mehr als eine Smart-Home-Plattform – es ist eine philosophische Antwort auf die Frage, wem das Zuhause gehört. Statt Gerätezustände an AWS, Google oder Apple zu senden, verarbeitet jede Regel, Routine und Sensorauswertung lokal auf dem eigenen Server. Das bedeutet: Licht schaltet sich aus, wenn der Bewegungsmelder am Ende des Flurs nichts meldet – und das funktioniert auch wenn das Internet ausgefallen ist, der Provider streikt oder das Firmware-Update versehentlich den Cloud-Zugang des Geräts flasht.</p>
+<p>Home Assistant unterstützt Tausende Geräte-Integrationen, vom einfachen Zigbee-Schalter über komplexe AVR-Netzwerke bis zu MQTT-basierten DIY-Komponenten. Die Visualisierung mit Lovelace ist flexibel, und mit Template-Sensoren und Automations-Engine lässt sich praktisch jedes Szenario abbilden.</p>
+<p><strong>Für wen ist es?</strong> Jeder, der bereits einen Atom-Miner-Rechner (oder besser: ein Mini-PC ohne Ruckler wie ein Thin Client) zur Verfügung hat und Lust hat, die eigenen Zuhause-Logik selbst zu schreiben. Für rein-Obagai-Nutzer, die klicken und fertig sein wollen, gibt es gebrauchsfertige Homepixel-Lösungen – aber die führen zurück in die Cloud.</p>
+<hr>
+<h2>Fazit: Selbsthosting ist kein Nischen-Thoerie mehr</h2>
+<p>Die Cloud war früher einfach – weil niemand Infrastructure warten wollte. Heute ist dieses Argument nicht mehr triftig: Docker Compose, Managed-Homelab-Tools wie Yunohost oder CasaOS sowie bewährte Deployment-Vorlagen aus der Community machen den Einstieg so einfach wie damals die Auswahl eines Cloud-Anbieters. Der Unterschied: Man schiebt das Risiko auf sich, ja – aber man tauscht es gegen echte Datenhoheit, bessere Kostenkontrolle und Systeme, die nicht mit einem Merchandising-Setup verbunden werden.</p>
+<p>Die fünf Projekte hier sind kein theoretisches Gedankenexperiment – sie sind im täglichen Haushalt getesteter Betrieb, von Familien, Freelancern und Homelab-Interessierten. Der Einstieg kostet einen Nachmittag. Die Vorteile läuft Jahre lang.</p>
+<hr>
+<p><strong>Verwandte Artikel auf homelab.brillianze.de:</strong></p>
+<ul>
+<li><a href="./nextcloud-docker-einrichtung.md">Nextcloud selbst gehostet: Docker-Container-Einrichtung für den Einstieg</a></li>
+<li><a href="./docker-compose-homelab-grundlagen.md">Docker Compose für Homelab-Bedürfnisse: Grundkonfiguration und Security-Grundregeln</a></li>
+<li><a href="./jellyfin-mini-pc-setup.md">Selbstgehosteter Medienserver: Jellyfin auf einem Mini-PC im Detail</a></li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
