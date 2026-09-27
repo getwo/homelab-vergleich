@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mealie einrichten: Selbstgehostete Rezeptverwaltung mit Docker Compose</title>
+<meta name="description" content="Mealie selbst hosten: Schritt-für-Schritt-Anleitung mit Docker Compose. Rezeptverwaltung, Meal-Planer und Einkaufsliste – privat, ohne Cloud-Abo und vollständig unter deiner Kontrolle.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Mealie einrichten: Selbstgehostete Rezeptverwaltung mit Docker Compose</h1>
+<p>Stapelweise Rezeptkarten, zerschnittene Zeitungsausschnitte und Reste kalter URL-Links: Viele Hobbykochs haben ihre Inspiration zerstreut, weil sie sie in fünf verschiedenen Apps und Clouds hinterlegt haben. Mealie ändert das. Die quelloffene Plattform bündelt Rezepte, Meal-Planer und Einkaufsliste an <strong>einem Ort</strong> – selbst gehostet, ohne Tracking und ohne Abo. In dieser Anleitung baust du Mealie mit Docker Compose auf, importierst deine ersten Rezepte und richtest ein wöchentliches Planungssystem ein, das du danach täglich nutzt.</p>
+<h2>Was ist Mealie und warum selbst hosten?</h2>
+<p>Mealie (früher Mew) ist eine selbst gehostete Koch- und Rezeptplattform, die aus drei Bausteinen besteht: einer <strong>Rezeptdatenbank</strong>, einem <strong>Meal-Planer</strong> und einer automatisch generierten <strong>Einkaufsliste</strong>. Alle drei hängen zusammen: Du findest ein Rezept, planst es in die Woche ein, und Mealie listet die benötigten Zutaten zusammengefasst auf – skaliert auf die portionen, die du geplant hast.</p>
+<p>Die Alternative ist eine Cloud-Rezept-App. Die Nachteile sind konkret:</p>
+<ul>
+<li><strong>Datenhoheit:</strong> Deine Rezepte, Mahlzeitenpläne und Einkaufslisten bleiben auf deinem Server. Kein Anbieter parsiert, was du kochst.</li>
+<li><strong>Kostenlos und ohne Abo:</strong> Mealie ist unter der MIT-Lizenz verfügbar. Keine Premium-Funktionen, die hinter einer Paywall liegen.</li>
+<li><strong>Offline-fähig:</strong> Sobald Docker läuft, funktioniert Mealie lokal – ohne Internetverbindung.</li>
+<li><strong>Erweiterbar:</strong> Eine offene API und Webhooks lassen sich an eigene Workflows anbinden (zum Beispiel Kalender-Synchronisation oder Per-URL-Import).</li>
+</ul>
+<p>Mealie repräsentiert den Trend hin zu <strong>Self-Hosted Diensten</strong>, bei denen der Nutzer die volle Kontrolle behält. Weitere Projekte in dieser Kategorie findest du in unserem Überblick <a href="self-hosted-dienste-2026.md">Die 15 besten Self-Hosted Dienste für dein Homelab 2026</a>.</p>
+<h2>Funktionen im Überblick: Rezepte, Meal-Planer, Einkaufsliste</h2>
+<p>Mealie hat drei Kernbereiche, die aufeinander aufbauen:</p>
+<p><strong>Rezepte speichern und organisieren.</strong> Mealie unterstützt mehrere Wege, Rezepte hinzuzufügen: Manuelles Erstellen über den Editor, automatischen Import von URLs (Rezeptbilder, Zutaten und Anleitung werden dabei extrahiert) sowie JSON-Import für Stapel. Rezepte lassen sich mit Kategorien, Tags und Bildern versehen – so findest du später &quot;quick weeknight pasta&quot; oder &quot;meal-prep bowls&quot; in Sekunden.</p>
+<p><strong>Meal-Planer.</strong> Über den Planer legst du für jede Woche fest, welches Rezept an welchem Tag serviert wird. Mealie zeigt den Plan als Kalenderansicht an und summiert automatisch die Zutaten für die geplanten Portionen.</p>
+<p><strong>Einkaufsliste.</strong> Aus dem Meal-Plan werden die Zutaten direkt in die Einkaufsliste überführt – gruppiert nach Kategorien wie Gemüse, Milchprodukte oder Gewürze. Du kannst die Liste manuell anpassen, ganze Zeilen streichen oder Portionsänderungen vornehmen, bevor du einkaufst.</p>
+<h2>Mealie per Docker Compose installieren</h2>
+<p>Die Installation führt über Docker Compose – vergleichbar zur <code>docker-compose.yml</code>-Nachstellung von Paperless-ngx. Self-Hosting mit Docker ist das robusteste Format: Einzelne Containerspitzen sind isoliert, Daten liegen in Named Volumes und Updates sind ein <code>docker compose pull &amp;&amp; docker compose up -d</code>.</p>
+<h2>Voraussetzungen</h2>
+<ul>
+<li>Ein Server oder NAS, auf dem Docker Compose verfügbar ist. Empfehlungen für die Hardware findest du in unseren Guides <a href="nas-2026.html">NAS-2026</a>, <a href="minipc-homelab.html">Minipc-Homelab</a> und <a href="proxmox-einsteiger-guide.html">Proxmox-Einsteiger-Guide</a>.</li>
+<li>Grundkenntnisse von Docker Compose (Begleitartikel: <a href="docker-einsteiger.md">Docker-Einsteiger</a>).</li>
+<li>Optional: Ein Reverse Proxy vor Mealie, wenn der Dienst aus dem Internet erreichbar sein soll. Der Aufbau erklärt unser <a href="reverse-proxy.html">Reverse-Proxy-Artikel</a>.</li>
+</ul>
+<h2>Verzeichnisstruktur</h2>
+<p>Erstelle ein Projektverzeichnis und strukturiere es so:</p>
+<pre><code>
+/home/mealie/
+├── docker-compose.yml
+├── mealieconfig/
+│   └── mealieconfig.yml
+└── data/          ← von Docker verwaltet (Volumen)
+</code></pre>
+<p>Die App und die Daten werden durch Docker in Volumes gehalten. Konfigurationsänderungen landen in der eigenen <code>mealieconfig/</code>-Ordnerstruktur, damit sie beim Update bestehen bleiben.</p>
+<h2>docker-compose.yml</h2>
+<p>Die minimale Konfiguration für Mealie umfasst den Web-Container und ein Daten-Volumen:</p>
+<pre><code>
+services:
+  mealie:
+    image: gustaphe/mealie:latest
+    container_name: mealie
+    restart: unless-stopped
+    ports:
+      - &quot;8080:80&quot;
+    volumes:
+      - ./data:/app/data
+      - ./mealieconfig:/app/config
+    environment:
+      - MEALIE_SECRET_KEY=changeme-in-production
+      - MEALIE_TIMEZONE=Europe/Berlin
+      - MEALIE_FIRST_NAME=Admin
+      - MEALIE_LAST_NAME=User
+      - MEALIE_EMAIL=admin@localhost
+      - MEALIE_USERNAME=admin
+      - MEALIE_PASSWORD=changeme-in-production
+      - MEALIE_REGISTERABLE=off
+</code></pre>
+<p>Wichtige Punkte bei der Konfiguration:</p>
+<ul>
+<li><code>MEALIE_SECRET_KEY</code> muss im Produktivbetrieb durch einen zufälligen, langen Wert ersetzt werden – er schützt die Sitzungen und internen Token.</li>
+<li><code>MEALIE_TIMEZONE</code> sollte auf deine Zeitzone gesetzt werden, damit Meal-Planer und Einkaufsliste korrekt datiert sind.</li>
+<li>Die Standard-Bindung an Port 8080 lässt sich an ein freies Interface anpassen oder über einen Reverse Proxy (z. B. Nginx Proxy Manager) nach außen schalten.</li>
+<li>Um Datenbanken mittels PostgreSQL statt der eingebauten SQLite-Version zu betreiben, füge einen <code>db</code>-Block mit einem postgres-Container und die passenden Umgebungsvariablen hinzu.</li>
+</ul>
+<h2>Erster Start und Admin-Login</h2>
+<p>Starte den Stack mit:</p>
+<pre><code>
+docker compose up -d
+</code></pre>
+<p>Danach erreichst du die Oberfläche unter <code>http://&lt;deine-ip&gt;:8080</code>. Beim allerersten Start erstellt Mealie automatisch das Admin-Konto aus den Umgebungsvariablen. Melde dich mit den in der <code>docker-compose.yml</code> angegebenen Zugangsdaten an.</p>
+<p>Nach dem Login solltest du sofort:</p>
+<p>1. Den <code>MEALIE_SECRET_KEY</code> und das Admin-Passwort im laufenden Betrieb durch einen neuen Wert ersetzen (über die Oberfläche oder neuestart mit aktualisierter Compose-Datei).</p>
+<p>2. Zu den Einstellungen navigieren und die Sprach- und Datumsformatierung auf Deutsch stellen.</p>
+<p>3. Optional: E-Mail-Benachrichtigungen aktivieren, falls du die Einkaufslisten per Post versenden möchtest (erfordert SMTP-Konfiguration in den Einstellungen).</p>
+<h2>Rezepte importieren und organisieren</h2>
+<p>Mealie bringt mehrere Import-Methoden mit, damit du nicht Manuelles Eintippen für jedes Rezept wiederholst.</p>
+<h2>Import von URLs</h2>
+<p>Die praktischste Methode: Kopiere die URL eines Rezepts in das Import-Feld. Mealie holt die Seite, extrahiert Titel, Zutaten, Anleitungsschritte und Bilder und erstellt einen neuen Rezept-Eintrag. Das Verfahren ist nicht zuverlässig für jede Website – unübliche Site-Strukturen führen zu unvollständigen Imports – aber die meisten großen Rezept-Seiten funktionieren.</p>
+<h2>JSON-Import für Stapel</h2>
+<p>Für Sammlungen mehrerer Rezepte gleichzeitig bietet Mealie einen JSON-Import an. Das JSON-Schema orientiert sich an einem einfachen Format: Titel, Zutatenliste (je Zutat mit Menge und Einheit), Anleitung als Array von Schritten und optionale Felder für Tags, Kategorien und Bild-URL. Das ist nützlich, wenn du Legacy-Rezeptdaten aus einem anderen System übernimmst.</p>
+<h2>Kategorien, Tags und Bilder</h2>
+<p>Rezepte lassen sich nach Tags (z. B. &quot;vegetarisch&quot;, &quot;meal-prep&quot;, &quot;under 30 min&quot;) und Kategorien (z. B. &quot;Hauptgericht&quot;, &quot;Dessert&quot;, &quot;Snack&quot;) organisieren. Kategorien strukturieren die Browse-Ansicht, Tags ermöglichen facettenartige Filter. Rezepte ohne eigenes Bild kannst du später durch Upload oder URL ergänzen.</p>
+<h2>Backup und Updates</h2>
+<p>Mealie speichert seine Daten in einem Docker-Volumen. Ein Backup des <code>data/</code>-Ordners reicht für die meisten Installationen. Der Ordner enthält die SQLite-Datenbank, hochgeladene Bilder und Konfigurationsdateien.</p>
+<p><strong>Backup:</strong> Kopiere regelmäßig den <code>data/</code>-Ordner auf dein Backup-Ziel (lokale NAS, externen Stick, objektstorage-Backup). Für automatisierte Backups auf Proxmox-Ebene siehe <a href="proxmox-backups-automatisieren.md">Proxmox-Backups automatisieren</a>.</p>
+<p><strong>Updates:</strong> Pull das neueste Image und bilde den Container neu:</p>
+<pre><code>
+docker compose pull
+docker compose up -d
+</code></pre>
+<p>Vor einem Update unbedingt ein aktuelles Backup erstellen – Datenbankmigrationen kommen mit neueren Releases und können in seltenen Fällen nicht rückgängig gemacht werden.</p>
+<h2>FAQ zu Mealie</h2>
+<p><strong>Kann ich Mealie mit mehreren Personen teilen?</strong></p>
+<p>Ja. Mealie unterstützt mehrere Benutzer mit unterschiedlichen Rollen. Du kannst Leserechte, Schreibzugänge und Admin-Berechtigungen pro Nutzer vergeben. Das ist nützlich für Haushalte, Familien oder kleine Gemeinschaften, die gemeinsam planen.</p>
+<p><strong>Welche Alternativen gibt es zu Mealie?</strong></p>
+<p>TastyPlan (eher kuratierte Community-Plattform), Paprika (Passive Rezept-Sammlung ohne Meal-Planner) und Supercook (reiner Einkaufs-Assistent). Mealie kombiniert drei Bausteine in einem und läuft selbst gehostet.</p>
+<p><strong>Reicht der eingebauten SQLite-Datenbank?</strong></p>
+<p>Für Einzelnutzer und kleine Haushalte ja. Bei mehreren gleichzeitigen Nutzern mit häufigen Schreibvorgängen kann PostgreSQL skalierbarer sein – die Container-Konfiguration ist dafür anpassbar.</p>
+<p><strong>Kann ich Mealie mit einem Kalender synchronisieren?</strong></p>
+<p>Mealie exportiert Plan-Daten. Eine vollumfängliche Kalender-Synchronisation (z. B. nach Google Calendar oder CalDAV) ist kein Kernfeature, lässt sich aber über Webhooks oder den API-Zugriff anbinden.</p>
+<p><strong>Läuft Mealie auf einem Raspberry Pi?</strong></p>
+<p>Prinzipiell ja, da Mealie in Python läuft und der Container nicht GPU-beschleunigt. Für reine Textverarbeitung mit wenigen Nutzern ist ein Pi ausreichend; Import-Performance (Bildverarbeitung, OCR) profitiert von etwas mehr CPU-Power. Empfehlungen für Low-Power-Hardware findest du im <a href="raspberry-pi-homelab.html">Raspberry Pi Homelab</a>.</p>
+<h2>Interne Links</h2>
+<ul>
+<li><a href="self-hosted-dienste-2026.md">Die 15 besten Self-Hosted Dienste für dein Homelab 2026</a> – Mealie im Kontext anderer Dienste</li>
+<li><a href="docker-einsteiger.md">Docker-Einsteiger</a> – Grundlagen zu Docker Compose</li>
+<li><a href="nas-2026.html">NAS-2026</a> – Hardware-Empfehlungen für selbst gehostete Dienste</li>
+<li><a href="proxmox-einsteiger-guide.html">Proxmox-Einsteiger-Guide</a> – Betriebssystem für den Dienst-Hoster</li>
+<li><a href="reverse-proxy.html">Reverse-Proxy</a> – Dienste sicher aus dem Internet erreichbar machen</li>
+<li><a href="stromkosten-homelab.md">Stromkosten im Homelab</a> – Betriebskosten einkalkulieren</li>
+</ul>
+<hr>
+<p><strong>Affiliate-Hinweis (noch nicht live):</strong> In einer späteren Version dieses Artikels werden Affiliate-Links zu Synology NAS (DS223/DS423) als Host und Hetzner-VPS für externes Hosting eingefügt. Die Links werden erst nach Konfiguration mit echten Publisher-IDs aktiviert und durch eine Offenlegung nach §5 DDG gekennzeichnet.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
