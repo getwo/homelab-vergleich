@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eigenen Mailserver betreiben: Warum es schwierig ist und wann es sich lohnt</title>
+<meta name="description" content="Mailserver selbst hosten: SPF, DKIM, DMARC, PTR, IP-Reputation – Vergleich Mailcow vs. Postfix/Dovecot vs. Relay, Umzug aus Cloud und häufige Fehler.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Eigenen Mailserver betreiben: Was hinter den Kulissen passiert</h1>
+<p>Du hast bereits mehrere Dienste selbst gehostet – vielleicht Nextcloud, einen Reverse Proxy, ein paar Webservices – und nun kommt der Gedanke: Warum nicht auch den Mailserver selbst betreiben? Es klingt nach der logischen Vollendung der Selbsthosting-Idee. Alles auf der eigenen Hardware, alles unter eigener Kontrolle, keine Abhängigkeit von einem Cloud-Anbieter.</p>
+<p>Bei Webdiensten stimmt das meist. Bei Mail sehr oft nicht.</p>
+<p>Denn beim Mailserver geht es nicht nur darum, Mails zu empfangen und zu senden. Es geht darum, Mails zu senden, die beim Empfänger ankommen – und nicht in dessen Spam-Ordner landen oder gar abgelehnt werden. Und das ist eines der aufwendigsten Probleme im Selfhosting, weil es von externen Faktoren abhängt, die du nicht kontrollierst: IP-Reputationsdatenbanken, Spam-Filter von Gmail und Outlook, Richtlinien von großen Empfängern, und eine Anాలే లేదు Lieferkette von DNS-Einträgen, die alle korrekt sein müssen.</p>
+<p>Der Artikel erklärt, was du brauchst, bevor du überhaupt startest, wie du die einzelnen Komponenten einrichtest, welchen Weg du konkret gehst, und wo die häufigsten Fehler liegen. Keine Versprechungen – nur Dienste und Konfigurationen, die tatsächlich existieren.</p>
+<hr>
+<h2>Warum Mail das schwierigste Selfhosting-Projekt ist</h2>
+<p>Bei einem Webserver hast du eine Domain, ein Zertifikat, einen Port und bist erreichbar. Bei Mailservern gibt es eine zusätzliche Dimension: Reputation.</p>
+<p>Jeder Mailserver auf der Welt hat eine Reputation – eine Art Bonität, die von Empfängern und Spam-Filteranbietern bewertet wird. Wenn du einen neuen Server aufsetzt, beginnt er mit keiner Reputation – und damit oft mit einem Problem. Große E-Mail-Provider wie Gmail, Outlook/Hotmail, Yahoo und viele Firmensysteme betrachten eingehende Mails von neuen oder unbekannten Servern mit Skepsis. Das zeigt sich typischerweise so:</p>
+<ul>
+<li>Mails landen im Spam-Ordner</li>
+<li>Mails werden abgelehnt mit Fehlermeldungen wie &quot;550 5.7.1 Rejection&quot; oder &quot;421 Too many connections&quot;</li>
+<li>Mails werden nur dann angenommen, wenn der Absender eine etablierte Reputation hat</li>
+</ul>
+<p>Reputation ist kein einzelner Schalter, den du setzt. Sie ist das Ergebnis von mehreren Faktoren: der IP-Adresse, der Domain, der Konfigurationskorrektness, dem Versandverhalten über Zeit, und wie andere Server deine Mails behandeln – also eine Kombination aus Technik und Zeit.</p>
+<p>Das Problem ist, dass du Reputation nicht einfach &quot;bekommst&quot; – du musst sie aufbauen. Und der Aufbau dauert. Die ersten Wochen nach Inbetriebnahme sind typischerweise die schwierigste Phase, weil deine Mails ohne etablierte Reputation oft begrenzt zustellen oder abgelehnt werden.</p>
+<hr>
+<h2>Die Pflicht-Komponenten: IP-Reputation, PTR, SPF, DKIM, DMARC</h2>
+<p>Bevor du einen Mailserver installierst, musst du die DNS-basierten und reputationsrelevanten Komponenten verstehen. Ohne diese Komponenten landest du schnell in einer Situation, in der Mails technisch funktionieren, aber nicht beim Empfänger ankommen.</p>
+<h2>IP-Reputation und statische IP</h2>
+<p>Deine IP-Adresse ist einer der wichtigsten Reputation-Faktoren. Wenn du eine dynamische IP hast (wie bei vielen Hausanschlüssen), wird dein Mailversand wahrscheinlich nicht funktionieren, weil viele Provider dynamische IPs blockieren oder stark einschränken. Für einen eigenen Mailserver ist eine statische IPv4-Adresse praktisch unverzichtbar.</p>
+<p>Eine statische IP bedeutet: Die IP-Adresse ändert sich nicht. Das ist wichtig, weil Reputation an die IP gebunden ist – wenn sich die IP ändert, ist die Reputation weg.</p>
+<h2>Reverse DNS (PTR)</h2>
+<p>PTR (Pointer Record) ist der DNS-Eintrag, der einer IP-Adresse einen Hostnamen zuordnet – die Umkehrung des normalen A-Records. Für Mailserver ist PTR essentiell, weil viele empfangende Server prüfen, ob die IP-Adresse des Absenders einen korrekten PTR-Eintrag hat. Ohne PTR oder mit einem PTR, der nicht zum Hostnamen des Mailservers passt, werden Mails oft abgelehnt.</p>
+<p>PTR wird nicht in deinem eigenen DNS verwaltet – es wird von dem Provider verwaltet, der die IP-Adresse zugewiesen hat. Wenn du eine IP bei einem Hosting-Provider hast, musst du beim Provider eine PTR-Änderung beantragen oder konfigurieren. Die IP muss auf einen Hostnamen zeigen, der wiederum auf die IP zeigt – eine zirkuläre Verifikation, die viele Spam-Filter prüfen.</p>
+<h2>SPF (Sender Policy Framework)</h2>
+<p>SPF ist ein DNS-Eintrag (TXT-Record) auf deiner Domain, der angibt, welche Server Mails in deinem Auftrag senden dürfen. Ein Beispiel:</p>
+<pre><code>
+v=spf1 ip4:198.51.100.28 -all
+</code></pre>
+<p>Das sagt: Nur die IP 198.51.100.28 darf Mails für diese Domain senden. <code>-all</code> bedeutet &quot;alle anderen verbieten&quot;. Es gibt auch <code>~all</code> (soft fail) und <code>?all</code> (neutral), aber für einen klar konfigurierten Server ist <code>-all</code> die saubere Variante, wenn du wirklich nur einen Server hast.</p>
+<p>SPF ist einer der grundlegendsten Schutzmechanismen. Wenn du SPF nicht hast, kann jeder beliebige Server Mails in deiner Domain verschicken – und viele Empfänger behandeln das als verdächtig.</p>
+<h2>DKIM (DomainKeys Identified Mail)</h2>
+<p>DKIM fügt einer jeden abgesendeten Mail einen kryptographischen Signaturalgorithmus hinzu. Der Empfänger prüft die Signatur anhand eines Public-Keys, den du im DNS bereitstellst. Wenn die Signatur stimmt, weiß der Empfänger, dass die Mail nicht manipuliert wurde und wirklich von dir kam.</p>
+<p>DKIM erzeugt ein Schlüsselpaar – einen privaten Schlüssel auf dem Server und einen öffentlichen Schlüssel im DNS. Der Server signiert Mails mit dem privaten Schlüssel, der Empfänger verifiziert mit dem öffentlichen Schlüssel.</p>
+<p>Die DNS-Ausgabe für DKIM sieht typischerweise so aus (der exakte Name hängt von der Software und dem Selector ab):</p>
+<pre><code>
+mailing._domainkey.example.com.  IN  TXT  &quot;v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQ...&quot;
+</code></pre>
+<h2>DMARC (Domain-based Message Authentication, Reporting and Conformance)</h2>
+<p>DMARC ist ein DNS-Eintrag (TXT-Record auf <code>_dmarc.deinedomain.de</code>), der angibt, wie ein Empfänger reagieren soll, wenn SPF oder DKIM fehlschlagen. DMARC setzt also auf SPF und DKIM auf – es ist kein Ersatz, sondern ein Policy-Empfehlungssystem.</p>
+<p>Ein typischer DMARC-Eintrag für den Start:</p>
+<pre><code>
+v=DMARC1; p=none; rua=mailto:dmarc-reports@example.com
+</code></pre>
+<ul>
+<li><code>p=none</code> bedeutet: Noch nichts tun, nur Berichte sammeln. Das ist die empfohlene Startposition, weil du erst sehen willst, was passiert, bevor du harte Regeln aktivierst.</li>
+<li><code>p=quarantine</code> bedeutet: Mails, die die Prüfung nicht bestehen, in Quarantäne verschieben.</li>
+<li><code>p=reject</code> bedeutet: Mails, die die Prüfung nicht bestehen, ablehnen.</li>
+</ul>
+<p><strong>Wichtig:</strong> Beginne mit <code>p=none</code>. Wenn du direkt mit <code>p=reject</code> startest und etwas ist falsch, werden deine eigenen Mails abgelehnt. Also erst berichten, dann nachsehen, dann Schritt für Schritt verschärfen.</p>
+<hr>
+<h2>Vergleich: Mailcow vs. Postfix mit Dovecot vs. reines Relay</h2>
+<p>Es gibt mehrere Wege, einen Mailserver zu betreiben. Die drei wichtigsten Optionen sind:</p>
+<p>| Kriterium | Mailcow (vorkonfigurierter Stapel) | Postfix + Dovecot (Eigenbau) | Reines Relay (z.B. über Externen MTA) |</p>
+<p>|---|---|---|---|</p>
+<p>| <strong>Einrichtungsaufwand</strong> | Mittel: Docker-Compose, Konfiguration über Web-UI, aber viele Komponenten laufen automatisch | Hoch: Jede Komponente manuell konfigurieren, Postfix, Dovecot, TLS, DKIM, Dspam/Rspamd, Datenbank, Firewall-Regeln | Niedrig: Nur DNS und Relay-Einstellungen; kein eigener Empfangsserver |</p>
+<p>| <strong>Weboberfläche</strong> | Ja: Vollständige Admin-UI für Domains, Benutzer, Filter, Logs, Wartung | Nein: Konfiguration über Dateien und CLI; optional Webmail (Roundcube, SnappyMail) als separates Paket | Nein: Nur Einstellungen beim Relay-Provider |</p>
+<p>| <strong>Filterregeln</strong> | Integriert: Rspamd, ClamAV, Sieve-Filter, benutzerdefinierbare Regeln über UI | Manuell: Rspamd oder SpamAssassin selbst konfigurieren, Sieve für Benutzerregeln | Wenig kontrollierbar: Der Relay setzt eigene Filter; du hast wenig Einfluss auf Empfangsfilter |</p>
+<p>| <strong>Backup</strong> | Datenbank (MySQL/MariaDB) und Mail-Speicher (im Docker-Volume oder auf Platte) – klar getrennt | Datenbank (falls verwendet, z.B. für virtual users) und Mail-Speicher – muss selbst konfiguriert werden | Kein eigener Mailspeicher – E-Mails beim Relay; Backup ist Aufgabe des Relays |</p>
+<p>| <strong>Ressourcenbedarf</strong> | Mittel bis hoch: Mehrere Container, Rspamd, ClamAV (optional), Admin-UI; auf einem kleinen System heftig | Variabel: Postfix ist leicht, Dovecot ebenfalls; Rspamd/SpamAssassin können zusätzlichen Bedarf erzeugen; insgesamt kleiner als Mailcow | Sehr gering: Kein eigener Server, nur DNS und Konfiguration |</p>
+<p>| <strong>Fehleranfälligkeit</strong> | Geringer: Vorkonfiguration, automatisierte Komponenten; Fehler entstehen eher bei manuellen Änderungen an der UI-Konfiguration | Hoch: Viele manuelle Komponenten, jede muss korrekt sein; eine fehlerhafte Postfix-Konfiguration, fehlerhafter TLS oder fehlendes DKIM-Key kann zu Mailverlust führen | Gering: Kein eigener Server, aber Abhängigkeit von externem Relay; Probleme beim Relay wirken sich direkt auf den eigenen Versand aus |</p>
+<p>Mailcow ist die vollständigste Lösung, wenn du alles selbst haben willst – mit der höchsten Ressourcenanforderung. Postfix + Dovecot gibt dir volle Kontrolle, aber auch volle Verantwortung und den größten Konfigurationsaufwand. Ein reines Relay ist die einfachste Lösung, hat aber den größten Kontrollverlust – du hast keinen eigenen Empfangsserver, keine eigene Filterung, und du bist abhängig von einem externen Dienst.</p>
+<p>Mailcow wird über Docker-Compose installiert und bietet eine Web-Oberfläche für die Administration. Die Dokumentation ist öffentlich verfügbar unter der Mailcow-Webseite und im GitHub-Repository. Postfix und Dovecot sind Einzelkomponenten, die separat installiert und konfiguriert werden müssen.</p>
+<hr>
+<h2>Der realistische Weg: Schritt für Schritt</h2>
+<p>Die Reihenfolge ist wichtig. Viele Fehler entstehen, weil man in die falsche Reihenfolge geht – zum Beispiel SPF einrichtet, bevor die IP und PTR korrekt sind, oder DMARC mit zu strengen Regeln startet.</p>
+<h2>Schritt 1: Domain vorbereiten</h2>
+<p>Du brauchst eine Domain, die du kontrollierst. Es geht nicht darum, eine Subdomain oder ein kostenloses Hosting zu nehmen – du brauchst eine Domain, bei der du die DNS-Einträge selbst setzen kannst. Das ist die Grundlage für SPF, DKIM, DMARC – alles basiert auf der Domain.</p>
+<p>Wenn du eine Domain hast, stelle sicher, dass du Zugriff auf den DNS-Hoster hast, um TXT-, A-, MX- und andere Records zu setzen.</p>
+<h2>Schritt 2: Statische IP und Port 25 beim Provider klären</h2>
+<p>Bevor du den Server einrichtest, kläre folgendes beim Hosting-Provider:</p>
+<ul>
+<li><strong>Statische IPv4-Adresse</strong>: Du brauchst eine feste IP, die sich nicht ändert.</li>
+<li><strong>Port 25 (SMTP) geöffnet</strong>: Viele Provider blockieren Port 25 von Haus aus, um Spam zu verhindern. Das ist einer der häufigsten Haken für Einsteiger – du richtest alles korrekt ein, aber Mails können nicht versenden, weil Port 25 blockiert ist. Frage beim Provider explizit nach, ob Port 25 ausgehend (für Relay) und/oder eingehend (für eigenen Empfang) erlaubt ist.</li>
+</ul>
+<h2>Schritt 3: PTR (Reverse DNS) beim Provider einrichten</h2>
+<p>Sobald die statische IP da ist, richte beim Provider den PTR-Eintrag ein. Der PTR muss auf einen Hostnamen zeigen, der als Mailserver identifiziert wird – typischerweise etwas wie <code>mail.example.com</code>.</p>
+<p>Der Hostname in der PTR muss wiederum auf die IP zeigen (ein A-Record für <code>mail.example.com</code> muss auf die IP zeigen). Das ist die zirkuläre Verifikation, die viele Server prüfen.</p>
+<h2>Schritt 4: SPF einrichten</h2>
+<p>Setze den SPF-Eintrag in deinem DNS. Für den Anfang ein konkretes Beispiel – wenn dein Server die IP 198.51.100.28 ist und nur dieser Server Mails senden soll:</p>
+<pre><code>
+example.com.  IN  TXT  &quot;v=spf1 ip4:198.51.100.28 -all&quot;
+</code></pre>
+<p>Teste SPF nach der Einrichtung mit Tools wie <code>dig</code> oder <code>nslookup</code>, bevor du weitere Einträge hinzufügst:</p>
+<pre><code>
+dig example.com txt
+</code></pre>
+<h2>Schritt 5: DKIM einrichten</h2>
+<p>DKIM erfordert die Konfiguration auf dem Server (Schlüsselerzeugung und Signierung) sowie den DNS-Eintrag (öffentlicher Schlüssel).</p>
+<p>Bei Mailcow wird DKIM typischerweise über die Admin-Oberfläche verwaltet – du erstellst einen Selector, Mailcow generiert den Schlüssel, und du kopierst den öffentlichen Schlüssel in den DNS.</p>
+<p>Bei Postfix + Dovecot musst du DKIM selbst konfigurieren – typischerweise mit OpenDKIM oder Rspamd, die einen Schlüssel generieren und die Signierung übernehmen. Der öffentliche Schlüssel wird dann als TXT-Record im DNS eingetragen.</p>
+<p>Teste DKIM mit Tools wie <code>opendkim-testkey</code> oder einem Online-DKIM-Test, nachdem du den DNS-Eintrag gesetzt hast.</p>
+<h2>Schritt 6: DMARC einrichten – mit p=none starten</h2>
+<p>Setze den DMARC-Eintrag mit <code>p=none</code>, um Berichte zu sammeln, bevor du harte Regeln aktivierst:</p>
+<pre><code>
+_dmarc.example.com.  IN  TXT  &quot;v=DMARC1; p=none; rua=mailto:dmarc@example.com&quot;
+</code></pre>
+<p>Der <code>rua</code>-Teil ist die Adresse, an die Berichte gesendet werden. Diese Berichte sind XML-Dateien mit Informationen darüber, was Empfänger über deine Mails denken – eine nützliche Quelle, um Probleme zu erkennen.</p>
+<p>Warte eine bis zwei Wochen mit <code>p=none</code>, bevor du schrittweise zu <code>p=quarantine</code> und später zu <code>p=reject</code> gehst. Das gibt dir Zeit, Probleme zu erkennen, ohne dass Mails abgelehnt werden.</p>
+<hr>
+<h2>Umzug bestehender Postfächer von einem Cloud-Anbieter</h2>
+<p>Wenn du von einem Cloud-Mail-Anbieter (z.B. Google Workspace, Microsoft 365, IONOS, Host Europe) zu einem eigenen Server umziehst, ist das ein umfassenderes Projekt als nur den Server aufzusetzen.</p>
+<h2>Was du brauchst</h2>
+<ul>
+<li>Zugriff auf die alten Postfächer (Admin-Zugriff oder User-Zugriff mit IMAP)</li>
+<li>Zugriff auf die Domain-DNS (für SPF, DKIM, DMARC, MX-Record-Umschaltung)</li>
+<li>Einen Zeitplan für den Umzug, weil nicht alle Mails gleichzeitig umgezogen werden können</li>
+</ul>
+<h2>Der Umzugsprozess</h2>
+<p>1. <strong> neuen Mailserver einrichten und testen</strong> – bevor du etwas umziehst, muss der neue Server funktionsfähig sein: Mails empfangen, Mails versenden, SPF/DKIM/DMARC korrekt, PTR gesetzt.</p>
+<p>2. <strong> MX-Records umstellen</strong> – sobald der neue Server bereit ist, stellst du die MX-Records auf den neuen Server um. Achtung: Das hat eine Verbreitungszeit in DNS – einige Systeme nutzen die alten MX-Records noch etwas länger.</p>
+<p>3. <strong> Mails während des Übergangs</strong> – Mails, die während des Übergangs beim alten Server eintreffen, müssen irgendwie behandelt werden. Typischerweise lässt du den alten Server noch kurz laufen und leitet Mails weiter, oder du holst Mails per IMAP nach.</p>
+<p>4. <strong> Benutzerkonten und Daten migrieren</strong> – bestehende Mails, Ordner, Adressbücher – alles muss auf den neuen Server oder in die neue Umgebung. Bei Mailcow gibt es Migrationstools und -Anleitungen; bei eigenem Postfix/Dovecot musst du selbst konfigurieren.</p>
+<h2>Die ehrliche Warnung: Reputation muss neu aufgebaut werden</h2>
+<p>Das ist der wichtigste Punkt beim Umzug: Die IP-Reputation, die dein alter Cloud-Anbieter aufgebaut hat, geht verloren. Deine neue IP beginnt bei null.</p>
+<p>Das bedeutet konkret:</p>
+<ul>
+<li>Die ersten Wochen nach dem Umzug landen Mails möglicherweise im Spam-Ordner von Empfängern</li>
+<li>Mails können abgelehnt werden, weil die neue IP keine Reputation hat</li>
+<li>Du musst aufpassen, dass du nicht auf einmal große Mengen Mails versendest – das wird als Spam-Verhalten interpretiert</li>
+</ul>
+<p>Das ist kein Fehler – das ist normal. Reputation wird aufgebaut durch konsequenten, moderaten Versand über Zeit. Wenn du viele Mails auf einmal versendest, ohne Reputation, wird das von Spam-Filtern als verdächtig angesehen.</p>
+<p>Ein Umzug ist also kein einmaliger Moment, sondern ein Prozess über Wochen bis Monate, in dem du die neue Reputation aufbaust.</p>
+<hr>
+<h2>Mailcow in Betrieb nehmen: Ein vorkonfigurierter Stapel</h2>
+<p>Mailcow ist eine der vollständigsten Lösungen für einen eigenen Mailserver, weil es viele Komponenten zusammenbringt und über eine Web-Oberfläche verwaltet wird.</p>
+<h2>Voraussetzungen</h2>
+<ul>
+<li>Ein Linux-System (Debian, Ubuntu oder ähnlich) mit Docker und Docker-Compose</li>
+<li>Eine statische IP-Adresse mit offenem Port 25 (eingehend und ausgehend, je nach Vertrag)</li>
+<li>Eine Domain, für die du DNS-Einträge setzen kannst</li>
+<li>PTR-Eintrag beim Provider</li>
+</ul>
+<h2>설치 und erste Schritte</h2>
+<p>Mailcow wird über Docker-Compose installiert. Die Dokumentation auf der offiziellen Webseite beschreibt den genauen Ablauf. Die wesentlichen Schritte sind:</p>
+<p>1. <strong>Docker und Docker-Compose installieren</strong> – falls nicht bereits vorhanden.</p>
+<p>2. <strong>Mailcow-Dateien herunterladen</strong> – typischerweise aus dem GitHub-Repository, das die Docker-Compose-Konfiguration und Skripte enthält.</p>
+<p>3. <strong>Konfiguration anpassen</strong> – in der <code>.env</code>-Datei und ggf. in der <code>docker-compose.yml</code> werden Konfigurationen wie Datenbank-Passwörter, Hostname, und andere Einstellungen vorgenommen.</p>
+<p>4. <strong>Container starten</strong> – mit <code>docker compose up -d</code> werden die Container gestartet.</p>
+<h2>Portfreigaben</h2>
+<p>Mailcow benötigt mehrere Ports, die im Firewall geöffnet sein müssen:</p>
+<ul>
+<li><strong>Port 25</strong> (SMTP) – für eingehende Mails von anderen Servern</li>
+<li><strong>Port 587</strong> (Submission) – für Mails von Clients (Clients senden über 587 mit STARTTLS)</li>
+<li><strong>Port 465</strong> (SMTPS) – alternativer Port für verschlüsselten Versand von Clients</li>
+<li><strong>Port 993</strong> (IMAPS) – für IMAP-Verbindungen von Clients</li>
+<li><strong>Port 995</strong> (POP3S) – für POP3-Verbindungen von Clients, falls genutzt</li>
+<li><strong>Port 80 und 443</strong> – für die Web-Oberfläche und die Webmail-Oberfläche</li>
+</ul>
+<p>Die genaue Portkonfiguration ist in der Mailcow-Dokumentation beschrieben.</p>
+<h2>Zertifikat</h2>
+<p>Mailcow verwaltet Zertifikate typischerweise selbst – entweder über Let&#x27;s Encrypt (wenn die Domain von außen erreichbar ist und die ACME-Challenge funktioniert) oder durch eigene Zertifikate. Die Web-Oberfläche und die Verschlüsselung von Client-Verbindungen (SMTPS, IMAPS) benötigen gültige Zertifikate.</p>
+<p>Stelle sicher, dass die Domain, unter der die Web-Oberfläche erreichbar ist, korrekt in Mailcow konfiguriert ist und dass Let&#x27;s Encrypt-Zertifikate korrekt erneuert werden.</p>
+<h2>Backup der Datenbank und des Mail-Speichers</h2>
+<p>Mailcow speichert Daten in Docker-Volumes. Ein Backup muss beide Teile umfassen:</p>
+<ul>
+<li><strong>Datenbank</strong>: Die MySQL/MariaDB-Datenbank, die Benutzer, Domains, Einstellungen und andere Konfigurationsdaten enthält.</li>
+<li><strong>Mail-Speicher</strong>: Die tatsächlichen E-Mails, die im Dateisystem oder in Volumes gespeichert sind.</li>
+</ul>
+<p>Mailcow bietet Backup-Mechanismen – entweder über Skripte, die im Repository mitgeliefert werden, oder über eigene Backup-Strategien. Ein Backup sollte regelmäßig erfolgen und auf einem separaten Speichermedium oder -ort gespeichert werden.</p>
+<p>Ein Backup, das nur die Datenbank umfasst, reicht nicht – du verlierst alle Mails. Ein Backup, das nur den Mail-Speicher umfasst, reicht auch nicht – du verlierst alle Konten und Einstellungen. Beides gehört zusammen.</p>
+<hr>
+<h2>Häufige Fehler und wie sie vermieden werden</h2>
+<h2>Port 25 beim Provider blockiert</h2>
+<p>Das ist der häufigste Fehler überhaupt. Viele Provider blockieren Port 25, um Spam zu verhindern. Du richtest alles korrekt ein, installierst Postfix oder Mailcow, aber Mails können nicht versendet werden, weil Port 25 blockiert ist.</p>
+<p>Lösung: Frage beim Provider explizit nach, ob Port 25 erlaubt ist. Wenn nicht, ist ein eigener Mailserver mit eigenem Empfang nicht möglich – dann bleibt nur ein reines Relay über einen externen Anbieter.</p>
+<h2>Kein PTR oder falscher PTR</h2>
+<p>Ohne PTR oder mit einem PTR, der nicht zum Mailserver-Hostnamen passt, werden Mails von vielen Servern abgelehnt. PTR wird beim Provider konfiguriert – nicht in deinem eigenen DNS.</p>
+<p>Lösung: Stelle sicher, dass der PTR-Eintrag beim Provider korrekt ist und auf einen Hostnamen zeigt, der wiederum auf die IP zeigt.</p>
+<h2>DMARC mit zu rasanten Regeln aktiviert</h2>
+<p>Wenn du sofort mit <code>p=reject</code> startest und etwas in der Konfiguration falsch ist (z.B. SPF nicht korrekt, DKIM nicht funktionierend), werden deine eigenen Mails abgelehnt.</p>
+<p>Lösung: Starte mit <code>p=none</code>, sammle Berichte, prüfe, ob alles funktioniert, und verschärfe dann schrittweise.</p>
+<h2>Offenes Relay – Spam-Massenversand durch falsch konfigurierte Server</h2>
+<p>Ein offenes Relay ist ein Server, der Mails von jedem annimmt und weiterleitet – ohne Authentifizierung. Das ist eines der gefährlichsten Konfigurationsprobleme, weil ein offener Relay missbraucht werden kann, um Spam zu versenden, und die IP-Adresse wird schnell auf Spam-Listen gesetzt.</p>
+<p>Lösung: Stelle sicher, dass der Server nur authentifizierten Nutzern Mails zum Versand akzeptiert. Bei Postfix bedeutet das korrekte <code>mynetworks</code> und Authentifizierungskonfiguration; bei Mailcow ist das standardmäßig korrekt, aber manuelle Änderungen können es gefährden.</p>
+<h2>Passwort im Klartext in der Konfiguration</h2>
+<p>Passwörter für Datenbanken, Relay-Zugänge, Admin-Konten oder andere Komponenten gehören nicht im Klartext in Konfigurationsdateien, die von vielen Personen gelesen werden können.</p>
+<p>Lösung: Nutze geeignete Passwort-Management-Praktiken, setze Berechtigungen auf Konfigurationsdateien (Linux-Dateiberechtigungen, <code>chmod 600</code> für sensible Dateien), und übertrage keine Passwörter in öffentliche Templates oder Version-Controllsysteme.</p>
+<h2>Mailverlust weil IMAP-Ordner nicht gesichert werden</h2>
+<p>Ein Backup, das nur die Datenbank sichert, verliert die tatsächlichen Mails. IMAP-Ordner und Mails liegen im Dateisystem oder in Volumes, nicht in der Datenbank. Wenn nur die Datenbank gesichert wird, sind die Mails weg.</p>
+<p>Lösung: Sichere Datenbank und Mail-Speicher zusammen. Prüfe regelmäßig, ob ein Restore funktioniert – ein Backup, das nicht getestet wurde, ist kein Backup.</p>
+<hr>
+<h2>FAQ</h2>
+<p><strong>Warum landen meine Mails im Spam?</strong></p>
+<p>Die häufigsten Gründe: Fehlende oder falsche SPF/DKIM/DMARC-Konfiguration, kein PTR oder falscher PTR, neue IP ohne Reputation, zu große Versandmengen auf einmal, Inhalte, die von Spam-Filtern als verdächtig eingestuft werden. Beginne mit dem Check der DNS-Einträge (SPF, DKIM, DMARC mit Tools wie <code>dig</code> oder Online-Testdiensten) und dem PTR beim Provider.</p>
+<p><strong>Brauche ich zwingend eine statische IP?</strong></p>
+<p>Für einen eigenen Mailserver, der Mails empfängt und sendet, ja – praktisch. Dynamische IPs werden von vielen Servern blockiert oder streng eingeschränkt. Wenn du nur Mails empfangen willst (und Versand über einen Relay machst), kannst du auf eine statische IP verzichten – aber das ist eine eingeschränkte Variante. Für volle Funktionalität ist eine statische IPv4-Adresse die empfohlene Voraussetzung.</p>
+<p><strong>Kann ich einen eigenen Mailserver ohne Port 25 betreiben?</strong></p>
+<p>Nein – nicht für eingehenden Mailverkehr. Port 25 ist der Standard-Port für SMTP zwischen Servern. Wenn Port 25 beim Provider blockiert ist, kannst du Mails nicht empfangen (andere Server können dich nicht erreichen). Für ausgehenden Versand kannst du einen Relay nutzen, aber für eigenen Empfang ist Port 25 notwendig.</p>
+<p><strong>Wie lange dauert es, bis Mails beim Empfänger ankommen?</strong></p>
+<p>Das hängt von der Reputation ab. Mit einer neuen IP und korrekter Konfiguration landen Mails oft in den ersten Wochen im Spam-Ordner oder werden begrenzt angenommen. Reputation baut sich über Zeit auf – typischerweise Wochen bis Monate, abhängig vom Versandverhalten. Es gibt keine feste Zeit, weil es von vielen Faktoren abhängt.</p>
+<p><strong>Was ist der Unterschied zwischen Mailcow und Postfix mit Dovecot?</strong></p>
+<p>Mailcow ist ein vorkonfigurierter Stapel mit Web-Oberfläche, der Docker-Container für alle Komponenten bereitstellt – einfacher zu betreiben, aber mehr Ressourcenbedarf. Postfix mit Dovecet ist ein Eigenbau, bei dem du jede Komponente selbst konfigurierst – mehr Arbeit, mehr Kontrolle, weniger Ressourcen, aber auch mehr Fehleranfälligkeit bei manuellen Konfigurationen.</p>
+<hr>
+<h2>Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
+<ul>
+<li><a href="{slug: reverse-proxy-vergleich}">Reverse Proxy Vergleich</a> – Mailserver und Reverse Proxy sind oft verwandt, besonders wenn die Web-Oberfläche hinter einem Proxy erreichbar sein soll</li>
+<li><a href="{slug: monitoring-ohne-cloud}">Monitoring ohne Cloud</a> – Mailserver gehört überwacht: Uptime von SMTP/IMAP-Ports, Ressourcen auf dem Host, Logauswertung der Mail-Komponenten</li>
+<li><a href="{slug: docker-vs-vm}">Docker vs. VM</a> – für die Entscheidung, in welcher Umgebung Mailcow oder Postfix/Dovecot laufen soll</li>
+<li><a href="{slug: dns-grundlagen-records}">DNS-Grundlagen und Records</a> – SPF, DKIM, DMARC, MX, PTR sind DNS-Einträge; ein grundlegendes DNS-Verständnis erleichtert die Konfiguration</li>
+<li><a href="{slug: backup-strategie-selfhoster}">Backup-Strategie für Selfhoster</a> – Backups für Mailserver sind besonders wichtig, weil Mails nicht einfach neuherstellbar sind</li>
+</ul>
+<hr>
+<h2>Bildvorschläge</h2>
+<p><strong>Bild 1</strong></p>
+<ul>
+<li>Typ: Konzeptionelles Diagramm der Mailserver-Reputation und DNS-Abhängigkeiten</li>
+<li>Inhalt: Eine zentrale IP-Adresse mit Pfeilen zu vier Komponenten: PTR (Provider-Seite), SPF (TXT-Record in DNS), DKIM (TXT-Record mit Public Key), DMARC (TXT-Record auf _dmarc). Abhängigkeitspfeile zeigen, dass DMARC auf SPF und DKIM aufbaut. Rechts daneben: ein &quot;Spam-Filter&quot; mit Fragezeichen, der alle vier Einträge prüft, bevor eine Mail angenommen wird.</li>
+<li>Alt-Text: Diagramm der Mailserver-Abhängigkeiten – PTR, SPF, DKIM und DMARC als Voraussetzungen, bevor Mails von Empfängern akzeptiert werden</li>
+</ul>
+<p><strong>Bild 2</strong></p>
+<ul>
+<li>Typ: Screenshot der Mailcow-Admin-Oberfläche im Browser</li>
+<li>Inhalt: Die Mailcow-Dashboard-Übersicht mit Schlüsselinfo: Server-Status, eingegangene/ausgegangene Mails, Benutzerübersicht, und ein Bereich für DNS-Einträge (SPF/DKIM/DMARC-Hinweise). Der Screenshot zeigt die Weboberfläche, nicht die Server-Konsole.</li>
+<li>Alt-Text: Mailcow-Admin-Oberfläche mit Serverstatus, Mails-Übersicht und DNS-Informationen für SPF, DKIM und DMARC</li>
+</ul>
+<p><strong>Bild 3</strong></p>
+<ul>
+<li>Typ: Vergleichstabelle als grafische Übersicht (eher Infografik als reine Tabelle)</li>
+<li>Inhalt: Drei Spalten (Mailcow, Postfix + Dovecot, Reines Relay) mit Icons oder Kurzsymbolen für die Kriterien: Einrichtungsaufwand (Schwierigkeitsgrad), Weboberfläche (Ja/Nein), Filterregeln (integriert/manuell/mittel), Backup (Volles/Simple), Ressourcenbedarf (Bar oder Diagramm), Fehleranfälligkeit (niedrig/mittel/hoch). Die Werte sind als Symbolgrade dargestellt, nicht als Texttabelle.</li>
+<li>Alt-Text: Infografik zum Vergleich Mailcow vs. Postfix mit Dovecot vs. reines Relay – Aufwand, Weboberfläche, Filter, Backup, Ressourcen und Fehleranfälligkeit im Überblick</li>
+</ul>
+<p><strong>Bild 4</strong></p>
+<ul>
+<li>Typ: Architekturdiagramm eines eigenen Mailservers mit Client-Zugriff</li>
+<li>Inhalt: Eine einfache Architektur: Links ein E-Mail-Client (laptop oder smartphone), der via IMAPS (Port 993) oder SMTPS (Port 587/465) mit dem Mailserver verbindet. Der Mailserver (im Zentrum) hat Verbindungen nach außen: SMTP-Port 25 zu anderen Servern (für Empfang und Versand), DNS-Abfragen für SPF/DKIM/DMARC/PTR. Rechts: externe E-Mail-Provider (Gmail, Outlook etc.) als Empfänger, die die Reputation und DNS-Einträge prüfen.</li>
+<li>Alt-Text: Architekturdiagramm eines eigenen Mailservers – Clients verbinden über IMAPS/SMTPS, Server kommuniziert über Port 25 mit externen Mailservern, DNS-Einträge (SPF, DKIM, DMARC, PTR) werden von empfangenden Servern geprüft</li>
+</ul>
+<p><strong>Bild 5</strong></p>
+<ul>
+<li>Typ: Illustration des Reputation-Aufbaus über Zeit</li>
+<li>Inhalt: Eine simple Zeitachse (Wochen 1 bis 8) mit einer Kurve, die von &quot;Keine Reputation / Mails im Spam&quot; startet und sich langsam zu &quot;Etablerte Reputation / Mails im Posteingang&quot; bewegt. Markierungen an kritischen Punkten: &quot; PTR gesetzt&quot;, &quot;SPF hinzugefügt&quot;, &quot;DKIM hinzugefügt&quot;, &quot;DMARC p=none aktiv&quot;, &quot;DMARC p=quarantine&quot;, &quot;Erste Woche ohne Absender-Probleme&quot;. Keine realistischen Daten – rein konzeptionell.</li>
+<li>Alt-Text: Konzept der Reputation-Aufbaus über Zeit – ein eigener Mailserver beginnt mit keiner Reputation und baut sie durch korrekte Konfiguration und moderaten Versand über mehrere Wochen auf</li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
