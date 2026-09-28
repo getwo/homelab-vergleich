@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker-Container vs. VM: Wann welcher Virtualisierungstyp das Richtige ist</title>
+<meta name="description" content="Docker-Container oder VM? Eine praxisnahe Entscheidungshilfe für Homelab-Betreiber: Vergleichstabelle, klare Regeln, Sonderfälle und FAQ.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Docker-Container vs. VM: Wann welcher Virtualisierungstyp das Richtige ist</h1>
+<p>Die häufigste Frage in Homelab-Forums und bei BsN-Beratungsgesprächen klingt so: <em>„Soll ich das in Docker oder in einer VM machen?&quot;</em> Die Frage beruht auf einem grundlegenden Irrtum: Container und VMs seien austauschbare Begriffe für dasselbe Prinzip. Sie sind es nicht.</p>
+<p>Ein <strong>Container</strong> teilt sich den Kernel des Host-Systems und virtualisiert nur die Userspace-Umgebung – Bibliotheken, Dateisystem, Prozessisolation. Eine <strong>Virtuelle Maschine</strong> virtualisiert die gesamte Hardware, inklusive eigenem Kernel und eigenem Betriebssystem. Das ist der wichtigste Unterschied, und er bestimmt fast alle nachfolgenden Praktikabilitätsfragen.</p>
+<h2>Vergleichstabelle</h2>
+<p>| Kriterium | Docker-Container | Virtuelle Maschine |</p>
+<p>|---|---|---|</p>
+<p>| <strong>Isolation</strong> | Prozess- und Dateisystemebene; selber Kernel wie Host | Vollständige Hardware-Isolation; eigener Kernel; gegenseitige Beeinflussung praktisch unmöglich |</p>
+<p>| <strong>Speicherbedarf (Idle)</strong> | Einige Megabyte (Basis-Image); oft &lt; 100 MB pro Container | 1–4 GB je VM (OS-Image, zugewiesener RAM, Swap) |</p>
+<p>| <strong>Startzeit</strong> | Sekunden (Prozessstart) | Minuten (OS-Boot, Services starten) |</p>
+<p>| <strong>Backup</strong> | <code>docker commit</code> / Volume-Snapshots / Compose-Dateien als Code | VM-Image-Snapshot (z.B. Proxmox <code>qm backup</code>, <code>vzdump</code>) oder ganze Platte |</p>
+<p>| <strong>GUI-Programme</strong> | Nur indirekt (X11/VDI-Forwarding möglich, aber umständlich) | Direkt, vollständiges grafisches OS |</p>
+<p>| <strong>Hardware-Durchreichen</strong> | Möglich für GPU (--gpus), USB (linuxserver/letsencrypt bypass) und Netzwerk, aber Host-Kernel-abhängig | Einfacher: PCI/USB/Netzwerk passthrough in Hypervisor config (Proxmox: <code>qm set --hostpci0</code>, <code>usb0</code>) |</p>
+<p>| <strong>Sicherheitsrisiko</strong> | Kernel-Shared = Kernel-Exploit betrifft alle Container; kein eigener Kernel-Schutz | Geringeres Risiko; Kernel-Isolierung; bei gehackter VM bleibt Host normalerweise unberührt |</p>
+<h2>Entscheidungshilfe: Die Regelform</h2>
+<h2>In einen Container gehört …</h2>
+<p>1. <strong>Dienste ohne GUI, die nur TCP/HTTP/Liste socken</strong> – Webserver, Datenbanken, Messaging (PostgreSQL, Redis, MQTT, Nextcloud, Vaultwarden). Beispiel: <code>docker run -d -p 80:80 nginx</code>.</p>
+<p>2. <strong>Stateless- oder leicht stateful-Dienste</strong>, deren Daten auf Volumes ausgelagert sind: <code>docker compose</code> mit <code>volumes:</code> Block und einem definierten <code>docker-entrypoint.sh</code>. Das Backup-Szenario ist dann meist ein Volume-Snapshot oder ein <code>docker cp</code>.</p>
+<p>3. <strong>Apps, die einen spezifischen Linux-Kernel nicht brauchen</strong> – also Python/Node/Java-Apps, die auf einem aktuellen Debian- oder Alpine-Kernel laufen würden, gleich wie der Host.</p>
+<p>4. <strong>Skalierbare, replizierbare Dienste</strong>, bei denen man ohnehin mehrere Instanzen starten will: Docker Compose oder Kubernetes-ähnliche Orchestrierung ist der natürliche Rahmen.</p>
+<p><strong>Konkretes Signal:</strong> Wenn du eine <code>Dockerfile</code> schreiben kannst, die nur Pakete installiert, einen Binärstart ausführt und Ports expose – der Dienst gehört fast immer in einen Container.</p>
+<h2>Auf eine VM gehört …</h2>
+<p>1. <strong>Anwendungen, die ein eigenes, festes Betriebssystem voraussetzen</strong> – Windows-Server, ältere Linux-Versionen mit anderem Kernel als dem Host, BSD.</p>
+<p>2. <strong>Dienste, die Hardware-Durchreichen in der Hypervisor-Sprache voraussetzen</strong> – z.B. eine VM mit direkt zugewiesenem GPU-PCI, einer IDE/SATA-Platte oder einem USB-Schnittstellen-Gerät, das der Host-Kernel nicht selbst behandeln soll. In Proxmox: <code>qm set &lt;VMID&gt; --hostpci0 &lt;PCI-Addr&gt;</code> oder USB-Add: <code>qm set &lt;VMID&gt; --usb0 host=...</code>.</p>
+<p>3. <strong>Sicherheitskritische, isolierte Dienste</strong>, bei denen ein gemeinsamer Kernel ein unakzeptables Risiko ist – z.B. ein öffentlich zugängener Dienst auf einem Multi-Tenant-Host, oder Testumgebungen für Kernel-Exploits.</p>
+<p>4. <strong>Anwendungen, die Bare-Metal-nahe Performance für I/O brauchen</strong> und deren Container-Laufzeitumgebung zu viel Overhead oder zu viele Kernel-Abhängigkeiten einführt.</p>
+<p><strong>Konkretes Signal:</strong> Wenn du ein ISO-Image mounten, einen eigenen Kernel booten oder Geräte von der VM aus mit eigenen Treibern initialisieren willst – das ist eine VM.</p>
+<h2>Auf den Bare Metal (Host ohne Container, ohne VM) gehört …</h2>
+<ul>
+<li><strong>Das Hypervisor-Betriebssystem selbst</strong> – Proxmox VE ist ein eigenständiges Debian-basiertes OS; andere Hypervisor-OSe (ESXi, XCP-ng) ebenso.</li>
+<li><strong>Proxmox VE Web GUI, daemon-gesteuerte Dienste der Host-Infrastruktur</strong> – z.B. <code>pvedaemon</code>, <code>pveproxy</code>, <code>corosync</code>, <code>lvm2</code> für Storage-Pools, Networking auf dem Host.</li>
+<li><strong>Dienste, die den Host-Kernel direkt beeinflussen müssen</strong> – Kernel-Module (z.B. <code>vfio-pci</code> für GPU-Passthrough), <code>iptables</code>/<code>nftables</code>-Regeln auf dem physischen Interface, oder LVM/RAID-Konfiguration.</li>
+<li><strong>Dockershim-Passthrough auf Fremd-Hypervisorn</strong> – manche Orchestrierungen verlangen, dass Docker direkt auf der VM läuft, die ihrerseits eine VM ist (Doppelvirtualisierung); das gehört auf die innere VM, nicht auf den Host.</li>
+</ul>
+<h2>Sonderfälle, bei denen die Regeln nicht greifen</h2>
+<h2>GPU-Container</h2>
+<p>Ein Container, der eine GPU benötigt (Machine-Learning, transcodes, Rendering), ist eigentlich ein Container – aber mit Hardware-Passthrough: <code>docker run --gpus all ...</code> (NVidia Runtime) oder <code>--device /dev/dri/renderD128</code> für VA-API. Das funktioniert nur, wenn der Host-Kernel die GPU als Device bereitstellt und kein Kernel-Modul (wie <code>vfio-pci</code>) sie bereits für eine VM eingesogen hat. Bei einer FC-Passthrough (Full Container) mit GPU und einem gleichzeitigen GPU-Passthrough für eine VM entsteht ein Konflikt: GPU kann nur einem Gast zur Zeit zugeordnet sein. Entscheidungshilfe: ML-Inference im Container (kürzere Laufzeiten), dedizierte GPU-Workloads (Training) eher VM, wenn auch andere Hardware-Isolierungen nötig sind.</p>
+<h2>USB-Durchreichen an Container</h2>
+<p>Manche Container wollen physische USB-Geräte (Zwingend z.B. für bestimmte Praxissysteme): <code>docker run --device /dev/bus/usb/001/002 ...</code>. Das setzt voraus, dass der Host-Kernel das Gerät wie gewünscht sieht und dass <code>udev</code>-Regeln auf dem Host keine Konflikte verursachen. Bei komplexen USB-Geräten, die eigene Kernel-Treiber brauchen, ist eine VM mit USB-Passthrough (<code>qm set --usb0 host=...</code>) oft zuverlässiger.</p>
+<h2>Windows-Dienste</h2>
+<p>Windows-Dienste laufen in Docker-Containern nur eingeschränkt (Windows-Container etabliert, aber meist Windows-Server-Hosts nötig, selten im Homelab). Die Praxisentscheidung: Eine Windows-Dienst-App gehört in eine Windows-VM. Docker-Container mit Wine sind eine Grauzone und für produktive Dienste nicht empfehlenswert.</p>
+<h2>Docker-Desktop-Anwendungen auf einem Windows-PC</h2>
+<p>Docker Desktop auf Windows nutzt eine eingebettete Hyper-V-VM (WSL2 oder hyperv daemons). Du hast dort drei Schichten: Windows-Host → Docker Desktop VM (Hyper-V/WSL2) → Container. Bei Problemen mit Volume-Mounts oder Netzwerk: oft liegt es an der VM-Schicht, nicht am Container. Ein Port, der von außen nicht erreichbar ist, ist häufig ein WSL2-NAT-Problem (Windows-Subnetz 172.16.0.0/12, forwarding aus WSL2 heraus muss explizit gestattet sein).</p>
+<h2>LXC und Docker: Verwirrend ähnlich, aber unterschiedliche Garantien</h2>
+<p>Proxmox VE bringt LXC (Linux Containers) nativ mit. LXC ist ein Container-ähnliches System, das auf dem selben physikalischen Kernel läuft wie Docker (beide nutzen Linux Namespaces und cgroups). Wo sie sich unterscheiden:</p>
+<ul>
+<li><strong>LXC</strong> ist ein systembezogener Container: Er bootet ein vollständiges Userspace-Linux (init, systemd oder OpenRC) und sieht von innen fast wie eine minimale VM aus (<code>tty</code>, <code>/dev</code>, Paketmanager). Backup über <code>pct backup</code> oder <code>vzdump</code> (ganzes Container-Rootfs-Archiv). Wahl zwischen Privilegierten und unprivilegierten Containern (mapped UIDs/GIDs bei unprivilegiert).</li>
+<li><strong>Docker</strong> ist ein App-Container: Ein Prozess pro Container, ein vorhersagbares Lebenszyklus (start → run → stop), keine systemweiten Dienste im Container.</li>
+</ul>
+<p>Die Sicherheitsgarantie ist unterschiedlich: Ein privilegierter LXC-Container (<code>pct unprivileged 0</code>) teilt sich mehr Kernel-Fähigkeiten als ein Standard-Docker-Container. Ein unprivilegierter LXC-Container plus User-Namespaces ist ähnlich sicher wie Docker mit Rootless-Modus. Für reine Diensteroberflächen im Homelab sind LXC und Docker oft austauschbar; bei Bedarf an einem eigenen init-Prozess oder einem Init-System im Container ist LXC natürlicher.</p>
+<p>Kurz: LXC ist das Werkzeug, wenn du einen ganzen (minimalen) Linux-Dienst im Container haben willst; Docker ist das Werkzeug, wenn du eine einzelne Anwendung mit definiertem Lebenszyklus willst.</p>
+<h2>FAQ</h2>
+<p><strong>F1: Kann ich nicht einfach alles in Docker legen, um Ressourcen zu sparen?</strong></p>
+<p>Nein, nicht wenn der Dienst ein eigenes Kernel-Verhalten oder gerätespezifische Initialisierung braucht. Ein VM-basierter Dienst mit eigenem Kernel und eigenem Treiber-Einsatz ist nicht durch einen Container ersetzbar, ohne die Anforderungen zu verlieren. Ressourcensparnis ist ein Argument, nicht das einzige Argument.</p>
+<p><strong>F2: Ist Proxmox mit LXC und Docker gleichzeitig sinnvoll?</strong></p>
+<p>Ja. Typisches Setup: Proxmox-Host (Bare Metal) → VM für Windows oder GUI-Dienste → innerhalb einer Linux-VM (oder direkt auf dem Proxmox-Host-LXC-Container) Docker für die Diensteebene. Oder: LXC für leichte System-Container, Docker für die Anwendungs-Container auf demselben Host. Mix und Match nach den Regeln oben.</p>
+<p><strong>F3: Was ist das Sicherheitsrisiko, wenn ein Container gehackt wird?</strong></p>
+<p>Das Ausmaß hängt vom Container-Typ und von den Kernel-Fähigkeiten ab. Ein root-fähiger Docker-Container mit <code>--privileged</code> hat effektiv root auf dem Host – bei einem Kernel-Exploit ist der ganze Host betroffen. Ein unprivilegierter Container ohne Devices und ohne <code>--privileged</code> begrenzt die Schadensfläche, aber ein Kernel-Exploit im Container kann theoretisch den Host kompromittieren, weil beide denselben Kernel nutzen. Eine VM mit eigener Kernel-Isolierung begrenzt den Schaden auf die VM.</p>
+<p><strong>F4: Welches Backup soll ich wählen – Volume oder VM-Snapshot?</strong></p>
+<p>Container-Backup = Volumes kopieren (<code>docker volume inspect</code> zeigt den Pfad; dann rsync oder Snapshot des Host-Dateisystems) plus Compose-Konfigurationsdatei als Code sichern. VM-Backup = ganze VM-Snapshot/Backup (<code>qm backup &lt;VMID&gt; &lt;backup-storage&gt;</code>). Wenn du beides nutzt, sind die VM-Backups oft einfacher zu verwenden und wiederherzustellen (einheitlicher Mechanismus); Container-Backups sind im Detail genauer (nur die Daten, nicht das gesamte OS-Image). Praxis: beide parallel, je nach Wichtigkeit.</p>
+<hr>
+<p><em>Hinweis: Konrad Konfigurationsdetails (PCI-Adressen, USB-IDs, prompte Pfade) sind jeweils systemabhängig; Beispiele zeigen Syntax. Dokumentation für Treiber und Geräte: <code>lspci -nn</code>, <code>lsusb</code>, <code>docker volume inspect</code>, <code>pct config</code> auf dem Proxmox-Host.</em></p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
