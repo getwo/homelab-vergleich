@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datenbank-Backups richtig planen: PostgreSQL, MySQL und die Container-Falle</title>
+<meta name="description" content="Warum ein einfaches Kopieren des Datenverzeichnisses bei PostgreSQL und MySQL fehlerhaft ist – und wie man logische Backups mit pg_dump, mysqldump sowie WAL-Archivierung korrekt erstellt und wiederherstellt.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Datenbank-Backups richtig planen: PostgreSQL, MySQL und die Container-Falle</h1>
+<h2>Einleitung: Warum Dateisystem-Backups allein nicht reichen</h2>
+<p>Ein Backup, das nie getestet wurde, ist kein Backup. Diese Erkenntnis ist besonders schmerzhaft, wenn sie im Moment des Datenverlusts aufkommt – etwa wenn Nextcloud aus dem Nothingness zurückkehrt, Vaultwarden Passwörter verweigert oder Immich nicht mehr auf alte Fotos zugreifen kann. Die meisten Homelab-Betreiber sichern die Datenverzeichnisse ihrer Container oder VMs mit rsync, Borg oder Restic – und glauben, sie wären gesichert. Doch wenn die Datenbank im aktuellen Zustand schreibt, während das Backup läuft, bleibt das Ergebnis hinter dem eigentlichen Datenbestand zurück.</p>
+<p>In diesem Artikel geht es nicht um Backup-Produkte oder empfohlene Software. Es geht um das Verständnis dessen, was bei PostgreSQL und MySQL passiert, wenn man den Datenbankspeicher einfach kopiert – und wie man es richtig macht.</p>
+<h2>Warum das Kopieren des Datenverzeichnisses nicht funktioniert</h2>
+<p>Sowohl PostgreSQL als auch MySQL schreiben ihre Daten nicht einfach sequenziell in Dateien, sondern nutzen transaktionsbasierte Mechanismen, die während eines laufenden Backups zu inkonsistenten Zuständen führen können.</p>
+<h2>PostgreSQL: WAL, Shared Buffers und inkonsistente Seiten</h2>
+<p>PostgreSQL schreibt Änderungen zunächst in ein Write-Ahead Log (WAL) und hält Änderungen im Shared-Buffer-Cache, bevor sie auf die Plattenfläche fallen. Das Datenverzeichnis unter <code>/var/lib/postgresql/data</code> (oder einem custom <code>data_directory</code>) enthält die Datenbankdateien – aber diese Dateien können zu jedem Moment teilweise geschrieben sein. Ein einfaches <code>cp -r</code> oder <code>rsync</code> des Verzeichnisses erfasst nicht:</p>
+<ul>
+<li>Laufende Transaktionen, die noch nicht committed wurden und deren Änderungen nur im WAL stehen</li>
+<li>Noch nicht geflushed Seiten im Shared Buffer, die auf der Platte fehlen</li>
+<li>Das WAL selbst, das für eine konsistente Wiederherstellung oft notwendig ist – es sei denn, man archiviert es separat</li>
+</ul>
+<p>Ein Copy des Datenverzeichnisses kann auch zu korrupten Backups führen, wenn PostgreSQL gerade eine Tabelle oder einen Index reorganisiert (autovacuum, REINDEX) und dabei Dateisperren oder Dateien mit inkonsistenten Größen auftreten.</p>
+<h2>MySQL/MariaDB: InnoDB, Redo-Logs und MyISAM-Schreibsperren</h2>
+<p>MySQL mit InnoDB speichert Daten in Tabellenräumen (<code>.ibd</code>-Dateien) und nutzt Redo-Logs (ib_logfile0, ib_logfile1), um Crash-Recovery zu ermöglichen. Wenn man während des Betriebs das Datenverzeichnis kopiert, kann man InnoDB-Tabellendaten in einem Zustand erhalten, der keine konsistente Wiederherstellung ohne die entsprechenden Redo-Log-Einträge erlaubt. Zudem sind MyISAM-Tabellen (falls noch genutzt) nur durch flüchtige <code>.frm</code>- und <code>.MYD</code>-/<code>.MYI</code>-Dateien geschützt – ohne ausreichende Sperren können diese bei einem Dateikopier-Vorgang beschädigt werden.</p>
+<h2>Dateirechte und Besitz</h2>
+<p>Ein weiteres Problem: Datenbank-Verzeichnisse gehören typischerweise dem Datenbank-Benutzer (z.B. <code>postgres</code> oder <code>mysql</code>). Ein ungeplanter Kopiervorgang mit root-Rechten auf ein anderes Ziel kann diese Besitzverhältnisse durcheinanderbringen und die Datenbank beim Wiederherstellungsvorgang daran hindern, die Dateien zu öffnen.</p>
+<h2>Der korrekte Weg für PostgreSQL: logisches Backup mit pg_dump</h2>
+<p>PostgreSQL bietet das Werkzeug <code>pg_dump</code> für logische Backups. Ein logisches Backup bedeutet, dass die Datenbankinhalte als SQL-Befehle oder im eigenen Compressed-Format exportiert werden – unabhängig von der physischen Speicherstruktur.</p>
+<h2>Grundform</h2>
+<pre><code>
+pg_dump -U postgres -d meine_datenbank -f /backup/meine_datenbank.sql
+</code></pre>
+<p>Das erzeugt ein plaintext-SQL-Script. Für komprimierte, flexiblere Backups nutzt man das Custom-Format:</p>
+<pre><code>
+pg_dump -U postgres -d meine_datenbank -Fc -f /backup/meine_datenbank.dump
+</code></pre>
+<p>Mit <code>-Fc</code> erhält man ein komprimiertes Format, das later mit <code>pg_restore</code> selektiv wiederhergestellt werden kann (z.B. nur bestimmte Schemata oder Tabellen). <code>pg_restore</code> erfordert eine leere oder existierende Zieldatenbank:</p>
+<pre><code>
+createdb -U postgres meine_datenbank_restored
+pg_restore -U postgres -d meine_datenbank_restored /backup/meine_datenbank.dump
+</code></pre>
+<h2>WAL-Archivierung für Point-in-Time-Recovery</h2>
+<p>Ein reines <code>pg_dump</code> alleine genügt nicht für alle Szenarien. Wenn man Wiederherstellung auf einen bestimmten Zeitpunkt (Point-in-Time-Recovery, PITR) braucht, muss man WAL-Archivierung aktivieren:</p>
+<pre><code>
+# postgresql.conf
+wal_level = replica
+archive_mode = on
+archive_command = &#x27;cp %p /var/lib/postgresql/wal_archive/%f&#x27;
+</code></pre>
+<p>Diese Archivierung ist unabhängig von dem Datenbank-Backup und ermöglicht es später, ein pg_dump-Backup zu einem früheren Zeitpunkt wiederherzustellen und die fehlenden WAL-Dateien nachzuspielen, um auf den aktuellen Stand zu kommen.</p>
+<p>Für Homelab-Umgebungen, die PITR nicht benötigen, reicht ein regelmäßiges pg_dump oft aus. Wer jedochUMAN-Charakteristiken wie Nextcloud oder Vaultwarden betreibt und im Worst-Case einen katastrophalen Datenverlust vermeiden will, sollte WAL-Archivierung in Betracht ziehen.</p>
+<h2>Alternative: pgBackRest</h2>
+<p><code>pgBackRest</code> ist ein vollständiges Backup-Tool, das logische und physikalische Backups unterstützt und WAL-Archivierung verwaltet. Es behandelt Deltas, Compression und Encryption. Für komplexe Setups lohnt sich ein Blick auf die Dokumentation, doch für den typischen Homelab-Betreiber, der ein einfaches Script sucht, reicht pg_dump meist.</p>
+<h2>Der korrekte Weg für MySQL und MariaDB: mysqldump</h2>
+<p>MySQL und MariaDB bieten <code>mysqldump</code> (bzw. <code>mariadb-dump</code>, das gleiche binary unter neuem Namen) für logische Backups.</p>
+<h2>Wichtige Optionen</h2>
+<pre><code>
+mysqldump --user=root --password --all-databases \
+  --single-transaction \
+  --routines --triggers --events \
+  --flush-logs \
+  -r /backup/all_databases.sql
+</code></pre>
+<ul>
+<li><code>--single-transaction</code>: Für InnoDB-tabellen schließt dies ein konsistentes Snapshot-Backup ohne Tabellensperren ein. MyISAM-Tabellen werden dabei trotzdem gesperrt – ein Migration hin zu InnoDB ist empfehlenswert.</li>
+<li><code>--routines</code>, <code>--triggers</code>, <code>--events</code>: Sichert gespeicherte Prozeduren, Trigger und geplante Ereignisse. Ohne diese Flags gehen diese oft verloren.</li>
+<li><code>--flush-logs</code>: Erzeugt ein neues Binlog nach dem Dump, was bei der Replikation hilfreich sein kann.</li>
+</ul>
+<p>Für einzelne Datenbanken:</p>
+<pre><code>
+mysqldump --user=root --password meine_datenbank \
+  --single-transaction --routines --triggers --events \
+  -r /backup/meine_datenbank.sql
+</code></pre>
+<h2>MariaDB-spezifisch</h2>
+<p><code>mariadb-dump</code> ist kompatibel zu <code>mysqldump</code> und unterstützt dieselben Optionen. Bei MariaDB mit der Aria-Engine oder speziellen MariaDB-Features lohnt ein Blick in die Dokumentation, aber für InnoDB-dominierte Setups verhält sich der Dump identisch.</p>
+<h2>Container: Backup-Jobs in docker-compose oder systemd</h2>
+<p>Im Homelab laufen Datenbanken häufig in Docker-Containern. Ein Backup-Script muss dann die richtige Umgebung finden – und die Dateirechte achten.</p>
+<h2>docker-compose-Ansatz</h2>
+<p>Im <code>docker-compose.yml</code> kann man einen separaten Service oder ein benutzerdefiniertes Script definieren, das das Backup durchführt:</p>
+<pre><code>
+services:
+  postgres-backup:
+    image: postgres:16-alpine
+    entrypoint: [&quot;sh&quot;, &quot;-c&quot;]
+    command: &gt;
+      pg_dump -U postgres -d meine_datenbank -Fc -f /backup/meine_datenbank.dump
+      &amp;&amp; chown -R 1000:1000 /backup/
+    volumes:
+      - ./backups:/backup
+      - postgres_data:/var/lib/postgresql/data
+    user: &quot;1000:1000&quot;
+</code></pre>
+<p>Wichtig: Der Nutzer im Container muss die gleichen UID/GID haben wie der Besitzer des Mountpoints, oder die Datei darf nicht erstellt werden können. Alternativ lässt man den Backup-Container als root laufen und fixiert die Rechte nachträglich.</p>
+<h2>Systemd-Timer für Host-Instanzen</h2>
+<p>Für PostgreSQL oder MySQL auf dem Host selbst ist ein systemd-Timer mit einem entsprechenden Service robust:</p>
+<pre><code>
+# /etc/systemd/system/db-backup.service
+[Unit]
+Description=PostgreSQL logical backup
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=postgres
+ExecStart=/usr/local/bin/pg_backup.sh
+</code></pre>
+<pre><code>
+# /etc/systemd/system/db-backup.timer
+[Unit]
+Description=Schedule daily database backup
+Requires=db-backup.service
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+</code></pre>
+<p>Das Script <code>pg_backup.sh</code> kann sein:</p>
+<pre><code>
+#!/bin/bash
+BACKUP_DIR=&quot;/var/backups/postgresql&quot;
+DATE=$(date +%Y%m%d_%H%M%S)
+pg_dump -U postgres -d meine_datenbank -Fc -f &quot;$BACKUP_DIR/meine_datenbank_$DATE.dump&quot;
+</code></pre>
+<h2>Dateirechte und UID/GID</h2>
+<p>Container-Volumes werden typischerweise mit den Rechten des Host-Benutzers angelegt. Der Backup-Container muss entweder die gleiche UID nutzen oder der Backup-Ordner wird mit <code>chmod 777</code> (nicht empfohlen für Produktionsumgebungen) oder expliziter <code>chown</code> versehen. Ein sicherer Weg: Den Backup-Ordner vorher anlegen und mit der korrekten UID besitzen:</p>
+<pre><code>
+mkdir -p /var/backups/postgresql
+chown 1000:1000 /var/backups/postgresql
+</code></pre>
+<h2>Aufbewahrung und Verschlüsselung</h2>
+<h2>Rotationsschema</h2>
+<p>Ein sinnvolles Rotationsschema für den Homelab-Betreiber:</p>
+<ul>
+<li><strong>Tägliche Backups</strong>: 7 Aufbewahrungstage (letzte Woche)</li>
+<li><strong>Wöchentliche Backups</strong>: 4 Aufbewahrungswochen (letzten Monat)</li>
+<li><strong>Monatliche Backups</strong>: 12 Monate Aufbewahrung</li>
+</ul>
+<p>Ein einfaches Script stösst das an:</p>
+<pre><code>
+#!/bin/bash
+BACKUP_DIR=&quot;/var/backups/postgresql&quot;
+AGE_DAYS=7
+AGE_WEEKS=4
+AGE_MONTHS=12
+
+find &quot;$BACKUP_DIR&quot; -name &quot;*.dump&quot; -mtime +$AGE_DAYS -delete
+# wöchentliche: Prüfe mit Datum-Suffix
+find &quot;$BACKUP_DIR&quot; -name &quot;*_weekly_*.dump&quot; -mtime +$(($AGE_WEEKS * 7)) -delete
+# monatliche: Prüfe monatliche Backups separat
+find &quot;$BACKUP_DIR&quot; -name &quot;*_monthly_*.dump&quot; -mtime +$(($AGE_MONTHS * 30)) -delete
+</code></pre>
+<h2>Verschlüsselung</h2>
+<p>Backups sollten verschlüsselt werden, besonders wenn sie auf Cloud-Speicher oder externe Festplatten wandern. Ein gängiger Weg mit GPG:</p>
+<pre><code>
+gpg --symmetric --cipher-algo AES256 \
+  --passphrase-file /etc/backup-credentials/gpg-passphrase \
+  -o /backup/meine_datenbank.dump.gpg \
+  /backup/meine_datenbank.dump
+</code></pre>
+<p>Das Passphrase-File sollte auf einem sicheren Medium (z.B. Passwort-Manager oder dezidierter Vault) gespeichert sein. Ein Backup ohne verschlüsselten Transport oder Speicher schützt nicht gegen Diebstahl des Backup-Mediums.</p>
+<h2>Wiederherstellung: Schritt-für-Schritt-Checkliste</h2>
+<p>Die Wiederherstellung ist der wichtigste Teil. Ein Backup ohne getestete Wiederherstellung ist nutzlos.</p>
+<h2>Wiederherstellungstest-Planung</h2>
+<p>Bevor man den Ernstfall erlebt, sollte man einen Wiederherstellungstest in einer isolierten Test-VM oder einem zweiten Container durchführen. Das Documentieren des Testprozesses gehört ebenfalls zum Backup-Plan.</p>
+<h2>Checkliste PostgreSQL</h2>
+<p>1. <strong>Vorbereitung</strong>: Prüfen, ob das Backup-Dump die erwartete Struktur hat (<code>pg_restore -l backup.dump</code> listet Inhalte auf ohne Wiederherstellung).</p>
+<p>2. <strong>Zieldatenbank erstellen</strong>:</p>
+<p>   ```bash</p>
+<p>   createdb -U postgres meine_datenbank_test</p>
+<p>   ```</p>
+<p>3. <strong>Wiederherstellung starten</strong>:</p>
+<p>   ```bash</p>
+<p>   pg_restore -U postgres -d meine_datenbank_test \</p>
+<p>     --clean --if-exists \</p>
+<p>     /backup/meine_datenbank.dump</p>
+<p>   ```</p>
+<p>   <code>--clean</code> entfernt vorhandene Objekte vor dem Wiederherstellen, <code>--if-exists</code> verhindert Fehler bei fehlenden Objekten.</p>
+<p>4. <strong>Datenvalidierung</strong>: Einzelne Tabellen mit <code>SELECT COUNT(*)</code> oder <code>pg_stat_user_tables</code> überprüfen, ob Zeilenanzahl plausibel ist.</p>
+<p>5. <strong>Anwendungstests</strong>: Nextcloud- oder Vaultwarden-Instanz mit der wiederhergestellten Datenbank starten und prüfen, ob Login, Dateien, ○○Einträge etc. funktionieren.</p>
+<p>6. <strong>Dokumentation</strong>: Ergebnis, Dauer, eventuelle Probleme in einem Wiederherstellungstest-Protokoll festhalten.</p>
+<h2>Checkliste MySQL/MariaDB</h2>
+<p>1. <strong>Vorbereitung</strong>: Dump-Datei prüfen (<code>head -n 50 dump.sql</code> zeigt Struktur und Tabellen).</p>
+<p>2. <strong>Zieldatenbank erstellen</strong>:</p>
+<p>   ```bash</p>
+<p>   mysql -u root -p -e &quot;CREATE DATABASE meine_datenbank_test;&quot;</p>
+<p>   ```</p>
+<p>3. <strong>Wiederherstellung</strong>:</p>
+<p>   ```bash</p>
+<p>   mysql -u root -p meine_datenbank_test &lt; /backup/meine_datenbank.sql</p>
+<p>   ```</p>
+<p>   Bei großen Dumps kann <code>pv</code> für Fortschrittsanzeige genutzt werden:</p>
+<p>   ```bash</p>
+<p>   pv /backup/meine_datenbank.sql | mysql -u root -p meine_datenbank_test</p>
+<p>   ```</p>
+<p>4. <strong>Datenvalidierung</strong>: <code>SELECT COUNT(*) FROM tabelle</code> für kritische Tabellen, Prüfung auf Fremdschlüssel-Integrität mit <code>mysqlcheck --check-upgrade</code>.</p>
+<p>5. <strong>Anwendungstests</strong>: Wie bei PostgreSQL – App lokal mit der Datenbank verbinden und prüfen.</p>
+<p>6. <strong>Dokumentation</strong>: Wie oben.</p>
+<h2>FAQ</h2>
+<h2>Wie oft muss ich ein Datenbank-Backup machen?</h2>
+<p>Das hängt vom RPO (Recovery Point Objective) ab – also wie viel Datenverlust im Worst-Case tolerierbar ist. Für kritische Dienste wie Vaultwarden (Passwörter) oder Nextcloud (Dateien, die nicht erneut erstellt werden können) ist ein tägliches Backup ratsam. Wenn die Toleranz höher ist, kann ein wöchentliches Backup genügen. Wichtig: Ein Backup ohne Wiederherstellungstest hat keinen Wert – die Häufigkeit sollte also auch die Testfrequenz berücksichtigen.</p>
+<h2>Warum funktionert <code>cp -r</code> des Datenbankverzeichnisses nicht?</h2>
+<p>Weil das Datenbankverzeichnis inkonsistente Zustände enthalten kann: unfertige Transaktionen, nicht geflushed buffers, fehlende WAL-Archivierung. Ein logisches Backup mit <code>pg_dump</code> oder <code>mysqldump</code> erfasst den konsistenten logischen Zustand der Datenbank, nicht den physikalischen Speicher zur Laufzeit.</p>
+<h2>Was ist der Unterschied zwischen pg_dump und WAL-Archivierung?</h2>
+<p><code>pg_dump</code> erstellt ein logisches Backup des Datenbankinhalts zu einem Punkt in der Zeit. WAL-Archivierung sammelt die physikalischen Write-Ahead-Logs, die für eine kontinuierliche Point-in-Time-Recovery nötig sind. Beide zusammen ergeben ein vollständiges Disaster-Recovery-Konzept. Für viele Homelab-Umgebungen ist <code>pg_dump</code> alleine ausreichend, wenn der Datenverlust eines Tages tolerierbar ist.</p>
+<h2>Kann ich mein Backup verschlüsseln und trotzdem wiederherstellen?</h2>
+<p>Ja. GPG oder andere symmetrische Verschlüsselungen lassen sich vor der Wiederherstellung wieder entschlüsseln:</p>
+<pre><code>
+gpg --decrypt --passphrase-file /etc/backup-credentials/gpg-passphrase \
+  /backup/meine_datenbank.dump.gpg &gt; /backup/meine_datenbank.dump
+</code></pre>
+<p>Dasselbe gilt für symmetrische Verschlüsselung mit OpenSSL oder age. Wichtig: Der Encryption-Key muss separat und sicher gespeichert werden – sonst ist das Backup verloren.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
