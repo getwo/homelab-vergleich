@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VLAN-Netzsegmentierung: Wann braucht man sie wirklich und wie man sie selbst baut</title>
+<meta name="description" content="Mehrere WLAN-Namen sind kein VLAN. Erklärung, wann Netzsegmentierung sinnvoll ist, welche Hardware gebraucht wird und wie man OpenWrt, OPNsense oder pfSense mit VLANs einrichtet — ohne Marketingfloskeln.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>VLAN-Netzsegmentierung: Wann braucht man sie wirklich und wie man sie selbst baut</h1>
+<p>Viele Selbsthaber und kleine Betriebe kaufen drei WLAN-Router, geben ihnen drei SSIDs — &quot;Besucher&quot;, &quot;Smart Home&quot;, &quot;Office&quot; — und glauben, ihr Netz sei jetzt sicher getrennt. Es ist das häufigste Missverständnis, das ich sehe: <strong>mehrere WLAN-Namen bedeuten nicht automatisch Netzsegmentierung.</strong> Wenn alle drei SSIDs auf dasselben Subnetz routen, obwohl man drei Access Points hat, sind sie ein Broadcast-Domäne und Geräte können sich gegenseitig sehen — oft ohne dass der Nutzer es merkt.</p>
+<p>Ein VLAN (Virtual Local Area Network) ist die korrekte Antwort auf dieses Problem. Dieser Artikel erklärt, wann ein VLAN wirklich nötig ist, welche Hardware gebraucht wird, wie die Praxis aussieht und wo die häufigsten Fehler liegen. Niemand wird hier zu teurer Hardware überzeugt — nur diejenigen, die selber bauen wollen, finden konkrete Schritte.</p>
+<h2>Was ein VLAN ist — und was es nicht ist</h2>
+<p>Ein VLAN zerlegt ein physikalisches Netz in mehrere logische Netze. Das gilt insbesondere für die <strong>802.1Q-Tagging</strong>-Technologie: ein VLAN-fähiger Switch hängt ein 4-Byte-Tag an jeden Ethernet-Rahmen, der über eine Trunk-Port oder zwischen Switch-Ports wandert. Geräte in VLAN 10 sprechen nur mit Geräten in VLAN 10, wenn nichts anders konfiguriert ist — auch wenn sie denselben Switch und die gleichen Ethernet-Kabel teilen.</p>
+<p><strong>Ein VLAN ist kein Firewall-Substitut.</strong> Ein VLAN begrenzt das Broadcast-Domänen und stellt die L2-Trennung bereit. Ob Pakete zwischen VLANn fließen dürfen, entscheidet erst die Firewall oder der Router — mit seinen Access-Control-Lists (ACLs). Wenn Sie also &quot;Kamera-Netz sollte nicht auf das Arbeitsplatz-Netz zugreifen können&quot; wollen, brauchen Sie zwei Dinge: VLANs (für die physische/ logische Trennung) und Firewall-Regeln (für die Zugriffsberechtigung). Vergessen Sie den zweiten Teil, ist das VLAN nicht mehr als ein Etikett.</p>
+<p><strong>Was ein VLAN nicht tut:</strong></p>
+<ul>
+<li>Es verschlüsselt nichts. Ein WLAN mit WPA2/WPA3 macht die Übertragung sicher — ein VLAN macht das nicht.</li>
+<li>Es schützt nicht vor Exploiten innerhalb des eigenen VLANs. Geräte im selben VLAN können sich gegenseitig weiter angriffen — darum ist die Kombination mit Firewall-Regeln so wichtig.</li>
+<li>Es hilft nicht, wenn der Router selbst keine VLANs kann.</li>
+</ul>
+<h2>Brauche ich VLAN? Eine Entscheidungstabelle</h2>
+<p>| Szenario | Empfehlung | Begründung |</p>
+<p>|---|---|---|</p>
+<p>| Privathaushalt mit ~30 Geräten, keine Kamera, kein Hosting | VLAN oft überflüssig | Wenn nur Smart-TVs, Handys, Laptops und ein paar Drucker im flachen Netz laufen, reicht ein durchdachtes Subnetz mit guter Passwort-Policy. Der Mehraufwand lohnt selten. |</p>
+<p>| Büro mit 5 Arbeitsplätzen + Gast-WLAN und regelmäßigen Besuchergeräten | <strong>VLAN empfohlen</strong> | Arbeitsplatz-Netz enthält vertrauliche Daten; Gast-Netz muss komplett isoliert sein. Ein VLAN für Gäste und ein für Mitarbeiter sind die minimale sinnvolle Trennung. |</p>
+<p>| Haus mit Kamera-System und Smart Home (bis 50 Geräte, IoT-Schrott) | <strong>VLAN stark empfohlen</strong> | Viele IoT-Geräte (Kameras, Sensoren, smarte Steckdosen) haben fest im Code verankerte Schwachstellen und kommunizieren trotzdem mit Außenquellen. Ein isoliertes IoT-VLAN, das nur bestimmte Ports nach außen freigibt, begrenzt die Angriffsfläche. |</p>
+<p>| Firma mit ausgewählten Arbeitsplätzen und Servern, 10–30 Personen | <strong>VLAN Pflicht</strong> | Management-VLAN für Infrastruktur, Server-VLAN, Arbeitsplatz-VLAN, Gast-VLAN — das ist die Norm. Ohne getrennte Verwaltungs-VLAN läuft jeder, der am Netz steht, Gefahr, Switch-Konfiguration zu sehen oder zu ändern. |</p>
+<p>Die Faustregel: <strong>Segmentierung ist dann sinnvoll, wenn Nutzer oder Geräte mit unterschiedlichem Vertrauens niveau im selben physischen Netz auftreten.</strong> Echte Trennung zwischen &quot;vertrauen&quot; und &quot;nicht vertrauen&quot; erfordert mehr als eine WLAN-Passphrase.</p>
+<h2>Der Aufbau: Was braucht man wirklich?</h2>
+<h2>1. Managed Switch statt unmanaged</h2>
+<p>Ein unmanaged Switch leitet Ethernet-Rahmen unverändert weiter — er versteht keine VLAN-Tags. Für VLAN-Strecken brauchen Sie einen <strong>managed Switch, der 802.1Q unterstützt</strong>. Das ist nicht gleichzusetzen mit &quot;Enterprise-Price&quot;: es gibt günstige managed Switches bei Switch-Preisen ab etwa 50–80 € (8-Port, unmanaged ist ähnlich günstig). Entscheidend ist die Funktion — nicht der Markenname.</p>
+<p>Konfigurieren Sie auf dem Switch:</p>
+<ul>
+<li><strong>Access-Ports:</strong> Ein Port, der nur einem VLAN zugeordnet ist (z. B. Access-Port VLAN 10 für Arbeitsplatz). Kein Tagging an der Station — das Gerät denkt, es sei in einem normalen Netz.</li>
+<li><strong>Trunk-Ports:</strong> Ein Port, der mehrere VLANs trägt, mit 802.1Q-Tagging. Typischerweise: Switch → Router/Firewall.</li>
+</ul>
+<h2>2. Der Router/Firewall muss VLAN-fähig sein</h2>
+<p>Der zentrale Punkt: <strong>nur der Router oder das Firewall-System kann zwischen VLANn routen und dort Firewall-Regeln definieren.</strong> Die Open-Wrt-Distribution unterstützt VLANs auf vielen Kompatiblen Router-Hardware. OPNsense und pfSense (FreeBSD-basiert) haben volle VLAN-Unterstützung, VLAN-Interface-Definitionen und Regel-Manager — dort lässt sich das sehr sauber bauen. Die Fritz!Box bietet in neueren Modellen eingeschränkte VLAN-Unterstützung (Client-VLAN für das eigene WLAN), aber <strong>kein allgemeines 802.1Q VLAN-Tagging für arbitrary VLANs</strong> und kein echtes Routing zwischen eigenen VLANs. Wer mehr als zwei Netze braucht, wird aus der Fritz!Box herauswachsen.</p>
+<p>Konkret: In OPNsense pflegt man unter <em>Interfaces → VLANs</em> neue VLAN-Interfaces auf dem physischen Port an (z. B. VLAN 10 auf LAN, VLAN 20 auf LAN). Diese VLAN-Interfaces appear dann als eigene Interfaces (z. B. &quot;VLAN 10 on LAN&quot;), die man dann unter <em>Interfaces → Assignments</em> zuordnet. Erst dann kann man in <em>Firewall → Rules</em> Regeln für jedes VLAN setzen.</p>
+<p>In OpenWrt erstellt man VLANs typischerweise durch Konfiguration des switch-Devices in <code>/etc/config/network</code> — pro VLAN-Interface mit <code>option vid</code> und <code>option ports</code> — und aktiviert das Routing und die Firewall-Regeln über die <code>zone</code>-Definitionen in denselben Dateien. Die genaue Syntax hängt von der Hardware und dem OpenWrt-Target ab.</p>
+<h2>3. Welche Geräte in welche Netze hinein müssen</h2>
+<p>| VLAN | Typische Geräte | Kommentar |</p>
+<p>|---|---|---|</p>
+<p>| <strong>Gast-WLAN</strong> | Besucher-Handys, Laptops ohne Zugang zum Firmennetz | Isolierte Zone; meist nur Internet, keine LAN-Zugriffe. |</p>
+<p>| <strong>IoT / Smart Home</strong> | Kameras (wenn nicht im Kamera-VLAN), smarte Steckdosen, Sensoren, Sprachassistenten | IoT-Geräte haben oft ungewollte Outbound-Verbindungen — hier kann man kontrollieren, welche Geräte wohin dürfen. |</p>
+<p>| <strong>Kamera-VLAN</strong> (optional, bei professionellen Kameras mit NVR) | IP-Kameras, NVR, lokale Monitoring-PCs | Kameras sollten nicht ohne weiteres ins IoT-Netz fallen, wenn sie für Videoüberwachung im Gesetz stehen könnten. |</p>
+<p>| <strong>Server / Dienste</strong> | NAS, Home-Server, Docker-Hosts, Druckserver | Nur von vertrauenswürdigen Arbeitsplatz-VLANn oder dem Management-VLAN erreichbar. |</p>
+<p>| <strong>Arbeitsplatz</strong> | Büro-PCs, Homeoffice-Laptops, Entwicklungshosts | Das täglich genutzte vertrauenswürdige Netz. |</p>
+<p>| <strong>Management</strong> | Switches, Router, APs, NVRs, andere Infrastruktur | Besonders wichtig: isoliert, nur von bestimmten Admin-IPs erreichbar. |</p>
+<p>| <strong>WAN</strong> | Kein eigenes VLAN nötig (das ist der Internet-Upstream) | Oft nur ein physischer oder logischer WAN-Port. |</p>
+<p>Die Aufteilung kann kleiner sein — nicht jedes Netz muss ein VLAN sein. Reichen zwei VLANs (z. B. &quot;vertraut&quot; und &quot;Gast/IoT&quot;), reicht auch das.</p>
+<h2>Firewall-Regeln: Grundregel und Beispiel</h2>
+<p><strong>Grundregel:</strong> Jedes VLAN beginnt mit einer Regel, die <strong>alles blockiert</strong>. Dann fügt man gezielt nur die notwendigen Regeln hinzu — nie umgekehrt &quot;alles erlauben und dann einzelne blockieren&quot;. Der Ansatz &quot;deny by default, allow by exception&quot; ist die praktische Trennung, die ein VLAN überhaupt wertvoll macht.</p>
+<p>Beispiel: <strong>NAS nur aus dem LAN erreichbar</strong>. Angenommen, das NAS hat die IP 192.168.10.50 im Arbeitsplatz-VLAN (VLAN 10). Die Firewall-Regel in OPNsense/pfSense lautet: Quelle = VLAN 10 Arbeitsplatz-Netz, Ziel = 192.168.10.50, Port = 445 (SMB) und 22 (SSH für Admin), Aktion = erlauben. Für das IoT-VLAN (VLAN 30) gibt es eine Regel: Ziel = 192.168.10.50, Aktion = blockieren (oder, noch besser, gar keine Regel — dann blockiert der Default den Zugriff). Für das Gast-VLAN gilt dasselbe: kein Zugriff auf das NAS.</p>
+<p>Mit dieser Kombination aus VLANs und Firewall-Regeln verhindert man, dass ein kompromittierter Smart-TV oder eine unsichere Kamera das NAS erreicht — nicht durch &quot;hoffe, das IoT-Gerät ist nett&quot;, sondern durch eine Regel, die das blockiert.</p>
+<h2>Fünf häufige Fehlschlüsse beim Eigenbau</h2>
+<p>1. <strong>&quot;Mein Switch kann VLANs&quot;</strong> — aber er kann kein 802.1Q Tagging. Viele günstige managed Switches haben eine Web-Oberfläche mit VLAN-Menü, aber intern arbeiten sie nur mit Port-basierter VLAN-Zuordnung (pro port ein VLAN, kein Tagging). Das reicht nicht für Trunk-Ports zum Router.</p>
+<p>2. <strong>DHCP pro VLAN fehlt.</strong> VLANs sind getrennte Broadcast-Domänen — jeder VLAN braucht seinen eigenen DHCP-Bereich, sonst bekommen Geräte keine Adresse oder Adressen aus dem falschen Netz. OPNsense und pfSense haben eigenständige DHCP-Server pro Interface; in OpenWrt definiert man pro VLAN-Zone den DHCP-Bereich.</p>
+<p>3. <strong>Management-VLAN vergessen und ausgesperrt.</strong> Wer die Verwaltungsportale der Switch/APs/Router in einem VLAN vergessen hat, das nicht routbar ist oder von seinem Arbeitsplatz-PC nicht erreichbar ist, muss sich nach der Konfiguration neu den Zugang überlegen — oft mit Kabel, Console oder Reset.</p>
+<p>4. <strong>Kameras ohne Weg zum NTP.</strong> Getrennte VLANs bedeuten getrennten Netzwerk-Zugang. Wenn Kameras ihren Zeitstempel nicht synchronisieren können, sind Aufzeichnungen rechtlich fragwürdig und Local-Storage-Konflikte folgen. Man muss entweder NTP freigeben (in der Regel unkritisch, UDP 123, direction out) oder einen lokalen NTP-Server im Kamera-VLAN bereitstellen.</p>
+<p>5. <strong>Falsche Reihenfolge beim Aufbau.</strong> Typischer Fehler: Switch konfigurieren, VLANs anlegen, Router NICHT angepasst — und dann verwirrt sein, warum VLAN 20 nicht funktioniert. Der Router muss alle VLAN-Interfaces kennen, DHCP bereitstellen, Routing und Firewall-Regeln definieren. Hardware-Reihenfolge: Router/Firewall konfigurieren, dann Switch, dann Access Points, dann Endgeräte. Nicht andersherum.</p>
+<h2>Aufwand und Kostenrahmen</h2>
+<p>| Position | Spanne | Annahme |</p>
+<p>|---|---|---|</p>
+<p>| Managed Switch (8–16 Port, 802.1Q) | 50–150 € | Konsumentenklasse, kein Enterprise-Stack |</p>
+<p>| Router/Firewall (OpenWrt-fähig, oder OPNsense/pfSense-Hardware) | 0–250 € | Eigenes vorhandenes Hardware oder günstige Hardware |</p>
+<p>| Arbeitszeit Eigenbau (Konfiguration, Test, Dokumentation) | 2–6 Stunden | Je nach Komplexität; einfaches 2-VLAN-Setup vs. 5-VLAN-Architektur |</p>
+<p>| Dienstleistung durch BsN (optional) | ab 180 € (2h) bis ca. 540 € (6h) | Beratung, Konfiguration, Dokumentation; auf eigener Hardware oder mit BsN-Hardware |</p>
+<p>Der Aufwand liegt weniger in der Hardware als in der konsequten Konfiguration aller Glieder: Switch, Router, Firewall-Regeln, DHCP, Access Points. Wer zwei VLANs und eine klare Policy baut, kommt entschieden schneller zurecht als wer fünf Netze konfiguriert und nicht testet, ob die Firewall-Regeln auch funktionieren.</p>
+<h2>FAQ</h2>
+<p><strong>Reicht ein unmanaged Switch?</strong></p>
+<p>Nein, für echte VLAN-Trennung mit Tagging nicht. Ein unmanaged Switch schaltet Ethernet-Einheiten transparent durch, ohne zu unterscheiden, welches VLAN ein Rahmen angehört. Für einfache Port-basierte VLANs (ein VLAN pro Switch-Port) reicht ein kleiner managed Switch.</p>
+<p><strong>Sind Kameras im Gast-WLAN sicher?</strong></p>
+<p>Nun, nein. Ein Gast-WLAN ist für Besucher gedacht, nicht für sicherheitskritische Geräte. Kamera-Hacks sind real, und viele Kameras kommunizieren ohnehin mit Cloud-Diensten. Ein separaten Kamera-VLAN mit kontrollierten Firewall-Regeln (nur Integrations-Server erreichbar, NTP freigegeben, keine unnötigen Outbounds) ist sicherer und nachvollziehbarer.</p>
+<p><strong>Muss ich für jedes VLAN einen eigenen SSID?</strong></p>
+<p>Nein. Ein VLAN ist ein Layer-2-Netz; die SSID ist Layer-1/Wireless. Ein Access Point kann mehrere SSIDs anbieten, die jeweils in unterschiedlichen VLANs landen. OpenWrt, OPNsense mit einer AP-Software — viele APs unterstützen mehrere SSIDs mit VLAN-Tagging pro SSID. Das ist die saubere Art: SSID &quot;Office&quot; landet in VLAN 10, SSID &quot;Gäste&quot; in VLAN 20, ohne dass das physikalische Netz durcheinander ist.</p>
+<p><strong>Wie teste ich, ob meine VLANs funktionieren?</strong></p>
+<p>Praktisch: Von einem Gerät im VLAN 10 versucht man, eine bekannte IP aus VLAN 20 zu erreichen (z. B. ein Gerät im IoT-Netz oder ein NAS). Wenn die Verbindung nicht aufbaut und Firewall-Logs zeigen, dass die Regel blockiert hat — funktioniert die Trennung. Gleichzeitig testet man die erlaubten Verbindungen (z. B. Arbeitsplatz-PC zum NAS), damit man weiß, dass nicht zu viel blockiert wurde. Ohne Test der Firewall-Regeln baut man VLANs, die entweder zu wenig oder zu viel trennen.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
