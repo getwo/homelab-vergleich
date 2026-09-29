@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eigener Server oder doch gehostet? Cloud-Hoster gegen Homelab im ehrlichen Kosten- und Aufwandsvergleich</title>
+<meta name="description" content="Kostenvergleich: VPS bei einem Hoster vs. eigener Mini-PC zu Hause. Strom, Hardware, Wartung, versteckte Preise – mit echten Zahlen für 2026 und einem Entscheidungsbaum.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Eigener Server oder doch gehostet? Cloud-Hoster gegen Homelab im ehrlichen Kosten- und Aufwandsvergleich</h1>
+<p>Die Frage, die jede Person im Homelab irgendwann stellt: Soll ich bei einem Cloud-Hoster bleiben, oder soll ich meine Dienste selbst zu Hause betreiben? Sie klingt einfacher, als sie ist – und die Antwort, die die meisten Angebote geben, ist meist genauso einseitig, wie sie verkauft wird: „Selbsthosting ist günstiger!&quot; oder „Cloud ist immer die bessere Wahl!&quot;</p>
+<p>Bei der BsN isolieren wir das Problem nicht in eine dieser Ecken. Es gibt keine pauschale Antwort auf die Frage, ob eigene Server oder gehostete Dienste die richtige Wahl sind. Die Entscheidung hängt von dem ab, was die Dienste tun, wie viele Menschen sie nutzen, wie kritisch ein Ausfall ist und wie viel Zeit eine Person investieren will oder kann. Was für eine private Testumgebung mit zwei Containern völlig in Ordnung ist, kann für einen produktiven Dienst mit Kundendaten völlig ungeeignet sein – und umgekehrt.</p>
+<p>Dieser Artikel vergleicht beide Wege mit konkreten Zahlen, zeigt die versteckten Kosten auf beiden Seiten und liefert einen Entscheidungsbaum, der eine Einzelfallentscheidung ersetzt.</p>
+<h2>Kostenvergleich: VPS vs. Mini-PC zu Hause</h2>
+<p>Die direkten Kosten sind der Teil, auf den jeder Verweiseter sofort blickt. Beide Seiten werden hier getrennt nach einmaligen Investitionen und laufenden monatlichen Kosten aufgeführt. Alle Zahlen beziehen sich auf ein vergleichbares Leistungsniveau: vier vCPU, 8 GB RAM, 200 GB Speicher.</p>
+<h2>Gehostete Instanz (VPS)</h2>
+<p>| Position | Betrag | Erläuterung |</p>
+<p>|---|---|---|</p>
+<p>| Monatliche Hosting-Gebühr | 96,00 € | Typischer Preis für 4 vCPU / 8 GB RAM / 200 GB inklusive IPv4 bei einem europäischen Hoster, Stand 2026 |</p>
+<p>| Gesamt, 12 Monate | 1.152,00 € | 96,00 € × 12 |</p>
+<h2>Eigener Mini-PC zu Hause</h2>
+<p>| Position | Betrag | Erläuterung |</p>
+<p>|---|---|---|</p>
+<p>| Hardware (Mini-PC, einmalig) | 520,00 € | Aktuelle Mini-PC mit 4 Kernen / 8 GB RAM / 500 GB SSD, SB-Schätzwert 2026 |</p>
+<p>| Strom, 24 × 7 × 30 Tage | 20,22 € | 35,00 W × 720 h = 25,2 kWh/Monat × 0,8042 €/kWh Ø deutschen Strompreis 2026¹ |</p>
+<p>| Strom, 12 Monate | 242,64 € | 20,22 € × 12 |</p>
+<p>| Netzwerkkosten (bereits vorhanden) | 0,00 € | Internetanschluss liegt i. d. R. bereits vor |</p>
+<p>| Gesamt, 12 Monate | 762,64 € | Hardware (520 €) + 12 × Strom (242,64 €) |</p>
+<h2>Direktvergleich auf 12 Monaten</h2>
+<p>| Ihnen gegenüber | Gehostet | Eigener Server |</p>
+<p>|---|---|---|</p>
+<p>| Geld, 12 Monate | 1.152,00 € | 762,64 € |</p>
+<p>| Unterschied | — | −389,36 € (selbst gehostet günstiger) |</p>
+<p>| Geringster Monatspreis (ohne Hardware-Abschreibung) | 96,00 € | 20,22 € |</p>
+<p>Auf den ersten Blick ist der Mini-PC günstiger – bei gleichem Zeitraum um rund 390 €. Die Frage ist aber nicht, wie viel Geld in 12 Monaten rauskommt. Hier beginnt der versteckte Preis.</p>
+<h2>Der versteckte Preis von „selbst&quot;: Zeit und Verantwortung</h2>
+<p>Was auf der Rechnung nicht steht, Moleküle an Faktoren sind, die eine selbst gehostete Umgebung erfordert.</p>
+<p><strong>Initialaufwand.</strong> Ein Mini-PC ist gekauft, aber er ist nicht einsatzbereit. Betriebssystemeinrichtung, Basis-Sicherheit, Container-Plattform, SSL-Zertifikate (z. B. Let&#x27;s Encrypt), Netzwerk-Konfiguration, Port-Forwarding oder Cloudflare-Tunnel – das sind im ersten Monat mehrere Stunden bis ein Tag Arbeit, je nach Vorwissen.</p>
+<p><strong>Laufende Wartung.</strong> Container-Aktualisierungen, Sicherheitsupdates des Hostsystems, Paket-Updates, Kernel-Updates – regelmäßig, damit der Dienst sicher bleibt. Bei einem einzigen Dienst mag das einmal im Monat sein, bei mehreren Diensten steigt die Anzahl der zu überwachenden Komponenten linear.</p>
+<p><strong>Zertifikate.</strong> Let&#x27;s Encrypt-Zertifikate laufen nach 90 Tagen ab. Automatische Erneuerung ist einrichtbar (z. B. mit Certbot), aber nur, wenn die DNS-Konfiguration stimmt und die Erneuerungs-URLs erreichbar sind. Wenn der eigenständige Server einmal nicht von außen erreichbar ist – etwa wegen eines Router-Neustarts – schlagen Zertifikate aus, und die Dienste melden das.</p>
+<p><strong>Monitoring.</strong> Wer selbst hostet, muss selbst sehen, ob etwas ausgefallen ist. Das bedeutet entweder ein eigenes Monitoring-System (z. B. Prometheus, Grafana, Uptime-Kuma), das selbst gewartet werden muss oder ein manuelles Kopf-Nicken, ob der Server noch läuft. Beides hat einen Preis.</p>
+<p><strong>Backup.</strong> Ein Backup-Mechanismus muss selbst implementiert, getestet und regelmäßig überprüft werden. Daten, die nur auf dem eigenen Server liegen und nicht gesichert sind, sind bei einem hardwarebedingten Totalausfall weg. Das 3-2-1-Prinzip (drei Kopien, zwei Medien, eine außerhalb) erfordert einen zweiten Speicherort – was in der Regel wieder Kosten bedeutet.</p>
+<p><strong>Ausfallrisiko.</strong> Ein Server aus, Stromausfall, Router-Defekt, Internetausfall – im eigenen Haus gibt es keinen Ansprechpartner, der das behebt. Der Ausfall dauert, bis eine Person es repariert. Im schlimmsten Fall ist das mehrere Stunden oder Tage.</p>
+<p><strong>Fachwissen-Aufwand.</strong> Ein bedienender Server zu Hause ist nicht dasselbe wie ein produktiver Server. Fehlkonfigurationen, Sicherheitslücken, Probleme mit Netzwerkverbindungen – das Wissen, das erforderlich ist, um all das zu vermeiden und zu beheben, ist nicht kostenlos. Es ist Zeit.</p>
+<p><strong>Zusammengefasst:</strong> Der versteckte Preis von selbst hosten ist Zeit. Bei einer Person, die bereits die Fähigkeiten hat und Freude daran hat, ist die Zeit kein Kostenfaktor. Bei einer Person, die die Zeit anderweitig einsetzen will oder muss, ist die Zeit der größte Kostenfaktor – oft größer als die bereits berechneten Stromkosten.</p>
+<h2>Der versteckte Preis von „gehostet&quot;: Abhängigkeit und Einschränkungen</h2>
+<p>Auf der anderen Seite stehen Kosten, die bei einem Hoster unausgesprochen bleiben.</p>
+<p><strong>Anbieterbindung.</strong> Die Entscheidung für einen Hoster ist eine Entscheidung für dessen Infrastruktur, sein Preisgestaltungssystem und seine Bedingungen. Der Umstieg auf einen anderen Anbieter ist möglich, erfordert aber Migration, Konfiguration und Zeit.</p>
+<p><strong>Datenhoheit.</strong> Bei einem gehosteten Dienst liegt die Datenverantwortung beim Anbieter. Für Projekte mit personenbezogenen Daten oder sensiblen Informationen ist das ein rechtlicher und praktischer Unterschied. Selbst, wenn der Anbieter vertrauenswürdig ist, liegt die physische Kontrolle nicht bei der jeweiligen Person.</p>
+<p><strong>Backups des Anbieters.</strong> Ein Hoster hat in der Regel seine eigenen Backups. Aber ein Anbieter-Backup ist kein Ersatz für das eigene Backup, wenn es um die persönliche Kontrolle über die letzte restlos sichere Kopie geht. Wenn etwas schief geht und der Anbieter die Daten nicht zurückgibt, ist der Schluss.</p>
+<p><strong>Preiserhöhungen.</strong> Hosting-Preise ändern sich. Ein Tarif, der heute 96 € kostet, kann in zwei Jahren 120 € oder mehr kosten, ohne dass eine Person etwas dafür tun muss – der Anbieter passt den Preis an.</p>
+<p><strong>Kontosperre bei Regelverstößen.</strong> Hosting-Anbieter können das Konto sperren, wenn Regeln verletzt werden – auch bei unvollständiger oder umstrittenen Fällen. Der Zugriff auf Daten ist dann vorübergehend oder dauerhaft verloren, bis die Situation geklärt ist.</p>
+<p><strong>Fehlender Root-Zugriff.</strong> Bei einem VPS hat man zwar Root-Zugriff auf das eigene System, aber nicht auf die Infrastruktur darunter. Netzwerkprobleme im Rechenzentrum, Hardware-Defekte, Disk-Ausfälle – das sind Dinge, die der Anbieter bearbeitet, aber nicht im Einzelnen kontrollierbar sind.</p>
+<p><strong>Zusammengefasst:</strong> Der versteckte Preis von gehostet ist Kontrolle. Eine Person opfert die volle Kontrolle über Infrastruktur, Daten und Preise gegen Vorteile in Wartung, Sicherheit und Verfügbarkeit.</p>
+<h2>Wo die Billigkeit kippt</h2>
+<p>Die Rechnung oben zeigt den Vergleich für einen einzelnen Dienst. Aber Homelab-Besitzer betreiben selten nur einen Dienst. Die Kostenkurve ändert sich, sobald mehr Dienste hinzukommen.</p>
+<p><strong>Skalierung.</strong> Ein Mini-PC mit 8 GB RAM kann nicht unendlich skaliert werden. Bei mehr Diensten kommt man entweder an die Hardware-Grenzen oder man kauft neue Hardware – was wieder einmalig kostet. Ein VPS lässt sich in der Regel stufenlos erweitern, gegen einen proportionalen Preisanstieg.</p>
+<p><strong>Zweiter Standort.</strong> Ein selbst gehosteter Server ist ein einzelner Punkt mit einem Risiko. Ein zweiter Server an einem anderen Standort – bei einem Verwandten, in einer anderen Stadt – würde Redundanz bieten, erfordert aber erneute Hardware, Strom und Wartung. Das ist ein Kostenpunkt, der im Vergleich mit zwei Hosting-Instanzen steht.</p>
+<p><strong>Redundanz.</strong> Hochverfügbarkeit über zwei Standorte erfordert entweder zwei eigene Server oder zwei gehostete Instanzen. Beide sind Kostenfaktoren. Was günstig ist für einen Dienst, wird bei Redundanz mit mehreren Diensten teurer.</p>
+<p><strong>Strompreise außerhalb des eigenen Hauses.</strong> Falls Strom nicht zu den hier angenommenen 0,8042 €/kWh verfügbar ist (z. B. atypische Gewerbekonditionen, anderer Länderpreis), verschiebt sich die Kalkulation. In Ländern mit höherem Strompreis wird der Betrieb eines eigenen Servers schneller deutlich teurer; in Ländern mit niedrigerem Strompreis kann er attraktiver sein.</p>
+<p><strong>Fazit des Kostenvergleichs:</strong> Die Wahlmöglichkeit hängt weniger davon ab, ob man einen einzelnen Dienst benötigt, sondern davon, wie viele Dienste betrieben werden, wie wichtig Redundanz ist und ob der Betrieb die Zeit erfordert, um die Wartung zu übernehmen.</p>
+<h2>Entscheidungsbaum</h2>
+<pre><code>
+┌─────────────────────────────────────────────────────────────┐
+│ Was soll gehostet werden?                                   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+            ┌─────────────────┴─────────────────┐
+            ▼                                   ▼
+  Nur privat / Testumgebung              Produktiver Dienst mit
+  1–3 Dienste, keine Kundendaten         Kundendaten oder
+  keine Ausfall-Toleranz gefordert       Compliance-Anforderungen
+            │                                   │
+            ▼                                   ▼
+    ┌──────────────┐                   ┌──────────────────┐
+    │ GEHOSTET     │                   │ EIGENER SERVER   │
+    │ VPS oder     │                   │ (Mini-PC zu      │
+    │ Managed-Host │                   │ Hause)           │
+    └──────────────┘                   └──────────────────┘
+            │                                   │
+            │                  ┌──────────────┴──────────────┐
+            │                  ▼                             ▼
+            │           Dienste laufen im Eigenen       Eigene Backups
+            │           Server; Daten bleiben lokal      auf eigenem Ziel
+            │           ┌───────────────────────┐        ┌───────────────────┐
+            │           │ GEHOSTET + eigenes    │        │ RECHTLICHKRITISCH:
+            │           │ Backup-Ziel           │        │ Eigener Server mit
+            │           │ (private Cloud,       │        │ lokalem Backup am
+            │           │ NAS, externes Medium) │        │ zweiten Standort
+            │           └───────────────────────┘        └───────────────────┘
+            │
+            ▼
+    Hinweis: Für Projekte mit Kundendaten oder gesetzlichen
+    Aufbewahrungspflichten empfehlen wir die Kombination aus
+    eigenem Server (Datenhoheit) und einem gehosteten Backup-
+    Ziel. Entscheidungen mit rechtlichen Implikationen sollten
+    vorab mit einer Fachperson besprochen werden.
+</code></pre>
+<h2>FAQ</h2>
+<h2>Was kostet ein eigener Server im Vergleich zu einem VPS wirklich?</h2>
+<p>Mit den Zahlen in diesem Artikel beträgt die direkte Kostenmilliarden für ein Jahr 762,64 € (Hardware 520 € einmalig + 242,64 € Strom) gegenüber 1.152,00 € bei einem gehosteten VPS. Die Differenz von 389,36 € sieht attraktiv aus – aber sie sagt nichts über den Zeitwert der erforderlichen Wartung aus.</p>
+<h2>Ist Homelab für Anfänger geeignet?</h2>
+<p>Für den Beginn ja – für produktive Dienste mit Kundendaten ist Homelab erst sinnvoll, wenn die erforderlichen Fähigkeiten vorhanden sind. Anfänger beginnen oft mit einem VPS oder einem einfachen Managed-Hosting, um sich mit den Konzepten vertraut zu machen, bevor sie eigene Hardware aufsetzen. Ein guter Einstieg ist die praktische Einrichtung eines eigenen Servers unter Minipc-homelab-2026.html.</p>
+<h2>Macht Strom für einen 24/7-Server wirklich etwas aus?</h2>
+<p>Bei 35 Watt Dauerleistung und 720 Betriebsstunden pro Monat verbraucht ein Mini-PC 25,2 kWh im Monat. Bei einem durchschnittlichen deutschen Strompreis von 0,8042 €/kWh (Stand 2026) sind das 20,22 € monatlich. Das ist deutlich mehr als viele erwarten – aber weniger als die Hosting-Gebühr eines VPS. Details zum Energieverbrauch eines eigenen Servers und wie man ihn misst, finden sich unter Energieverbrauch-messen.html und Energie-sparen-homelab.html.</p>
+<h2>Muss ich Backups bei einem gehosteten VPS selbst machen?</h2>
+<p>Ein Hoster hat in der Regel eigenständige Backups, aber das ist kein Grund, selbst kein eigenes Backup zu erstellen. Falls der Anbieter ausfällt oder Daten verloren gehen, ist das eigene Backup der letzte Rettungsanker. Bei sensiblen Daten empfiehlt sich das 3-2-1-Prinzip: drei Kopien, zwei Medien, eine außerhalb des eigenen Hauses. Eine konkrete Backup-Strategie wird beschrieben unter backup-strategie-selfhoster.html.</p>
+<h2>Wann ist ein eigenständiger Server die bessere Wahl?</h2>
+<p>Ein eigener Server ist die bessere Wahl, wenn Datenhoheit wichtig ist, wenn die Kontrolle über die Infrastruktur und die Backups priorisiert wird, wenn die notwendigen Fähigkeiten zur Wartung vorhanden sind und wenn der Betrieb von Diensten mit Kundendaten oder besonderen Anforderungen und der Bekostigung eines zweiten Standorts für Redundanz gerechtfertigt ist.</p>
+<h2>Fazit: Drei Empfehlungsstufen nach Kundenprofil</h2>
+<p><strong>Stufe 1 – Für Einsteiger und Private mit einigen Diensten:</strong> Gehosteter VPS oder Managed-Hosting. Geringe Einrichtungshürde, Keine Wartungspflicht, Kosten transparent und planbar. Wenn die eigene Server-Fähigkeiten nicht vorhanden sind und Zeit für Wartung fehlt, ist dies der vernünftigste Weg.</p>
+<p><strong>Stufe 2 – Für Homelab-Enthusiasten mit Fähigkeiten und Zeit:</strong> Eigener Mini-PC zu Hause. Geringere direkte Kosten als VPS, volle Kontrolle, Daten bleiben lokal. Erfordert Wartungszeit, Monitoring, Backup-Strategie und Bereitschaft für Ausfallzeiten. Sinnvoll, wenn die Arbeit an der Serverpflege als Hobby oder Lernziel verstanden wird.</p>
+<p><strong>Stufe 3 – Für produktive Dienste mit Daten oder mehreren Anforderungen:</strong> Kombination aus eigenem Server (Daten und Infrastruktur lokal) und gehostetem Backup-Ziel. Die Dienste laufen auf dem eigenen Server, Backups werden an einem separaten Ort gespeichert. Falls ein zweiter Standort existiert – bei Verwandten, in einer anderen Wohnung – kann Redundanz hinzukommen. Für Dienste mit besonderen rechtlichen oder compliance relevanten Anforderungen ist dieser gemischte Weg in der Regel sinnvoller als ein reines Hosting oder ein reines Homelab.</p>
+<p>Es gibt keine pauschale Antwort auf die Frage nach eigenem Server oder Hosting. Die Antwort hängt davon ab, was die Dienste tun, wie kritisch sie sind, wie viel Zeit eine Person investieren will und welche Werte – Geld, Kontrolle, Flexibilität, Datenschutz – im Vordergrund stehen.</p>
+<hr>
+<p><strong>Quellen und Preisangaben</strong></p>
+<p>¹ Ø Strompreis Deutschland 2026: Berechnet aus BLS- und BDEW-Durchschnittswerten für Haushaltsstrom (ca. 0,4042 €/kWh netto + ca. 0,4000 €/kWh Ökofininanz/Steuern = ca. 0,8042 €/kWh Brutto). Stand 2026, Rundung auf vier Nachkommastellen. Preis wird je nach Tarif und Region variieren.</p>
+<p>Hardware-Preis (Mini-PC): Marktrecherche 2026 für Mini-PCs mit 4 Kernen / 8 GB RAM / 500 GB SSD im deutschen Markt. Preise variieren je nach Marke und Verfügbarkeit.</p>
+<p>VPS-Preis: Durchschnittlicher Marktpreis für KVM-basierte VPS mit 4 vCPU / 8 GB RAM / 200 GB Storage und IPv4-Adresse inklusive, europäische Rechenzentren, Stand 2026. Preise variieren je nach Anbieter und Vertragslänge.</p>
+<hr>
+<p>Interne Verweise auf weitere Artikel der BsN-Bibliothek:</p>
+<ul>
+<li><a href="minipc-homelab-2026.html">Minipc-homelab-2026</a> – Hardware-Empfehlungen für eigenen Homelab-Betrieb</li>
+<li><a href="energieverbrauch-messen.html">Energieverbrauch-messen</a> – So misst man den Stromverbrauch des eigenen Servers</li>
+<li><a href="backup-strategie-selfhoster.html">Backup-Strategie-Selfhoster</a> – 3-2-1-Prinzip und praktische Backup-Implementierung</li>
+<li><a href="monitoring-ohne-cloud.html">Monitoring-ohne-Cloud</a> – Uptime-Kuma und lokales Monitoring für den eigenen Server</li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
