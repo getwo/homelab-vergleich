@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lokale RAG-Pipeline: eigene Dokumente durchsuchen, ohne sie in die Cloud zu geben</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Lokale RAG-Pipeline: eigene Dokumente durchsuchen, ohne sie in die Cloud zu geben</h1>
+<p>Du hast einen Berg eigener Unterlagen — Handbücher, Verträge, Notizen, ein Wiki-Export — und möchtest Fragen daran stellen können, ohne alles zu einer US-Cloud hochzuladen. Genau dafür gibt es Retrieval-Augmented Generation (RAG). Dieser Artikel zeigt, wie eine solche Pipeline lokal aussieht, welche Bausteine es wirklich gibt, und wo die typischen Qualitätsfallen liegen.</p>
+<p>Eine Abgrenzung vorweg, damit keine Verwechslung entsteht: Der Artikel <a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a> behandelt die Frage, <strong>welche Software ein Sprachmodell als Dienst betreibt</strong> — Ollama, llama.cpp server, vLLM, LM Studio. RAG beginnt erst danach. Ein laufender LLM-Server ist die Voraussetzung, nicht das Thema. Dieser Text beschäftigt sich mit dem Weg <strong>von deinen Dokumenten zur fundierten Antwort mit Quellenangabe</strong>: dem Einbetten, Speichern, Wiederfinden und Belegen.</p>
+<h2>Was RAG gegenüber reinem Prompten mit Volltext ändert</h2>
+<p>Reines Prompten mit Volltext heißt: Du kopierst ganze Dokumente in die Eingabe und hoffst, dass das Modell die richtige Stelle findet. Das funktioniert bei einer Seite. Bei einem Handbuch mit 300 Seiten passt der Text gar nicht mehr in den Kontext — und selbst wenn er passt, sinkt die Treffsicherheit, weil das Modell zwischen viel Irrelevantem die eine relevante Passage suchen muss. Außerdem zahlst du bei jedem Aufruf für den gesamten Text, auch wenn du nur eine Zahl brauchst.</p>
+<p>RAG dreht das um. Statt alles zu übergeben, sucht der Suchschritt zuerst die passenden Abschnitte und legt dem Modell nur diese vor. Der Unterschied liegt also nicht im Sprachmodell, sondern in der Vorarbeit: einem durchsuchbaren Index, der aus Textabschnitten und ihren Zahlen-Vertretern (Embeddings) besteht. Das Modell bekommt bei jeder Frage nur die drei bis fünf relevantesten Abschnitte und soll daraus antworten — mit Verweis auf die Quelle. Der Nutzen in drei Punkten: der Kontext bleibt klein und bezahlbar, die Antwort stützt sich auf belegbare Stellen statt auf Modellgedächtnis, und du kannst nachvollziehen, woher eine Aussage stammt. RAG macht ein Modell nicht klüger — es gibt ihm nur die richtigen Seiten auf den Tisch.</p>
+<h2>Der Datenfluss in sieben Schritten</h2>
+<p>Eine RAG-Pipeline hat eine feste Reihenfolge. Jeder Schritt hängt vom vorherigen ab; wenn du einen überspringst, merkst du das erst an der Antwortqualität.</p>
+<p>1. <strong>Dokumente sammeln.</strong> Alle Quellen zusammenführen: Dateiordner, Wiki-Export, Mail-Anhänge, Netzlaufwerk. Wichtig ist eine Quelle der Wahrheit — dieselbe Datei zweimal im Index erzeugt Dubletten in den Treffern.</p>
+<p>2. <strong>Aufbereiten.</strong> Aus dem Rohformat reinen Text machen: PDF-Textschicht auslesen, Scans per OCR in Text verwandeln, HTML/Markdown von Formatierungsballast befreien. Hier entsteht die Textqualität, die alle späteren Schritte trägt.</p>
+<p>3. <strong>In Abschnitte teilen (Chunking).</strong> Den Text in handliche Stücke zerlegen, die als Einheit gesucht werden. Zu große Stücke verwässern die Antwort, zu kleine verlieren den Zusammenhang.</p>
+<p>4. <strong>Einbetten.</strong> Jeden Abschnitt mit einem Embedding-Modell in einen Zahlenvektor umrechnen. Ähnliche Bedeutung ergibt ähnliche Vektoren — das ist die Grundlage der semantischen Suche.</p>
+<p>5. <strong>In die Vektor-Datenbank schreiben.</strong> Die Vektoren samt Metadaten (Quelldatei, Kapitel, Mandant, Datum) speichern und einen Suchindex anlegen.</p>
+<p>6. <strong>Retrieval.</strong> Die Frage ebenfalls einbetten und die ähnlichsten Abschnitte abrufen — meist die k nächsten Nachbarn im Vektorraum.</p>
+<p>7. <strong>Antwort mit Quellenangabe.</strong> Die gefundenen Abschnitte plus die Frage an das Sprachmodell geben und eine Antwort verlangen, die ihre Fundstellen zitiert. Der Rücksprung von der Aussage zur Quelldatei ist der wichtigste Teil des Ganzen.</p>
+<h2>Komponenten und welchen Zuschnitt man nimmt</h2>
+<h2>Einbettungsmodell: lokal oder API</h2>
+<p>Das Embedding-Modell bestimmt, <strong>wie gut</strong> ähnliche Stellen gefunden werden, und <strong>welche Vektorlänge</strong> die Datenbank erwartet. Zwei Wege:</p>
+<ul>
+<li><strong>Lokal.</strong> Modelle aus der sentence-transformers-Familie laufen auf CPU, kleinere auch flott. Üblich sind <code>all-MiniLM-L6-v2</code> (384 Dimensionen, englischer Fokus) und für mehrsprachige Unterlagen <code>paraphrase-multilingual-MiniLM-L12-v2</code> oder <code>BAAI/bge-m3</code>. Wenn du ohnehin Ollama betreibst, liefert <code>ollama pull nomic-embed-text</code> (768 Dimensionen) Embeddings über die lokale API. Vorteil: keine Daten verlassen das Haus, keine Kosten pro Aufruf. Nachteil: CPU-Last beim Erstindex, und du musst das Modell selbst aktuell halten.</li>
+<li><strong>API.</strong> Ein Cloud-Embedding-Dienst (etwa das OpenAI-Embedding-Modell <code>text-embedding-3-small</code> mit 1536 Dimensionen) ist bequem und schnell, schickt aber jeden Abschnitt deiner Unterlagen an den Anbieter. Für ein Setup, dessen ganzer Sinn die Datenhoheit ist, ist das meist die falsche Wahl.</li>
+</ul>
+<p>Die harte Regel: <strong>Vektorlänge und Modell gehören zusammen.</strong> Wer das Modell tauscht, muss den Index neu bauen (siehe Qualitätsfallen).</p>
+<h2>Vektor-Datenbanken</h2>
+<p>Die Vektor-Datenbank speichert die Vektoren und findet die nächsten Nachbarn schnell wieder.</p>
+<ul>
+<li><strong>Chroma</strong> — prozessnah, keine Serverinstallation. In Python: <code>PersistentClient(path=&quot;./chroma&quot;)</code>, dann <code>get_or_create_collection(&quot;dokumente&quot;)</code> und <code>collection.add(...)</code>. Abfrage über <code>collection.query(query_embeddings=[...], n_results=5)</code>; <code>where={&quot;mandant&quot;: &quot;a&quot;}</code> filtert nach Metadaten. Ideal für Einzelplatz und Prototypen.</li>
+<li><strong>Qdrant</strong> — eigener Dienst (HTTP 6333, gRPC 6334), als Container betrieben. Du legst eine Collection mit <code>vector size</code> und <code>distance: Cosine</code> an, schreibst Punkte mit Payload, filterst per <code>filter</code>. Bringt Snapshots und ist für Mehrbenutzer-Setups die robustere Wahl.</li>
+<li><strong>pgvector</strong> — eine Erweiterung für PostgreSQL: <code>CREATE EXTENSION vector;</code>, Spalte <code>embedding vector(768)</code>, Index <code>USING hnsw (embedding vector_cosine_ops)</code>, Suche per <code>ORDER BY embedding &lt;=&gt; :query LIMIT 5</code>. Wenn du ohnehin Postgres laufen hast, sparst du eine zusätzliche Datenbank und behältst Backups, Rechte und Transaktionen in gewohnter Hand.</li>
+<li><strong>FAISS</strong> — eine Bibliothek, kein Dienst. <code>IndexFlatL2(dim)</code> für den Einstieg, <code>IndexIVFFlat</code> für größere Mengen (erfordert <code>train()</code>), Persistenz per <code>write_index()</code> / <code>read_index()</code>. Kein Metadaten-Filter und keine Zugriffskontrolle — die musst du drumherum bauen.</li>
+</ul>
+<h2>LiteRAG, fertige Oberflächen und Frameworks</h2>
+<ul>
+<li><strong>LiteRAG</strong> — ein leichtgewichtiger, graph-basierter RAG-Ansatz: Statt nur flache Vektorähnlichkeit zu nutzen, verbindet er Abschnitte über Beziehungen, um Mehrfach-Sprünge („wer hängt mit wem zusammen&quot;) besser zu beantworten. Sinnvoll, wenn deine Fragen über mehrere Dokumente hinweg zusammenhängen. Für reine Stichwortsuche ist es Überdimensionierung.</li>
+<li><strong>Open WebUI (mit RAG)</strong> — eine Weboberfläche, die Dokumente direkt hochladen, einbetten und im Chat durchsuchen lässt. Konfiguration über Umgebungsvariablen: <code>RAG_EMBEDDING_ENGINE</code> (z. B. <code>ollama</code>), <code>RAG_EMBEDDING_MODEL</code>, <code>CHUNK_SIZE</code>, <code>CHUNK_OVERLAP</code>, <code>RAG_TOP_K</code>, <code>VECTOR_DB</code>. Fertig, wenn du schnell zu einer Chat-Oberfläche mit Dokumentenbezug willst.</li>
+<li><strong>AnythingLLM</strong> — Desktop- und Server-Variante mit „Workspaces&quot;: pro Arbeitsbereich eigene Dokumente und eigener Embedder. Vector-Backend wählbar (standardmäßig LanceDB, alternativ Chroma, Qdrant, PGVector, Milvus). Die Server-Version bringt Mehrbenutzerverwaltung mit.</li>
+<li><strong>LlamaIndex</strong> — ein Python-Framework statt fertiger Oberfläche. Bausteine: <code>SimpleDirectoryReader</code> zum Einlesen, <code>SentenceSplitter</code> fürs Chunking, <code>VectorStoreIndex</code> für den Index, ein Query-Engine für die Abfrage. Maximale Kontrolle, mehr Eigenbau.</li>
+</ul>
+<h2>Vergleichstabelle</h2>
+<p>| Komponente | Einrichtung | Speicherbedarf | Modellwechsel | Offline-Fähigkeit |</p>
+<p>|---|---|---|---|---|</p>
+<p>| <strong>Chroma</strong> | Niedrig – als Bibliothek in dein Skript, keine Serverinstallation | Gering – Vektoren und Metadaten in einer lokalen Datei/Verzeichnis | Einfach: neues Embedding-Modell, Collection neu befüllen (Vektorlänge muss passen) | Vollständig – läuft rein lokal, kein Netzwerk nötig |</p>
+<p>| <strong>Qdrant</strong> | Mittel – Container starten, Collection anlegen (Größe + Distanz) | Mittel – eigener Dienst mit eigenem Datenspeicher; wächst mit Anzahl der Abschnitte | Collection mit passender Vektorlänge neu anlegen und neu befüllen | Vollständig – selbst gehostet im eigenen Netz |</p>
+<p>| <strong>pgvector</strong> | Mittel – Postgres-Erweiterung aktivieren, Spalte + Index anlegen | Gering zusätzlich – nutzt deine bestehende Postgres-Instanz und deren Backup | Spalte/Index neu anlegen; Rechte und Backups bleiben erhalten | Vollständig – Teil deiner eigenen Datenbank |</p>
+<p>| <strong>FAISS</strong> | Niedrig – reine Bibliothek im Python-Skript | Gering – Index als Datei auf Platte | Index neu bauen; Metadaten-Filter und Rechte selbst ergänzen | Vollständig – reine lokale Bibliothek |</p>
+<p>| <strong>LiteRAG</strong> | Mittel – Framework einrichten, Graph-Index aufbauen | Höher – Graph-Struktur zusätzlich zu Vektoren | Modellwechsel bedeutet Neuaufbau des Graph-Index | Vollständig – lokal betreibbar |</p>
+<p>| <strong>Open WebUI (RAG)</strong> | Niedrig – Container/Installation, Dokumente im Web-UI hochladen | Mittel – Embeddings + Dokumentstore der Instanz | <code>RAG_EMBEDDING_MODEL</code> ändern und Bestand neu einbetten | Vollständig lokal, wenn Embeddings lokal laufen |</p>
+<p>| <strong>AnythingLLM</strong> | Niedrig – Desktop-App oder Container, Workspace anlegen | Mittel – je Workspace eigene Vektoren + Quelldokumente | Embedder pro Workspace umstellbar, Dokumente neu einbetten | Vollständig lokal bei lokalem Embedder |</p>
+<p>| <strong>LlamaIndex</strong> | Hoch – eigenes Python-Projekt, Verdrahtung selbst | Gering – nur Framework; Speicher steckt im gewählten Vector-Store | Modell im Code tauschen, Index neu bauen | Vollständig – reines Framework |</p>
+<p>Kurz gefasst: Für einen Einzelplatz nimmst du Chroma oder FAISS, für einen Dienst im Netz Qdrant, und wenn Postgres schon läuft, ist pgvector der geringste Zusatzaufwand. Fertige Oberflächen wie Open WebUI oder AnythingLLM sparen dir den Eigenbau, kosten aber an Kontrolle über Chunking und Filter.</p>
+<h2>Wie Dokumenttypen unterschiedlich behandelt werden</h2>
+<p>Alle Dokumente landen als Text im Index — aber der Weg dorthin ist je nach Typ anders, und genau hier entstehen die meisten stillen Fehler.</p>
+<ul>
+<li><strong>PDF mit Textschicht.</strong> Der gute Fall: Der Text ist bereits im PDF enthalten und lässt sich mit PyMuPDF (<code>fitz</code>) oder pdfplumber auslesen. Achte auf Spalten, Kopf- und Fußzeilen und Seitenzahlen — die landen sonst mitten im Abschnittstext und verrauschen die Suche.</li>
+<li><strong>Scan ohne OCR.</strong> Ein eingescanntes PDF ist zunächst nur ein Bild. Ohne OCR ist der Text nicht lesbar und landet — wenn du nicht aufpasst — als leere oder sinnlose Einbettung im Index. Lösung: OCR nachrüsten, entweder als Vorlauf mit tesseract bzw. <code>ocrmypdf --skip-text</code> (das setzt genau dort eine Textschicht ein, wo noch keine ist), oder als eigener Erkennungsschritt. Fehlerhafte OCR ist schlimmer als gar kein Index, weil du falsche Fundstellen zitierst.</li>
+<li><strong>Markdown.</strong> Am angenehmsten: Markdown hat schon eine Struktur. Statt stumpf nach Zeichen zu trennen, teilst du sinnvoll nach Überschriften (das erhält Kapitelzusammenhänge) — viele Splitter können das, etwa ein Markdown-Header-Splitter. Die Überschrift gehört jeweils mit in den Abschnitt.</li>
+<li><strong>Confluence-Export.</strong> Ein Wiki-Export kommt als HTML mit Navigation, Makros und wiederkehrenden Randleisten. Vor dem Einbetten HTML zu reinem Text strippen — sonst indizierst du Menüs statt Inhalte. Der Seitenname als Kapitelüberschrift muss im Abschnitt bleiben, damit der Treffer auch als Quelle lesbar ist.</li>
+</ul>
+<h2>Drei realistische Anleitungen</h2>
+<h2>Anleitung 1: Reine Notizsuche auf dem eigenen Rechner</h2>
+<p>Ziel: Deine eigenen Notizen, Markdown-Dateien und Textdateien semantisch durchsuchen — kein Mehrbenutzer, kein Server, kein Internet.</p>
+<p><strong>Voraussetzungen:</strong> Python-Umgebung mit <code>chromadb</code> und einem Einbettungsmodell (lokal über sentence-transformers oder Ollama).</p>
+<p><strong>Schritt 1 — Notizen einlesen.</strong> Sammle alle <code>.md</code>- und <code>.txt</code> aus deinem Notizordner, lies sie ein und teile sie nach Überschriften in Abschnitte. Als Metadaten speicherst du den Dateipfad und die Überschrift.</p>
+<p><strong>Schritt 2 — Einbetten.</strong> Erzeuge für jeden Abschnitt das Embedding. Lokal reicht ein kleines mehrsprachiges Modell; für einen Notizbestand ist die Geschwindigkeit ausreichend.</p>
+<p><strong>Schritt 3 — In Chroma ablegen.</strong> Mit <code>PersistentClient(path=&quot;./chroma&quot;)</code> und <code>get_or_create_collection(&quot;notizen&quot;)</code>, dann <code>add(documents, embeddings, id=&quot;pfad#abschnitt&quot;, metadatas={&quot;pfad&quot;: ..., &quot;titel&quot;: ...})</code>.</p>
+<p><strong>Schritt 4 — Suchen.</strong> Frage einbetten und <code>query(query_embeddings=[...], n_results=5)</code> aufrufen. Du bekommst die fünf ähnlichsten Abschnitte samt Pfad zurück — für eine Notizsuche ist das oft schon das Ergebnis, ganz ohne Sprachmodell.</p>
+<p><strong>Schritt 5 — Optional beantworten lassen.</strong> Willst du eine formulierte Antwort, gib die gefundenen Abschnitte und die Frage an ein lokales Modell (Ollama) und verlange die Quellenangabe.</p>
+<h2>Anleitung 2: Frage-Antwort über Handbuch oder Vertragsdokumente</h2>
+<p>Ziel: Fragen wie „Welche Kündigungsfrist steht im Vertrag von 2024?&quot; oder „Was sagt das Handbuch zur Wartung?&quot; — mit Belegstelle.</p>
+<p><strong>Voraussetzungen:</strong> Ein laufender LLM-Server (siehe <a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a>), ein Embedding-Modell, eine Vektor-Datenbank (hier Qdrant oder Chroma).</p>
+<p><strong>Schritt 1 — Dokumente aufbereiten.</strong> Vertrags-PDFs haben meist eine Textschicht; Handbücher teils nicht. Prüfe stichprobenweise, ob Text herauskommt, und rüste für Scans OCR nach.</p>
+<p><strong>Schritt 2 — Abschnittsgröße festlegen.</strong> Vertragsklauseln sind kurz; Handbuchabschnitte länger. Setze die Stückgröße so, dass eine vollständige Klausel in ein Stück passt, und gib etwas Überlappung mit, damit ein Satz über die Grenze nicht zerrissen wird.</p>
+<p><strong>Schritt 3 — Einbetten und ablegen.</strong> Metadaten tragen hier Dokumentname, Datum und Abschnittsnummer — sie erscheinen später in der Quellenangabe.</p>
+<p><strong>Schritt 4 — Antwort mit Zitat erzwingen.</strong> Der Prompt muss verlangen, dass die Antwort <strong>nur</strong> aus den gelieferten Abschnitten stammt und jede Aussage mit Dokumentname und Abschnitt belegt. Ohne diese Vorgabe liefert das Modell dir flüssige Sätze ohne Fundstelle — und du kannst nichts prüfen.</p>
+<p><strong>Schritt 5 — Gegentest.</strong> Stelle eine Frage, deren Antwort du kennst, und eine, deren Antwort es in den Unterlagen gar nicht gibt. Bei der zweiten muss „dazu finde ich nichts&quot; kommen — kommt ein erfundener Satz, ist die Vorgabe zu schwach oder es werden zu viele Abschnitte übergeben.</p>
+<h2>Anleitung 3: Mehrbenutzer-Setup mit Zugriffskontrolle je Mandant</h2>
+<p>Ziel: Mehrere Personen oder getrennte Mandanten fragen ihre eigenen Unterlagen ab — und niemand sieht fremde Dokumente.</p>
+<p><strong>Voraussetzungen:</strong> Eine Vektor-Datenbank mit Metadatenfilter (Qdrant, pgvector oder Chroma), eine Oberfläche mit Benutzerkonten, ein gemeinsames Einbettungsmodell.</p>
+<p><strong>Schritt 1 — Mandant als Metadatenfeld.</strong> Jeder Abschnitt bekommt ein Feld <code>mandant</code> (oder <code>gruppe</code>). Das ist der Schlüssel, an dem später gefiltert wird.</p>
+<p><strong>Schritt 2 — Beim Abrufen filtern, nicht danach.</strong> Die Berechtigung muss <strong>in die Abfrage</strong> hinein, nicht erst in die Oberfläche. In Qdrant per <code>filter</code>, in pgvector als <code>WHERE</code>-Bedingung, in Chroma via <code>where={&quot;mandant&quot;: &quot;a&quot;}</code>.</p>
+<p><strong>Schritt 3 — Getrennte Collections als Alternative.</strong> Statt eines Metadatenfeldes kannst du je Mandant eine eigene Collection anlegen. Mehr Aufwand, aber sauberer isoliert — ein vergessener Filter kann dann nicht fremde Daten liefern.</p>
+<p><strong>Schritt 4 — Oberfläche nur als Tür, nicht als Schloss.</strong> Benutzerkonten in Open WebUI oder AnythingLLM sind die Anmeldung. Sie sind <strong>nicht</strong> die Zugriffskontrolle auf den Index — die liegt in der Abfrage. Wer nur die Oberfläche absichert, aber alle Dokumente in einem gemeinsamen, ungefilterten Index hält, hat in Wahrheit keine Trennung.</p>
+<p><strong>Schritt 5 — Rechte testen.</strong> Melde dich als Mandant A an und stelle absichtlich eine Frage, deren Antwort nur in den Unterlagen von Mandant B steht. Kommt eine Antwort, ist der Filter falsch — dann nicht in Produktion gehen.</p>
+<h2>Qualitätsfallen und Abhilfe</h2>
+<p><strong>Falsche Abschnittsgröße.</strong> Zu große Abschnitte (etwa eine ganze PDF-Seite) enthalten viel Beiwerk; der relevante Satz geht in der Ähnlichkeitsbewertung unter. Zu kleine Abschnitte (Halbsätze) verlieren den Zusammenhang. <em>Abhilfe:</em> an der Struktur trennen, nicht an der Zeichenzahl — nach Überschriften, nach Absätzen, nach Klauseln. Überschriften im Abschnitt mitführen. Stückgröße an echten Fragen testen, nicht theoretisch festlegen.</p>
+<p><strong>Embedding-Modell tauschen ohne Neuaufbau des Index.</strong> Der häufigste stille Fehler. Vektoren aus zwei verschiedenen Modellen liegen in unterschiedlichen Räumen und sind nicht vergleichbar — die Suche liefert dann Unsinn, ohne eine Fehlermeldung. Auch eine andere Vektorlänge passt nicht in die alte Collection. <em>Abhilfe:</em> Modellwechsel <strong>immer</strong> als Neuindex behandeln: alle Abschnitte neu einbetten und die Collection neu anlegen.</p>
+<p><strong>Antworten ohne Quellenangabe.</strong> Ohne Prompt-Vorgabe liefert das Modell gern schöne, unbelegte Sätze. <em>Abhilfe:</em> die Quelle zur Pflicht machen — im Prompt verlangen, dass jede Aussage Dokumentname und Abschnitt nennt, und in der Oberfläche die Fundstelle mit anzeigen. Eine Antwort ohne Beleg ist im Zweifel nicht brauchbar.</p>
+<p><strong>Halluzination trotz Belegen.</strong> Selbst mit gelieferten Abschnitten kann das Modell etwas ergänzen, was dort nicht steht — und trotzdem eine Quelle dranhängen. <em>Abhilfe:</em> im Prompt schreiben, dass nur belegt werden darf, was im Text steht, und bei fehlender Grundlage ausdrücklich „nicht in den Unterlagen&quot; zu antworten. Der Gegentest aus Anleitung 2 deckt das auf.</p>
+<p><strong>Berechtigungen, die nur die Schnittstelle betreffen.</strong> Die Oberfläche zeigt nur die eigenen Dokumente — die Vektor-Datenbank hält aber alles in einem ungefilterten Index, und die Abfrage holt ohne Filter über alle Mandanten. <em>Abhilfe:</em> Rechte in der Abfrage erzwingen (Metadatenfilter oder getrennte Collection), nicht in der Anzeige.</p>
+<h2>Häufige Fehler — mit realen Beispielen</h2>
+<p><strong>Beispiel 1: Der leere Scan-Index.</strong> Ein Nutzer lädt einen Ordner eingescannte Rechnungen in Open WebUI, stellt Fragen und bekommt entweder nichts oder frei erfundene Beträge. Ursache: Die PDFs hatten keine Textschicht, das System hat leere Abschnitte eingebettet. <em>Lehre:</em> vor dem Index prüfen, ob überhaupt Text herauskommt — bei Scans erst OCR, dann einbetten.</p>
+<p><strong>Beispiel 2: Der unsichtbare Modellwechsel.</strong> Jemand stellt in AnythingLLM den Embedder von einem kleinen auf ein größeres Modell um, ohne den Bestand neu einbetten zu lassen. Die Suche liefert danach zufällig wirkende Treffer. Ursache: alte Vektoren im neuen Raum. <em>Lehre:</em> Modellwechsel heißt immer Neuindex, nie nur Umschalten.</p>
+<p><strong>Beispiel 3: Die zu grobe Trennung.</strong> Ein Handbuch wird komplett seitenweise eingebettet. Fragen wie „Welcher Drehmomentwert gilt für Schraube X?&quot; liefern zwar die richtige Seite, aber das Modell wählt daraus den falschen Wert. <em>Lehre:</em> kleine, in sich geschlossene Abschnitte — eine Tabelle oder ein Absatz, nicht eine Seite.</p>
+<p><strong>Beispiel 4: Zwei Mandanten, ein Index.</strong> Zwei Firmen teilen sich eine Instanz, alle Dokumente liegen mit einem Mandantenfeld zusammen. Die Oberfläche zeigt nur die eigenen Dateien — aber die Suche filtert nicht, und in einer Antwort taucht eine Vertragsklausel der anderen Firma auf. Ursache: Berechtigung nur in der Anzeige. <em>Lehre:</em> Der Filter gehört in die Abfrage.</p>
+<p><strong>Beispiel 5: Die doppelte Quelle.</strong> Derselbe Ordner liegt einmal im Original und einmal als Kopie im Index. Jede Antwort zitiert denselben Inhalt zweimal und wirkt widersprüchlich. <em>Lehre:</em> eine Quelle der Wahrheit, Dubletten vor dem Einbetten aussortieren.</p>
+<p><strong>Beispiel 6: Kein Backup des Index.</strong> Der Vektor-Index ist nach einem Ausfall weg, und niemand weiß mehr, welche Abschnittsgröße und welches Modell benutzt wurde. <em>Lehre:</em> Index und seine Konfiguration gehören ins Backup — siehe <a href="{slug: datenbank-backups}">Datenbank-Backups</a>.</p>
+<h2>FAQ</h2>
+<p><strong>Brauche ich dafür eine GPU?</strong></p>
+<p>Für das Embedding selbst meist nicht zwingend. Kleine Modelle wie <code>all-MiniLM-L6-v2</code> laufen auf der CPU, das Erstindexieren dauert dann länger, ist aber machbar. Eine GPU beschleunigt das Einbetten großer Bestände deutlich. Erst das Sprachmodell, das die Antwort formuliert, profitiert stark von GPU — und das ist derselbe Server, den du ohnehin für Textaufgaben brauchst. Kurz: RAG allein läuft ohne GPU; willst du flüssige Antworten, hilft sie.</p>
+<p><strong>Wie oft muss ich neu einbetten?</strong></p>
+<p>Nur wenn sich etwas ändert. Kommen Dokumente dazu oder ändern sie sich, bette die betroffenen Abschnitte neu ein und ersetze sie im Index — kein Grund, alles neu zu bauen. Neu einbetten <strong>musst</strong> du immer dann, wenn du das Embedding-Modell wechselst, weil dann der ganze Vektorraum ein anderer ist. Für den Grundbestand gilt: einmal einbetten, danach nur noch pflegen.</p>
+<p><strong>Kann ich PDF-Dateien einfach so hineinwerfen?</strong></p>
+<p>Nur, wenn sie eine Textschicht haben. Bei Scans ohne Text bekommst du leere Abschnitte. Prüfe vorher stichprobenweise, ob Text herauskommt, und rüste für Scans OCR nach.</p>
+<p><strong>Muss ich die Vektor-Datenbank separat sichern?</strong></p>
+<p>Ja. Der Index ist genauso ein Datenbestand wie deine Unterlagen und nach einem Ausfall nicht ohne die Quelldateien und die Einbettungs-Einstellungen rekonstruierbar. Sichere ihn mit.</p>
+<p><strong>Reicht eine fertige Oberfläche oder brauche ich Eigenbau?</strong></p>
+<p>Für einen Einzelplatz oder ein kleines Team reicht Open WebUI oder AnythingLLM. Eigenbau mit Chroma, Qdrant oder LlamaIndex lohnt sich, wenn du bestimmtes Chunking, eigene Filter, getrennte Mandanten oder eine eigene Anwendung brauchst, die keine fertige Oberfläche bietet.</p>
+<h2>Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
+<ul>
+<li><a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a> — die Voraussetzung: welche Software das Sprachmodell als Dienst betreibt (klare Abgrenzung: dort der Server, hier die Dokumenten-Pipeline)</li>
+<li><a href="{slug: paperless-ngx-einrichten}">Paperless-ngx einrichten</a> — Quellsystem für gescannte Belege; dessen OCR-Vorarbeit zahlt direkt auf den RAG-Index ein</li>
+<li><a href="{slug: lokale-ki-vs-cloud}">Lokale KI vs. Cloud</a> — die Grundsatzentscheidung, warum Dokumente überhaupt lokal bleiben sollen</li>
+<li><a href="{slug: gpu-lokale-ki-2026}">GPU für lokale KI</a> — wann sich eine GPU für Einbetten und Antworten lohnt</li>
+<li><a href="{slug: caddy-reverse-proxy-https}">Caddy Reverse Proxy mit HTTPS</a> — wenn die RAG-Oberfläche im Netz verfügbar sein soll, mit TLS und Authentifizierung davor</li>
+<li><a href="{slug: vlan-netzsegmentierung}">VLAN-Netzsegmentierung</a> — für netzwerkseitige Trennung bei Mehrbenutzer-Setups</li>
+<li><a href="{slug: datenbank-backups}">Datenbank-Backups</a> — sichert den Vektor-Index und seine Konfiguration</li>
+</ul>
+<h2>Bildvorschläge</h2>
+<p><strong>Bild 1</strong></p>
+<ul>
+<li>Typ: Ablaufdiagramm (Flowchart) der sieben Pipeline-Schritte</li>
+<li>Inhalt: Waagerechte Kette: Dokumente sammeln → Aufbereiten (PDF/OCR/HTML) → Chunking → Einbetten → Vektor-Datenbank → Retrieval (k nächste Nachbarn) → Antwort mit Quellenangabe; unter dem Retrieval ein Rücksprung-Pfeil zur Quellenangabe</li>
+<li>Alt-Text: Ablaufdiagramm einer lokalen RAG-Pipeline — von den Dokumenten über Chunking, Embedding und Vektor-Datenbank bis zur Antwort mit Quellenangabe</li>
+</ul>
+<p><strong>Bild 2</strong></p>
+<ul>
+<li>Typ: Vergleichstabelle als Infografik</li>
+<li>Inhalt: Die Vergleichstabelle aus dem Artikel als visuelle Matrix: Chroma, Qdrant, pgvector, FAISS, LiteRAG, Open WebUI, AnythingLLM, LlamaIndex als Zeilen; Einrichtung, Speicherbedarf, Modellwechsel, Offline-Fähigkeit als Spalten; Fußnote „Modellwechsel = Index neu bauen&quot;</li>
+<li>Alt-Text: Vergleich lokaler RAG-Komponenten — Vektor-Datenbanken und Oberflächen nach Einrichtung, Speicherbedarf, Modellwechsel und Offline-Fähigkeit</li>
+</ul>
+<p><strong>Bild 3</strong></p>
+<ul>
+<li>Typ: Screenshot einer Chat-Oberfläche mit Quellenangabe</li>
+<li>Inhalt: Chat mit einer Frage über ein Handbuch, darunter die Antwort mit aufgeklappten Fundstellen (Dokumentname, Abschnitt, Textausschnitt)</li>
+<li>Alt-Text: Lokale Chat-Oberfläche, die eine Frage über eigene Dokumente beantwortet und dabei die Fundstellen als Quellenangabe mit anzeigt</li>
+</ul>
+<p><strong>Bild 4</strong></p>
+<ul>
+<li>Typ: Fehler-Checkliste als Infografik</li>
+<li>Inhalt: Sechs nummerierte Warnpunkte mit Symbol: falsche Abschnittsgröße, Modellwechsel ohne Neuindex, Antwort ohne Quelle, Halluzination trotz Beleg, Rechte nur in der Oberfläche, doppelte Quelldateien</li>
+<li>Alt-Text: Übersicht der häufigsten RAG-Qualitätsfallen — falsche Abschnittsgröße, Modellwechsel ohne Neuindex, fehlende Quellenangabe und Berechtigungen nur in der Oberfläche</li>
+</ul>
+<p><strong>Bild 5</strong></p>
+<ul>
+<li>Typ: Architekturdiagramm eines Mehrbenutzer-Setups</li>
+<li>Inhalt: Nutzer (Mandant A, Mandant B) → Oberfläche mit Anmeldung → Abfrage mit Metadatenfilter (<code>mandant</code>) → eine Vektor-Datenbank → Sprachmodell; hervorgehoben, dass der Filter in der Abfrage sitzt, nicht in der Anzeige</li>
+<li>Alt-Text: Mehrbenutzer-RAG-Architektur — der Mandantenfilter sitzt in der Abfrage an der Vektor-Datenbank, nicht in der Oberfläche</li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
