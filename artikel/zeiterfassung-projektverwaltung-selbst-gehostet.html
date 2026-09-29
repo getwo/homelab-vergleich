@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeiterfassung und Projektverwaltung selbst gehostet: Kimai, Vikunja, Redmine im Vergleich</title>
+<meta name="description" content="Selbst gehostete Zeiterfassung und Projektverwaltung im Vergleich: Kimai, Vikunja, Redmine und Tamtam mit Lizenz, Zeiterfassung, Docker-Setup, Mandantenfähigkeit und Nextcloud-Anbindung – plus vollständige Kimai-Anleitung.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Zeiterfassung und Projektverwaltung selbst gehostet: Was lohnt sich wirklich?</h1>
+<p>Du hast fünf, zehn oder fünfzehn Mitarbeiter, macht ihr Projekte und am Ende des Monats fragt dich die Buchhaltung – oder du selbst – warum die Stundennachweise von Hans gar nicht mit dem stimmen, was auf der Excel-Liste steht, die Sabine vor drei Monaten angelegt hat. Die Excel-Liste ist zu diesem Zeitpunkt nicht mehr eine Liste, sondern ein Archiv von Annahmen.</p>
+<p>Das ist kein Versehen. Das ist der Moment, in dem Zeiterfassung und Projektverwaltung von „mal kurz notiert&quot; zu einem Problem werden, das Gelder, Rechnungen und DSGVO-Verpflichtungen tangiert. Eine Rechnung ohne belastbares Zeiterfassungsbasis ist in der Buchhaltung keine Rechnung, sondern eine Abschätzung. Und Mitarbeiterdaten, die länger gespeichert werden, als das Gesetz zulässt, sind kein Vorsprung, sondern ein Risiko.</p>
+<p>Dieser Artikel vergleicht vier Lösungen, die du selbst hosten kannst – Kimai, Vikunja, Redmine und Tamtam – und zeigt danach, wie du Kimai mit Docker, MariaDB, der Web-Oberfläche, der REST-API über curl und einem Rechnungsauswertung-Setup aufsetzt. Der letzte Abschnitt behandelt DSGVO-Grundlagen, häufige Fehler und eine FAQ. Keine erfundenen Benchmarks, keine Preise ohne Quelle. Wo etwas unverbindlich ist, steht es auch so im Text.</p>
+<p>Signaturen und Anpassung: Die DSGVO-Regelungen sind die aktuellen Bestimmungen des europäischen DSGVO-Rahmens (Art. 5, Art. 17, Art. 25) – das sind die spezifischen gesetzlichen Vorgaben, auf die sich diese Bestimmungen beziehen. Die Rechtslage auch für Unternehmen, die Dienstleistungen im Auftrag des Kunden erbringen, kann je nach Rechtsform des Auftraggebers unterschiedlich sein. Der vorliegende Artikel beschreibt die Bestimmungen.</p>
+<h2>Das Ausgangsproblem in wenigen Worten</h2>
+<p>Eine Zeiterfassung, die aus einer gemeinsamen Excel-Datei oder einer Tabelle besteht, an der vier Leute gleichzeitig arbeiten, hält three Dinge nicht, die sie trotzdem muss:</p>
+<ul>
+<li>  <strong>Belastbarkeit.</strong> Eine Stundennachweis muss im Nachhinein nachvollziehbar sein – wer hat wann für was gearbeitet, mit welcher Begründung und in welchem Projektzusammenhang? Excel lässt das nur zuverlässig, wenn alle Beteiligten dieselbe Datei immer gleich benutzen – und das funktioniert in der Praxis nicht, weil es nie funktioniert.</li>
+<li>  <strong>Verbindung zu Projekten und Rechnungen.</strong> Zeiterfassung, die nicht mit Projekten verknüpft ist, bringt Stunden, aber kein Bild davon, warum die Stunden da sind. Projektverwaltung ohne Zeiterfassung bringt Aufgaben, aber keine Grundlage für Rechnungen. Die Kombination ist diejenige, die dich vor dem Monatschluss voran bringt.</li>
+<li>  <strong>Löschpflichten.</strong> Mitarbeiterzeiten, Kundendaten und Projektdaten sind personenbezogene Daten. Sie dürfen nicht beliebig lange gespeichert werden. Eine Excel-Liste im Netzlaufwerk hat keine Löschregeln, keine Benutzerrechte und keine Auditfähigkeit. Das ist im normalen Betrieb kein Drama – bis es eines ist.</li>
+</ul>
+<p>Der Vergleich der folgenden vier Lösungen beginnt bei dieser Problemstellung. Keine der vier ist die perfekte Antwort auf alle Fragen. Jede löst einen Teil des Problems besser als die anderen.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
