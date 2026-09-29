@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medien selbst hosten: Jellyfin, Navidrome und Plex als Ersatz für Netflix und Spotify</title>
+<meta name="description" content="Jellyfin, Navidrome, Plex oder Emby? Praxisvergleich, Docker-Anleitung, Hardware-Decoding, Speicherplanung und Rechtsfragen für eigenen Medienserver.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Medien selbst hosten: Jellyfin, Navidrome und Plex als Ersatz für Netflix und Spotify</h1>
+<p>Du willst, dass deine Filme, Serien und Musik immer da sind — auf dem Smart-TV, dem Laptop, im Auto und am Handy. Du willst keine monatlichen Abos, keine Algorithmen, die dir Inhalte verbergen, und keine Angst vor einem Abo, das plötzlich teurer wird. Das ist der Ausgangspunkt. Der Rest ist technische Entscheidung.</p>
+<h2>Das Problem</h2>
+<p>Netflix, Spotify und andere Abo-Dienste funktionieren gut — bis sie es nicht mehr tun. Eine Preiserhöhung, ein Kontozugriff, eine-region lock oder ein Profil für Kinder und Erwachsene: All das sind Alltagsprobleme, die sich nach einem Punkt wiederholen. Hinzu kommt, dass jeder Abo-Dienst ein detailliertes Zuhör- und Sehverhalt aufbaut. Was du schaust, wann du pausierst, was du überspringst — das fließt in ein Profil, das dir Vorschläge macht. Das ist für manche nutzlich, für andere unkomfortabel.</p>
+<p>Die eigene Bibliothek ist das Gegenteil davon: Du bestimmst, was du hast, wie du es organisierst und wer Zugriff hat. Der Preis dafür ist, dass du die Technik selbst in die Hand nimmst — nicht weil sie schwer wäre, sondern weil es keine andere Möglichkeit gibt, wenn du Kontrolle willst.</p>
+<h2>Vergleich: Jellyfin, Navidrome, Plex, Emby</h2>
+<p>| Kriterium | Jellyfin | Navidrome | Plex | Emby |</p>
+<p>|---|---|---|---|---|</p>
+<p>| Lizenz | Open Source (GPL) | Open Source (GPL) | Server + Desktop-App open source; Premium-Abos für Zusatz-Features | Ursprünglich open source; heute primär proprietär, Premiere-Abo für volle Funktionsfähigkeit |</p>
+<p>| Medienarten | Video, Audio, Bilder | Audio (Musik) | Video, Audio, Bilder | Video, Audio, Bilder |</p>
+<p>| Client-Anzahl | Kein Limit | Kein Limit | Einschränkungen je nach Abo bei gleichzeitigen Streams | Einschränkungen je nach Abo-Level |</p>
+<p>| Transcoding | Ja (CPU/GPU) | Kein Transcoding | Ja, stark ausgebautes Transcoding | Ja |</p>
+<p>| Hardware-Decoding | VAAPI, Intel Quick Sync, NVIDIA (Container-Toolkit) | Nicht relevant (Audio nur) | NVIDIA, Intel Quick Sync, weiteres je Plattform | NVIDIA, Intel Quick Sync |</p>
+<p>| Metadaten-Agenten | Intern + Plugins (TheMovieDB, TheAudioDB etc.) | Fokus Musik-Metadaten (MusicBrainz, Discogs-ähnlich), Covers, Playlists | Sehr starkes eigenes Metadaten-System, automatisierte Bibliotheks-Aufnahme | Starke Metadaten-Automatik, ähnlich Plex |</p>
+<p>| Eignung kleine Firmen | Gut: keine Lizenz-Kosten, volle Kontrolle, eigenständig einrichtbar | Ideal für eigene Musikbibliothek | Gut, aber Abo-Modelle können unübersichtlich sein | Nur mit Abo-Upgrade volle Features |</p>
+<p>Plex und Emby haben die reifste Client-Unterstützung und Keyboardsteuerung. Jellyfin macht den gleichen Weg ohne Lizenz-Kosten und ohne Abo-Modelle. Navidrome ist der Spezialist für Musik — nichts anderes — und das gut.</p>
+<h2>Jellyfin: Vollständige Einrichtung</h2>
+<p>Jellyfin läuft am häufigsten über Docker.</p>
+<h2>Docker-Compose-Grundgerüst</h2>
+<p>Erstelle <code>docker-compose.yml</code>:</p>
+<pre><code>
+version: &quot;3.8&quot;
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    user: 1000:1000
+    devices:
+      - /dev/dri:/dev/dri     # VAAPI/Hardware-Decoding
+    volumes:
+      - ./config:/config
+      - ./media:/media
+      - /pfad/zu/filme:/movies:ro
+      - /pfad/zu/serien:/series:ro
+    ports:
+      - 8096:8096
+    restart: unless-stopped
+    environment:
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.brillianze.de
+</code></pre>
+<p><code>user: 1000:1000</code> muss zu deinem Linux-Nutzer passen (<code>id -u</code> und <code>id -g</code> auf dem Host prüfen). Die Pfade unter <code>volumes</code> sind Beispiele — ersetze <code>/pfad/zu/filme</code> und <code>/pfad/zu/serien</code> durch deine echten Mountpoints.</p>
+<h2>Nutzer anlegen und Bibliothek einrichten</h2>
+<p>Nach <code>docker compose up -d</code> öffnest du <code>http://&lt;server-ip&gt;:8096</code> und legst in der Weboberfläche einen Administrator an. Danach erstellst du Bibliotheken: Filme, Serien oder gemischte Inhalte. Für jede Bibliothek gibst du den eingebundenen Ordner an.</p>
+<p>Ordner-Struktur, die Jellyfin gut einliest:</p>
+<pre><code>
+/media
+  /filme
+    /The.Matrix.1999.mkv
+  /serien
+    /Breaking.Bad
+      /Season.01
+        /Breaking.Bad.S01E01.mkv
+</code></pre>
+<p>Für Serien ist <code>&lt;Show&gt;/Season XX/&lt;Show&gt; SXXEYY.mkv</code> am zuverlässigsten.</p>
+<h2>Hardware-Decoding</h2>
+<p>Ohne Hardware-Decoding macht Jellyfin Transcoding nur auf die CPU — das reicht für ein bis zwei parallele 1080p-Streams, bei 4K wird es schnell eng.</p>
+<p><strong>VAAPI (Intel/AMD):</strong> Stelle sicher, dass <code>intel-media-driver</code> (Intel) oder <code>libva-llvm</code> (AMD) auf dem Host installiert ist. Dann die Device-Map in Docker (<code>/dev/dri:/dev/dri</code>) wie oben zeigen. In Jellyfin: Einstellungen → Player → Hardware-Decoding auf &quot;VAAPI&quot; oder &quot;Auto&quot;.</p>
+<p><strong>NVIDIA:</strong> Voraussetzung ist das <code>nvidia-container-toolkit</code> auf dem Host. Dann:</p>
+<pre><code>
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+</code></pre>
+<p>In Jellyfin: Hardware-Decoding auf &quot;Nvidia&quot; (NVENC) stellen.</p>
+<h2>Backup: Nur die Konfiguration</h2>
+<p>Jellyfin speichert Einstellungen, Nutzerdaten und Metadaten-Cache in <code>/config</code>. Die eigentlichen Filme und Serien liegen außerhalb des Containers. Das bedeutet: Das Jellyfin-Backup ist das Backup des <code>/config</code>-Verzeichnisses. Die Mediendateien werden nicht durch Jellyfin gesichert — dafür muss dein Storage-Backup sorgen.</p>
+<pre><code>
+tar czf /backup/jellyfin-config-$(date +%Y%m%d).tar.gz /pfad/zu/jellyfin/config
+</code></pre>
+<h2>Navidrome: Musikbibliothek selbst hosten</h2>
+<p>Navidrome ist ein Subsonic-kompatibler Musikstreaming-Server. Das bedeutet: Apps, die Subsonic unterstützen, verbinden sich ohne Zusatzprogramm.</p>
+<h2>Docker-Compose für Navidrome</h2>
+<pre><code>
+version: &quot;3.8&quot;
+
+services:
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: navidrome
+    user: 1000:1000
+    ports:
+      - 4533:4533
+    volumes:
+      - ./navidrome-data:/data
+      - /pfad/zu/musik:/music:ro
+    restart: unless-stopped
+    environment:
+      - ND_SCANSCHED_MINUTES=10
+      - ND_LOGLEVEL=info
+</code></pre>
+<p><code>/pfad/zu/musik</code> ist der Ordner mit deiner Musiksammlung (MP3, FLAC, Opus). Navidrome durchsucht ihn rekursiv. Nach dem Start (<code>docker compose up -d</code>) öffnest du <code>http://&lt;ip&gt;:4533</code> und legst den Administrator an.</p>
+<h2>Musikbibliothek und Apps</h2>
+<p>Am zuverlässigsten ist Ordner-Struktur <code>Künstler/Alben/Titel</code>. Navidrome liest ID3-Tags und andere Metadaten aus den Dateien. Subsonic-Apps für Auto und Handy:</p>
+<ul>
+<li><strong>Android:</strong> DSub, Airsonic-Client und andere Subsonic-Clients</li>
+<li><strong>iOS:</strong> Substreamer, senph</li>
+<li><strong>Desktop:</strong> Webbrowser + diverse Subsonic-Clients</li>
+</ul>
+<p>Jedes dieser Geräte verbindet sich mit Navidrome über die Subsonic-API.</p>
+<h2>Speicher und Zuverlässigkeit</h2>
+<h2>Kapazitätsplanung</h2>
+<ul>
+<li><strong>1080p-Filme:</strong> 4–6 GB pro Stück → 500 Filme ≈ 2–3 TB.</li>
+<li><strong>4K-Filme:</strong> 20–40 GB pro Stück → 100 Filme ≈ 2–4 TB.</li>
+<li><strong>Musik (FLAC):</strong> 300–500 MB/Album → 2.000 Alben ≈ 0,7–1 TB.</li>
+</ul>
+<p>Typisches Homelab mit Filmen und Musik: 4–8 TB. Ein Server mit 4–6 Festplatten-Fächern ist dafür machbar.</p>
+<h2>RAID und Backup</h2>
+<p>Ein Medienserver ist kein Backup. RAID (ZFS-Mirror, SnapRAID, mdad1) schützt vor einem Plattenausfall, nicht vor Löschungen, Fehlern oder Katastrophen.</p>
+<ul>
+<li><strong>Archivcharakter (Filme/Musik):</strong> SnapRAID auf separater Paritätsplatte, regelmäßiger Sync.</li>
+<li><strong>Eigene Aufzeichnungen:</strong> ZFS-Mirror mit Snapshots und Scrubs.</li>
+<li><strong>Backup auf separaten Ort:</strong> Externe Platte, zweiter Server oder Cloud. Für reine Mediendaten ist Cloud-Backup oft zu teuer — ein externer Sync auf eine zweite Haus-Platte ist realistischer.</li>
+</ul>
+<p>Ein Backup muss getesteter Weise wiederhergestellt werden können. Regelmäßiger Test gehört dazu.</p>
+<h2>Rechtsfragen: kurz und praktisch</h2>
+<p><strong>Eigene Inhalte:</strong> Filme, Serien und Musik, die du selbst aufgezeichnet oder produziert hast — dafür gibt es keine Beschwerde, solange du sie nicht weiterverkaufst oder öffentlich zeigst.</p>
+<p><strong>Öffentliche Vorführung:</strong> Ein Medienserver in der eigenen Wohnung ist keine öffentliche Vorführung. Machst du ihn aber über das Internet für andere zugänglich, liegt die Situation anders: Eine Dienstofferung für Dritte erfordert Rechte an den Inhalten.</p>
+<p><strong>Übertragungsrechte:</strong> Von Netflix, Spotify etc. heruntergeladene Inhalte sind meist nur für den privaten Gebrauch lizenziert — nicht für eigene Server oder Weitergabe. Der Server ändert nichts daran, dass die Nutzung auf den privaten Rahmen beschränkt bleibt.</p>
+<p><strong>Keine Weitergabe fremder Inhalte:</strong> Inhalte, für die du keine Rechte hast, kannst du nicht auf deinem eigenen Server hosten und anderen zur Verfügung stellen — weder über den Server selbst noch durch Teilen von Zugangsdaten. Inhalte aus illegitimen Quellen sind auch auf eigenem Server rechtswidrig.</p>
+<p>Kurz gesagt: Der Medienserver ist ein Werkzeug für eigene, rechtmäßig erworbenen oder selbst erstellte Inhalte — nichts anderes.</p>
+<h2>Häufige Fehler</h2>
+<h2>1. Transcoding-Last ohne Hardware-Decoding</h2>
+<p>Ohne Hardware-Decoding macht Jellyfin jedes 4K-Video auf die CPU um. Bei mehreren gleichzeitigen Streams braucht das planbare CPU-Leistung. Folge: Puffer, Abbrüche, verwirrte Nutzer. Lösung: Vor Einrichtung prüfen, ob die Hardware Decoding unterstützt, und es aktivieren. Für 1080p über LAN ist CPU-Transcoding oft noch tolerierbar. Für 4K nicht.</p>
+<h2>2. Metadaten-Provider ohne Kontrolle</h2>
+<p>Jellyfin und Plex holen automatisch Metadaten aus öffentlichen Quellen. Das funktioniert gut für bekannte Filme. Bei eigenen Aufnahmen, alternativen Versionen oder weniger bekannten Serien führt das zu fehlerhaften Zuordnungen, fehlenden Covers oder falschen Beschreibungen. Lösung: Für wichtige Bibliotheken manuelle Metadaten-Überprüfung am Anfang; nachträgliche Korrektur jedes Films einzeln ist zeitaufwendiger.</p>
+<h2>3. Festplatten ohne Kapazitätsplanung volllaufen lassen</h2>
+<p>Mediensammlungen wachsen. Wer nicht plant, läuft Gefahr, dass der Server keine neuen Dateien mehr annimmt, weil ein Pool voll ist. Ein Sync-Job auf eine volle Platte kann fehlschlagen, ohne dass man es merkt. Lösung: Kapazitätsplanung vor Aufbau, Monitoring auf Speicherplatz, dokumentierte Erweiterungspfade.</p>
+<h2>FAQ</h2>
+<p><strong>1. Brauche ich eine starke CPU für Jellyfin?</strong></p>
+<p> Für reine Weiterleitung (Direct Play) nein. Wenn der Client das Format nicht direkt abspielen kann und Jellyfin umcodieren muss, kommt es auf die CPU — besser auf die GPU mit Hardware-Decoding.</p>
+<p><strong>2. Kann ich Plex und Jellyfin parallel betreiben?</strong></p>
+<p> Ja, aber es ergibt wenig Sinn — doppelte Verwaltung ohne Mehrwert. Jellyfin ist die Lizenz-kostenlose Alternative.</p>
+<p><strong>3. Ist Navidrome nur für Musik?</strong></p>
+<p> Ja. Für Filme brauchst du zusätzlich Jellyfin, Plex oder Emby.</p>
+<p><strong>4. Reicht ein Mini-PC als Medienserver?</strong></p>
+<p> Für kleine Bibliotheken mit einigen hundert Filmen ja, wenn Hardware-Decoding verfügbar ist. Für große 4K-Bibliotheken oder mehrere gleichzeitige Viewer ist stärkere Hardware sinnvoll. Mehr dazu im Artikel <a href="https://homelab.brillianze.de/speicherhardware-nas-mini-pc-server-vergleich/">Speicherhardware im Homelab: NAS, Mini-PC oder echter Server</a>.</p>
+<p><strong>5. Muss ich Metadaten manuell pflegen?</strong></p>
+<p> Für Standard-Filme nein — die Automatik funktioniert gut. Eigene Aufnahmen oder spezielle Versionen lohnen am Anfang eine manuelle Nachpflege.</p>
+<h2>Schluss</h2>
+<p>Ein eigener Medienserver ist kein Allheilmittel oder billige Netflix-Alternative — aber er gibt dir die Kontrolle über die Bibliothek, die du ohne Abo-Dienste nicht hast. Jellyfin ist die License-freie Wahl für Film und Video, Navidrome die einfache Wahl für Musik. Plex und Emby sind die polierten Alternativen mit Abo-Modellen, wenn Convenience wichtiger ist als Lizenz-Kosten.</p>
+<p>Vor dem Start: Für Hardware-Entscheidungen hilft <a href="https://homelab.brillianze.de/speicherhardware-nas-mini-pc-server-vergleich/">Speicherhardware im Homelab: NAS, Mini-PC oder echter Server</a> (besonders RAID und Backup). Für ein Backup-Konzept, das reelle Daten schützt, lies <a href="https://homelab.brillianze.de/datenbank-backups/">Datenbank-Backups: Was du wirklich brauchst</a> — die Prinzipien gelten auch für Jellyfin- und Navidrome-Konfigurationsdaten. Für virtualisierte Umgebungen ist der <a href="https://homelab.brillianze.de/proxmox-einsteiger-guide/">Proxmox-Einsteiger-Guide</a> der nächste Schritt.</p>
+<h2>Bildvorschlag</h2>
+<ul>
+<li><strong>Dateiname:</strong> <code>jellyfin-navidrome-vergleich.png</code></li>
+<li><strong>Alt-Text:</strong> &quot;Jellyfin und Navidrome im Vergleich: Programme für Film- und Musikstreaming auf dem eigenen Server — offene Software ohne Abo-Modelle&quot;</li>
+<li><strong>Zielformat:</strong> PNG, 1400 × 800 Pixel, Verhältnis 7:4</li>
+</ul>
+<p>Das Bild könnte eine geteilte Ansicht zeigen: links Jellyfin-Weboberfläche mit Film-Bibliothek, rechts Navidrome-Musik-Ansicht mit Album-Browse — als schematische Darstellung, keine echten Daten.</p>
+<hr>
+<p>Dieser Artikel liegt als <strong>Draft</strong> vor. Die Veröffentlichung erfolgt erst nach inhaltlicher Prüfung durch Benjamin. Preise und Produktspezifikationen sind keine Empfehlungen und können sich ändern.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
