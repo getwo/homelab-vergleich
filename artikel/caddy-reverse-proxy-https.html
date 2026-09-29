@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caddy als Reverse Proxy: HTTPS für alle eigenen Dienste</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Caddy als Reverse Proxy: HTTPS für alle eigenen Dienste</h1>
+<p>Jeder, der mehrere Webdienste in seinem Homelab betreibt, stolpert über dasselbe Problem: Jeder Dienst hat seine eigene Adresse, oft mit einem selbst signierten Zertifikat, und der Browser warnt jeden Besucher. Pi-hole auf Port 80, Nextcloud auf 8080, Grafana auf 3000, Vaultwarden auf 8000 – die Liste wächst mit jedem neuen Projekt. Irgendwann ist die Übersicht weg, und der Wunsch nach einer einzigen, sicheren Startseite mit gültigem HTTPS für alle Dienste wird laut.</p>
+<p>Genau hier kommt ein Reverse Proxy ins Spiel. Und genau hier entscheidet sich die Frage, welche Software diese Aufgabe übernimmt. Für viele Homelaber ist heute <strong>Caddy</strong> die naheliegendste Antwort. Dieser Artikel erklärt, warum das so ist, welche Voraussetzungen gehen müssen, wie konkrete Caddyfiles aussehen und was man beachten muss, bevor Dienste wirklich nach außen gehen.</p>
+<h2>Warum Caddy statt Nginx?</h2>
+<p>Nginx ist seit Jahren der Standard für Reverse Proxys, und er erledigt seine Aufgabe zuverlässig. Doch Nginx bringt <strong>kein automatisches HTTPS</strong> mit. Wer einen Nginx-Reverse Proxy mit Let&#x27;s Encrypt-Zertifikaten versorgt, muss ein eigenes Zertifikats-Wrapper-Tool wie Certbot oder acme.sh neben dem Nginx-Host betreiben, Erneuerungen konfigurieren, Hook-Skripte schreiben und prüfen, ob das Zertifikat tatsächlich erneuert wurde, bevor es abläuft.</p>
+<p>Caddy hat diese Integration von Grund auf eingebaut. Das offizielle Caddy-Binary enthält bereits alle Komponenten, die für automatische TLS-Zertifikate nötig sind. Sobald eine Domain in einem Caddyfile auftaucht, prüft Caddy beim Start, ob ein gültiges Zertifikat vorhanden ist oder ob eine ACME-Challenge (HTTP oder DNS) möglich ist. Wenn ja, lädt Caddy das Zertifikat herunter und erneuert es im Hintergrund, ohne dass ein weiterer Daemon oder ein Cron-Job eingerichtet werden muss.</p>
+<p>Das macht den Unterschied im Alltag konkret:</p>
+<ul>
+<li><strong>Kein extra Tool für Zertifikate.</strong> Eine Caddy-Installation reicht aus. Certbot, nginx und ein نظام planen ist nicht nötig.</li>
+<li><strong>Weniger Konfigurationsfehlerquellen.</strong> Bei Nginx kann eine fehlerhafte Certbot-Integration oder ein falscher Cron-Job dazu führen, dass ein Zertifikat abläuft, ohne dass jemand es bemerkt. Caddy erneuert standardmäßig im Hintergrund.</li>
+<li><strong>Caddyfile-Syntax ist lesbar.</strong> Während Nginx-Konfigurationen schnell drei- bis vierseitig werden, sieht ein typisches Caddyfile oft aus wie eine adressierteListe – eine Zeile pro Dienst, und fertig.</li>
+</ul>
+<p>Das heißt nicht, dass Caddy immer besser ist. Für Umgebungen, in denen alle Dienste als Docker-Container laufen und automatisch erkannt werden sollen, ist Traefik oft die skalierlichere Wahl. Für Nutzer, die eine grafische Oberfläche bevorzugen, bietet Nginx Proxy Manager die Klick-Oberfläche, die Caddy bewusst nicht mitbringt. Für das klassische Homelab mit einem handvoll statischer Dienste, die man auf einer VM oder in einer LXC-Instanz betreibt, ist Caddy jedoch eine sehr überzeugende Wahl – ganz ohne UI, aber mit minimaler Konfigurationsaufgabe.</p>
+<h2>Die Caddyfile-Syntax im Überblick</h2>
+<p>Ein Caddyfile ist nicht secret. Die Grundstruktur sieht immer gleich aus:</p>
+<pre><code>
+domain.tld {
+    # Direktiven hier
+}
+</code></pre>
+<p>Alles, was innerhalb der geschweiften Klammern steht, gehört zu dieser Domain. Mehrere Domains können auch durch einfaches Aneinanderreihen definiert werden, wenn sie dieselbe Behandlung erhalten. Die wichtigsten Direktiven im Reverse-Proxy-Zusammenhang sind:</p>
+<ul>
+<li><strong><code>reverse_proxy</code></strong> – leitet den gesamten Traffic auf ein Backend weiter, z. B. <code>reverse_proxy localhost:8080</code></li>
+<li><strong><code>reverse_proxy /pfad* 127.0.0.1:PORT</code></strong> – pfadbasiertes Routing: Nur Anfragen unter einem bestimmten Pfad gehen zum Backend</li>
+<li><strong><code>tls</code></strong> – Zertifikatseinstellungen, z. B. für interne CAs oder manuelle ZertifikatsPfade</li>
+<li><strong><code>encode zstd gzip</code></strong> – Kompression aktivieren</li>
+<li><strong><code>log</code></strong> – Zugriffsprotokollierung aktivieren</li>
+<li><strong><code>header</code></strong> – Header hinzufügen oder entfernen, z. B. Security-Header</li>
+</ul>
+<p>Die HTTP-Challenge von Let&#x27;s Encrypt (die Standard-Methode für einzelne Domains) funktioniert, indem der Caddy-Prozess selbst kurzzeitig über Port 80 antwortet, um den Challenge-Nachweis zu erbringen. Das setzt voraus, dass Port 80 von außen erreichbar ist. Für Wildcard-Zertifikate ist stattdessen die DNS-Challenge nötig, die zusätzlich ein Caddy-Modul für den jeweiligen DNS-Provider erfordert.</p>
+<h2>Voraussetzungen: DNS und Port-80/443</h2>
+<p>Bevor Caddy das erste Mal mit einer Domain startet, müssen zwei Dinge gegeben sein: die DNS-Auflösung und die Port-Erreichbarkeit.</p>
+<h2>DNS-Voraussetzungen</h2>
+<p>Jeder Domainname, für den Caddy ein öffentliches Let&#x27;s Encrypt-Zertifikat anfordern soll, muss von außen auf die öffentliche IP des Servers zeigen. Die praktische Bedeutung: Wenn <code>cloud.beispiel.de</code> auf Caddy zeigt, dann muss der <code>A</code>- oder <code>AAAA</code>-Record für diese Subdomain im DNS Correctly auf die öffentliche IP verweisen.</p>
+<p>Für ein einzelnes Homelab mit mehreren Subdomains gibt es zwei gängige Muster:</p>
+<ul>
+<li><strong>Eintrag pro Subdomain.</strong> Jede Subdomain bekommt einen eigenen <code>A</code>-Record. Das ist einfach nachzuhalten und funktioniert mit der HTTP-Challenge ohne weitere Hilfsmittel.</li>
+<li><strong>Wildcard-Eintrag (<code><em>.beispiel.de</code>).</strong> Ein einzelner <code>A</code>-Record für <code></em>.beispiel.de</code> deckt alle Subdomains ab. Das spart DNS-Einträge, erfordert aber die DNS-Challenge für Wildcard-Zertifikate – und damit ein passendes Caddy-Modul für den DNS-Provider.</li>
+</ul>
+<p>Wildcard-Zertifikate sind praktisch, aber sie haben eine Relevanz-Trap: Sie funktionieren nur, wenn der DNS-Provider automatisch ein TXT-Record für die ACME-DNS-Challenge setzen kann. Nicht jeder Provider hat ein offiziell unterstütztes Caddy-Plugin; bei kleineren oder älteren Providern kann die Einrichtung mehr Aufwand kosten, als die Wildcard einspart.</p>
+<h2>Port-80- und Port-443-Voraussetzungen</h2>
+<p>Caddy muss Port 80 und Port 443 gebunden haben, damit HTTP-Challenge und TLS-Terminierung funktionieren. In der Firewall muss beides nach außen freigegeben sein. Zusätzlich muss nichts anderes diese Ports schon blockieren oder nutzen – ein anderer Webserver, der noch auf Port 80 lauscht, muss vorher geschaltet werden.</p>
+<p>In der Praxis bedeutet das: Bevor Caddy gestartet wird, prüft man mit <code>ss -tlnp</code> oder <code>netstat -tlnp</code>, ob Port 80 und 443 frei sind. Wenn ein anderer Dienst dort noch läuft, bekommt Caddy beim Start einen Fehler und startet nicht.</p>
+<p>Im Router oder der Firewall des Isenggeräts muss außerdem eine Portweiterleitung (Port Forwarding) für 80/TCP und 443/TCP auf die interne IP des Caddy-Hosts zeigen. Ohne diese Weiterleitung kann Let&#x27;s Encrypt die HTTP-Challenge nicht erreichen, und Caddy kann kein Zertifikat anfordern. Das ist einer der häufigsten Gründe, warum Caddy zwar lokal läuft, aber kein Zertifikat Holt.</p>
+<h2>Was, wenn kein Port 80 nach außen geht?</h2>
+<p>Wenn aus sicherheitstechnischen Gründen kein Port 80 nach außen freigegeben werden soll, gibt es zwei Alternativen:</p>
+<ul>
+<li><strong>DNS-Challenge statt HTTP-Challenge.</strong> Caddy spricht dann direkt den DNS-Provider an, um den Challenge-Nachweis zu erbringen. Das erfordert ein installiertes DNS-Plugin für den jeweiligen Provider.</li>
+<li><strong>Eigene Zertifizierungsstelle (CA).</strong> Für rein interne Dienste, die niemals nach außen gehen, ist ein eigenes Root-Zertifikat praktischer als ein public-CA-Zertifikat. Browser vertrauen eigenen CAs nur, wenn das Root-Zertifikat auf jedem Clientsystem importiert wurde. Für das Homelab mit wenigen Clients ist das machbar; für uneingeschränkte Nutzung über viele Geräte hinweg unübersichtlich.</li>
+</ul>
+<h2>Zertifikate: Interne Namen und öffentliche Namen</h2>
+<p>Nicht jeder Dienst in einem Homelab soll öffentlich erreichbar sein, und nicht jede Domäne braucht ein Let&#x27;s Encrypt-Zertifikat. Caddy unterstützt beide Welten.</p>
+<h2>Öffentliche Domain-Zertifikate mit Let&#x27;s Encrypt</h2>
+<p>Sobald eine Domain von außen erreichbar ist, erstellt Caddy automatisch ein Let&#x27;s Encrypt-Zertifikat über die HTTP- oder DNS-Challenge. Die Konfiguration dafür ist implizit: Werte einfach die Domain ins Caddyfile, und Caddy kümmert sich um den Rest. Ein explizites <code>tls</code>-Statement ist nur nötig, wenn eine Abweichung vom Standard gewünscht ist, etwa ein anderes Zertifikatsverzeichnis oder ein bestimmter Zertifizierer.</p>
+<h2>Interne Dienste mit einem eigenen Zertifikat</h2>
+<p>Für Dienste, die nur im lokalen Netzwerk erreichbar sein sollen, aber trotzdem verschlüsselt sein müssen (z. B. zwischen Proxy und Backend), gibt es das Konzept eines <strong>internen Caddy-Zertifikats</strong>. Das praktische Muster: Ein Root-Zertifikat erstellen, dieses auf alle Clients importieren, und dann Caddy anweisen, für bestimmte Domänen dieses eigenständige Zertifikat zu verwenden.</p>
+<p>Ein Beispiel für ein solches Setup:</p>
+<pre><code>
+pi.bsn.internal {
+    tls {
+        ca_field common_name &quot;BsN Internal CA&quot;
+        # Verweist auf ein internes Zertifikat – genaue Syntax je nach Caddy-Version
+    }
+    reverse_proxy 192.168.3.11:80
+}
+
+dashboard.bsn.internal {
+    tls {
+        ca_field common_name &quot;BsN Internal CA&quot;
+    }
+    reverse_proxy 192.168.3.25:8890
+}
+</code></pre>
+<p>Die exakte Syntax für interne Zertifikate kann je nach Caddy-Version leicht variieren. Für Caddy 2 mit dem <code>tls.builtin</code>-Backend ist eine Methode, das Vertrauen über den <code>tls</code>-Block zu konfigurieren, wenn kein public-CA-Zertifikat verfügbar ist. Ein kleiner, aber wichtiger Vorteil: Auch interne Dienste werden dann per HTTPS angesprochen, ohne dass Browser-Warnungen auftreten, solange das Root-Zertifikat der eigenen CA vertraut ist.</p>
+<p>Für das praktische Homelab ist die häufigste Empfehlung: <strong>Öffentliche Dienste über Caddy + Let&#x27;s Encrypt, interne Dienste mit eigener CA oder klartext hinter Caddy.</strong> Letztlich entscheidet die Zugriffsabsicht: Dienste, die von unterwegs genutzt werden, sollten HTTPS von einer vertrauenswürdigen CA haben. Dienste, die nur an einem spezifischen Arbeitsplatz im lokalen Netz erreichbar sind, können oft auch mit einem eigenen Zertifikat Sicherheit haben.</p>
+<h2>Konkrete Caddyfile-Beispiele</h2>
+<p>Die folgenden Beispiele zeigen, wie ein Caddyfile für typische Homelab-Dienste aussehen kann. Sie sind bewusst einfach gehalten, weil Caddy mit wenig Zeilen viel erreicht. Jedes Beispiel setzt voraus, dass die jeweiligen Subdomains bereits in der DNS-Konfiguration korrekt aufgelöst werden.</p>
+<h2>Beispiel 1: Pi-hole hinter Caddy</h2>
+<p>Pi-hole läuft standardmäßig auf Port 80 und bietet eine Web-Oberfläche für DNS-Statistiken und Blocklisten-Konfiguration. Hinter Caddy wird es über eine Subdomain erreichbar.</p>
+<pre><code>
+pihole.beispiel.de {
+    reverse_proxy 192.168.3.62:80
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
+        X-Content-Type-Options &quot;nosniff&quot;
+    }
+}
+</code></pre>
+<p>Pi-hole selbst kommend auch über HTTPS – aber im lokalen Netzwerk reicht oft die Klartext-Verbindung zwischen Caddy und Pi-hole, weil beides im vertrauenswürdigen Netzsegment liegen. Caddy terminiert das TLS nach außen und leitet unverschlüsselt weiter. Das spart Pi-hole die Zertifikatsverwaltung.</p>
+<p>Soll Pi-hole auch DNS-Over-TLS für Clients im Netzwerk bereitstellen, ist das eine separate Konfiguration im Pi-hole selbst, nicht direkt Caddy-Thema.</p>
+<h2>Beispiel 2: Nextcloud hinter Caddy</h2>
+<p>Nextcloud ist eines der anspruchsvollsten Backend-Systeme im Homelab. Es erwartet spezifische Header und korrektes Proxy-Verhalten, um Funktionen wie Kalender, Kontakte und Echtzeit-Benachrichtigungen zuverlässig zu liefern.</p>
+<pre><code>
+nextcloud.beispiel.de {
+    reverse_proxy 192.168.3.25:8080 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
+        X-Content-Type-Options &quot;nosniff&quot;
+        X-Frame-Options &quot;SAMEORIGIN&quot;
+        Referrer-Policy &quot;strict-origin-when-cross-origin&quot;
+    }
+
+    log {
+        output file /var/log/caddy/nextcloud.log
+        format console
+    }
+}
+</code></pre>
+<p>Wichtig bei Nextcloud: Die Header <code>X-Forwarded-Proto</code> und <code>X-Forwarded-For</code> müssen gesetzt sein, sonst erkennt Nextcloud den Verbindungs-Typ nicht korrekt und einige Funktionen verhalten sich anders als erwartet. Das <code>header_up</code>-Block innerhalb von <code>reverse_proxy</code> übergibt diese Werte vom Proxy an das Nextcloud-Backend.</p>
+<h2>Beispiel 3: Grafana hinter Caddy</h2>
+<p>Grafana läuft auf Port 3000 und wird häufig für Homelab-Monitoring eingesetzt – ein Thema, das in <a href="grafana-dashboards.md">Homelab-Monitoring: Schöne Grafana-Dashboards bauen</a> genauer behandelt wird.</p>
+<pre><code>
+grafana.beispiel.de {
+    reverse_proxy 192.168.3.25:3000 {
+        header_up Host {upstream_hostport}
+    }
+
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
+    }
+
+    log {
+        output file /var/log/caddy/grafana.log
+    }
+}
+</code></pre>
+<p>Grafana muss konfiguriert werden, dass es weiß, dass es hinter einem Proxy läuft. In der <code>grafana.ini</code> oder über Umgebungsvariablen setzt man <code>protocol = http</code> und <code>domain = grafana.beispiel.de</code>, damit Links und Redirects die externe URL verwenden. Ohne diese Einstellung generiert Grafana interne URLs mit der lokalen IP oder localhost, was von außen nicht funktioniert.</p>
+<h2>Beispiel 4: Vaultwarden hinter Caddy</h2>
+<p>Vaultwarden – die schlanke Bitwarden-Variante – gehört zu den sensibelsten Diensten im Homelab. Passwörter sollten niemals unverschlüsselt übertragen werden. Hinter Caddy bekommt Vaultwarden automatisch ein gültiges Zertifikat, das Browser ohne Warnung akzeptieren.</p>
+<pre><code>
+vaultwarden.beispiel.de {
+    reverse_proxy 192.168.3.25:8008 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
+        X-Content-Type-Options &quot;nosniff&quot;
+    }
+
+    log {
+        output file /var/log/caddy/vaultwarden.log
+    }
+}
+</code></pre>
+<p>Für Vaultwarden ist HTTPS nicht nur Komfort – es ist zwingend. Ohne TLS würden Master-Passwort und verschlüsselte Vault-Daten im Klartext über das Netzwerk wandern. Die Dokumentation in <a href="vaultwarden-passwortmanager.md">Vaultwarden: Passwort-Manager selbst hosten</a> behandelt den Dienst selbst, Caddy übernimmt hier nur die TLS-Terminierung und das Routing.</p>
+<h2>Beispiel 5: Homelab-Dashboard hinter Caddy</h2>
+<p>Ein zentrales Dashboard, das alle Dienste auf einen Blick sammelt, ist für viele Homelaber die erste Anlaufstelle. Unabhängig davon, ob Homarr, Homepage oder Heimdall gewählt wird – wie in <a href="homelab-dashboard.md">Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich</a> beschrieben – läuft das Dashboard häufig auf einem eigenen Port und wird dann per Caddy auf eine Domain gehoben.</p>
+<pre><code>
+dashboard.beispiel.de {
+    reverse_proxy 192.168.3.25:7575 {
+        header_up Host {upstream_hostport}
+    }
+
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security &quot;max-age=31536000&quot;
+    }
+
+    log {
+        output file /var/log/caddy/dashboard.log
+    }
+}
+</code></pre>
+<p>Die Port-Nummer in <code>reverse_proxy</code> muss je nach gewähltem Dashboard angepasst werden. Homarr läuft meist auf 7575, Homepage auf 3000, Heimdall auf 8080 (oder 80 im Container). Caddy selbst kümmert sich nicht um die interne Port-Zuordnung des Dashboards – es leitet einfach den gesamten Traffic weiter.</p>
+<h2>Beispiel 6: Pfadbasiertes Routing (single domain, mehrere Dienste)</h2>
+<p>Manchmal reichen Subdomains nicht aus oder sollen vermieden werden. Dann kann Caddy auch pfadbasiert routeen. Beispiel: Ein Dashboard und ein Monitoring-Tool auf derselben Domain, verschiedene Pfade.</p>
+<pre><code>
+beispiel.de {
+    reverse_proxy /monitoring* 192.168.3.25:3000 {
+        header_up Host {upstream_hostport}
+    }
+
+    reverse_proxy / 192.168.3.25:7575 {
+        header_up Host {upstream_hostport}
+    }
+}
+</code></pre>
+<p>Achtung bei pfadbasierten Setup: Nicht jeder Backend-Dienst verträgt es sauber, wenn die Anfrage mit einem Pfad-Präfix kommt, den er nicht erwartet. Nextcloud beispielsweise erwartet normalerweise den Basis-Pfad <code>/</code>, nicht <code>/nextcloud/</code>. Pfadbasiertes Routing ist also nicht für jeden Dienst geeignet – für Dashboards und Monitoring-Tools hingegen oft ein sauberer Weg.</p>
+<h2>Stolperfallen: Was Caddy nicht automatisch repariert</h2>
+<p>Caddy reduziert die Konfigurationsaufgabe drastisch, aber es ist kein Allheilmittel. Einige Probleme bleiben dadurch, dass die Voraussetzungen liegen.</p>
+<h2>Zertifikatsrate-Limits von Let&#x27;s Encrypt</h2>
+<p>Let&#x27;s Encrypt begrenzt die Anzahl der Zertifikate, die pro Domain und pro Stunde ausgestellt werden können. Wenn Caddy in einer Testphase viele Domains oder Wildcard-Anfragen wiederholt schlägt, kann es sein, dass Let&#x27;s Encrypt temporär keine neuen Zertifikate mehr ausstellt. Das Ergebnis: Caddy startet, kann aber kein gültiges Zertifikat anfordern, und zeigt im Log eine Fehlermeldung.</p>
+<p>Die Rate-Limits betreffen nicht laufende Erneuerungen – sie betreffen nur neue Zertifikat-Anfragen. Wer während der Einrichtung wild viele Domains hinzufügt und wieder entfernt, riskiert eine temporäre Blockade. Die praktische Abhilfe: Vor dem produktiven Einsatz alle Domains in Ruhe konfigurieren und nicht im Trial-and-Error-Verfahren.</p>
+<h2>Wildcard-Zertifikate und DNS-Provider</h2>
+<p>Wildcard-Zertifikate (<code>*.beispiel.de</code>) sind praktisch, aber sie erfordern die DNS-Challenge. Für die DNS-Challenge muss Caddy einen Mechanismus haben, der bei dem jeweiligen DNS-Provider die nötigen TXT-Records setzt. Dafür gibt es zahlreiche Plugins, aber nicht jeder Provider ist offiziell unterstützt. Ist kein passendes Plugin verfügbar, muss auf die HTTP-Challenge mit einzelnen Domains ausweichen oder ein manueller Workflow genutzt werden.</p>
+<p>Ein weiterer Punkt: Wildcard-Zertifikate decken alle Subdomains ab, aber nicht alle Subdomains sollen auch existieren. Wem ein Wildcard-Zertifikat ausgestellt ist, macht damit implizit alle Subdomains unter der Domäne technisch erreichbar – solange die DNS-Auflösung stimmt. Das ist kein Sicherheitsloch im Zertifikat, aber ein Bewusstseins-Thema für Netzwerkdesign.</p>
+<h2>Reverse Proxy statt VPN</h2>
+<p>Eine der häufigsten Verwechslungen: Ein Reverse Proxy macht Dienste erreichbar, er schützt sie aber nicht automatisch. Wenn Caddy Nextcloud nach außen exponiert und kein Authentifizierungsschicht davor steht, ist Nextcloud von überall ohne VPN erreichbar. Für manche Dienste ist das gewollt – für andere ein unnötiges Risiko.</p>
+<p>Die Entscheidung sollte bewusst sein: <strong>Welche Dienste müssen wirklich öffentlich erreichbar sein?</strong> Die meisten Homelab-Dienste brauchen das nicht. Pi-hole zum Beispiel braucht oft nur lokalen Zugriff; ein VPN wie <a href="pihole-wireguard.md">Pi-hole + WireGuard: Werbefrei und sicher von unterwegs</a> reicht aus, um auch unterwegs den Werbeblocker zu nutzen, ohne Pi-hole öffentlich zu machen.</p>
+<p>Ein Reverse Proxy ist kein Ersatz für ein VPN. Er macht einen Dienst über eine öffentliche Adresse erreichbar; ein VPN macht das gesamte Netzwerk erreichbar, ohne einzelne Dienste zu exponieren.</p>
+<h2>Authentifizierungsschicht vor dem Proxy</h2>
+<p>Wenn Dienste öffentlich erreichbar gemacht werden, sollte überlegt werden, ob eine Authentifizierungsschicht davor sinnvoll ist. Tools wie Authentik oder Authelia können als Reverse-Proxy-Gatekeeper fungieren: Der Proxy leitet die Anfrage zuerst an die Auth-Lösung weiter, und erst wenn der Nutzer authentifiziert ist, geht die Anfrage an das Backend.</p>
+<p>Das ist besonders relevant für Admin-Oberflächen, Monitoring-Tools und Passwort-Manager. In <a href="homelab-sicherheit-fail2ban-authentik.md">Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten</a> wird beschrieben, wie Authentik als SSO mit optionalem Zwei-Faktor-Authentifizierungsschritt vor Dienste gestellt werden kann.</p>
+<p>Caddy selbst bringt keine eingebaute Vorauthentifizierung mit. Es kann mit externen Auth-Tools kombiniert werden, indem die <code>forward_auth</code>-Direktive eingesetzt wird:</p>
+<pre><code>
+dashboard.beispiel.de {
+    forward_auth authentik.beispiel.de {
+        uri /api/verify
+        copy_headers true
+    }
+
+    reverse_proxy 192.168.3.25:7575
+}
+</code></pre>
+<p>Die genaue Syntax und Konfiguration von <code>forward_auth</code> hängt von der Authentik-Version und dem Authentik-Provider-Setup ab; das Caddy-Plugin für Authentik ist Teil der offiziellen Caddy-Repository-Plugins und muss ggf. separat installiert werden bei selbst gebautem Caddy-Binary.</p>
+<h2>Sicherheits-Hinweise: Nicht jeden Dienst öffentlich machen</h2>
+<p>Der sicherste Dienst ist der, der nicht nach außen geht. Bevor ein Dienst hinter Caddy öffentlich gemacht wird, ist die Frage zu stellen: <strong>Braucht wirklich jemand von außerhalb Zugriff auf genau diesen Dienst?</strong></p>
+<h2>Dienste, die nie öffentlich sein sollten</h2>
+<p>Die offensichtlichen Kandidaten:</p>
+<ul>
+<li><strong>Proxmox-Console und -Web-Oberfläche</strong> – sollte nur im lokalen Netzwerk oder über VPN erreichbar sein.</li>
+<li><strong>NAS-Administration</strong> – administrative Oberflächen von Storage-Systemen gehören nie ins öffentliche Netz.</li>
+<li><strong>Router- und Switch-Konsole</strong> – ebenso.</li>
+<li><strong>Dienste ohne Authentifizierungschutz</strong>, die keine sichere Standard-Auth haben.</li>
+</ul>
+<h2>Dienste, die öffentlich gemacht werden können – mit Einschränkung</h2>
+<ul>
+<li><strong>Nextcloud</strong> – öffentlich erreichbar, wenn Sync von unterwegs wichtig ist. Sollte aber durch starke Accounts, 2FA und HTTPS abgesichert sein.</li>
+<li><strong>Vaultwarden</strong> – öffentlich erreichbar, wenn Passwörter von mehreren Geräten ohne VPN synchronisiert werden sollen. Zwingend HTTPS und starkes Master-Passwort.</li>
+<li><strong>Homelab-Dashboard</strong> – öffentlich erreichbar, aber nur als Link-Seite ohne sensible Funktionen, es sei denn, dahinter steckt eine Auth-Schicht.</li>
+<li><strong>Grafana</strong> – öffentlich sinnvoll nur, wenn explizit geteilte Dashboard-Links gewünscht sind; sonst intern oder VPN.</li>
+</ul>
+<h2>HTTPS ist nötig, aber nicht ausreichend</h2>
+<p>HTTPS verschlüsselt die Verbindung zwischen Client und Proxy. Das schützt vor Mitlesen im Übertragungsweg. Es schützt aber nicht davor, dass ein kompromittiertes Backend-Konto oder ein Schwachstellens in Nextcloud zu einem Datenleck führt. Die Absicherung eines öffentlichen Diensts besteht aus mehreren Ebenen: HTTPS, starke Passwörter, 2FA, Authentifizierungsschicht vor dem Proxy, Fail2ban, und regelmäßige Updates.</p>
+<p>Die grundlegenden Maßnahmen sind in <a href="homelab-sicherheit-guide.md">Homelab absichern: Der komplette Sicherheits-Guide 2026</a> zusammengefasst. Caddy ist ein Baustein in diesem Gesamtkonzept, nicht die gesamte Lösung.</p>
+<h2>Caddy-Dienst aufsetzen: Der praktische Ablauf</h2>
+<p>Der Vollständigkeit halber ein kompakter Ablauf, wie Caddy auf einer Linux-Maschine (Debian/Ubuntu) als Dienst eingerichtet wird:</p>
+<p>1. <strong>Caddy installieren.</strong> Das offizielle Installationsskript von Caddys Website bringt die aktuelle Version und legt einen systemd-Dienst an.</p>
+<p>2. <strong>Caddyfile anlegen.</strong> <code>/etc/caddy/Caddyfile</code> ist der Standard-Ort; systemd gibt Caddy diesen Pfad mit.</p>
+<p>3. <strong>DNS vorbereiten.</strong> Subdomains auf die öffentliche IP zeigen lassen; Port 80 und 443 in der Firewall und im Router freigeben.</p>
+<p>4. <strong>Ersten Start testen.</strong> <code>sudo caddy run --config /etc/caddy/Caddyfile</code> testet ohne Dauerhaftigkeit. Im Log werden Zertifikats-Anfragen und etwaige Fehler sichtbar.</p>
+<p>5. <strong>Als Dauerhaften Dienst.</strong> Sobald die Konfiguration gilt, Caddy über <code>systemctl enable --now caddy</code> aktivieren.</p>
+<p>Nach dem ersten Start läuft die Zertifikatsanfrage im Hintergrund. Caddy aktualisiert das Zertifikat automatisch, wenn es ansteht. Ein separater Certbot-Cron ist nicht nötig.</p>
+<h2>Fazit</h2>
+<p>Caddy vereinfacht die HTTPS-Absicherung eines Homelab-Proxys auf bruchteilhaftes Aufwand im Vergleich zu Nginx-basierten Setups. Die automatische ACME-Integration, die klare Caddyfile-Syntax und die eingebaute Erneuerung von Zertifikaten machen Caddy zu einer sehr wiedererkennbaren Wahl für Homelaber, die nicht jeden Tag am Zertifikats-Lifecycle arbeiten wollen.</p>
+<p>Gleichzeitig ist Caddy kein Zauberstab. Ein Reverse Proxy macht Dienste erreichbar, aber er entscheidet nicht darüber, welche Dienste es überhaupt geben soll. Die Entscheidung, welche Dienste öffentlich gemacht werden, welche durch eine Auth-Schicht geschützt werden und welche nur im lokalen Netzwerk bleiben, ist eine bewusste Architektur-Entscheidung. Caddy unterstützt diese Entscheidung, indem er HTTPS ohne viel Aufwand bereitstellt.</p>
+<p>Für das nächste Homelab-Projekt lohnt sich ein Blick auf die bestehende Infrastruktur: Welche Dienste laufen schon, welche Subdomains sind sinnvoll, welche DNS-Einträge fehlen, welche Ports sind frei? Mit diesen Voraussetzungen ist Caddy innerhalb einer Stunde produktiv einsatzbereit.</p>
+<hr>
+<h2>FAQ: Häufige Fragen zu Caddy als Reverse Proxy</h2>
+<p><strong>Warum sollte ich Caddy statt Nginx Proxy Manager wählen?</strong></p>
+<p>Nginx Proxy Manager bietet eine grafische Oberfläche, die ohne CLI-Kenntnisse auskommt. Caddy bietet keine UI, dafür die einfachste Konfiguration für HTTPS überhaupt – ein Caddyfile mit wenigen Zeilen deckt mehrere Dienste ab, und Zertifikats-Erneuerung läuft ohne extra Tool. Wenn du Konfigurationsdateien schreiben kannst und das geringste Setup suchst, ist Caddy die effizientere Wahl. Wenn du eine Klick-Oberfläche bevorzugst, ist NPM besser.</p>
+<p><strong>Funktioniert Caddy ohne öffentliche IP?</strong></p>
+<p>Nicht mit Let&#x27;s Encrypt über HTTP-Challenge. Wenn kein Port 80 von außen erreichbar ist, muss entweder die DNS-Challenge mit einem passenden DNS-Provider-Plugin genutzt werden oder ein eigenes Zertifikat (eigene CA) für interne Dienste. Für rein lokale Dienste mit eigener CA ist das ein valides Muster.</p>
+<p><strong>Was passiert, wenn das Let&#x27;s Encrypt-Zertifikat abläuft?</strong></p>
+<p>Caddy erneuert Zertifikate automatisch im Hintergrund, solange die Domäne weiterhin korrekt aufgelöst wird und die Challenge-Methode funktioniert. Trotzdem lohnt es sich, einmalig zu prüfen, ob die Erneuerung auch ohne manuelles Eingreifen gelingt – zum Beispiel indem man nach dem ersten Erneuern schaut, ob das alte Zertifikat tatsächlich ersetzt wurde. Ein abgelaufenes Zertifikat zeigt der Browser als Warnung an, der Dienst bleibt aber technisch erreichbar.</p>
+<p><strong>Kann ich mehrere Reverse Proxys nebeneinander betreiben?</strong></p>
+<p>Ja, aber sie dürfen nicht gleichzeitig auf denselben Port hören. Zwei Proxys auf Port 443 würden sich gegenseitig blockieren. Parallel-Betrieb macht nur Sinn, wenn sie unterschiedliche Ports nutzen oder wenn sie klar getrennte Subdomains bearbeiten – was in kleinen Homelabs selten ein gutes Design ist.</p>
+<p><strong>Welche Dienste sollte ich nicht hinter Caddy öffentlich machen?</strong></p>
+<p>Admin-Oberflächen von Proxmox, NAS-Systemen und Routern sollten nie öffentlich exponiert werden. Dienste ohne stabile Authentifizierung sollten ebenfalls nicht ohne eine Auth-Schicht nach außen. Für den Rest gilt: Je sensibler der Dienst, desto stärker die Absicherungsschichten davor.</p>
+<p><strong>Benötigt Caddy Docker?</strong></p>
+<p>Nein. Caddy läuft problemlos als systemd-Dienst auf einer VM oder LXC-Instanz, ohne Container. Docker ist eine mögliche Laufzeitumgebung, aber nicht die einzige oder empfohlene.</p>
+<p><strong>Wie vergleicht sich Caddy mit Traefik für Homelab?</strong></p>
+<p>Beide bieten automatisches HTTPS. Caddy ist direkter – ein Caddyfile und fertig. Traefik ist stärker im dynamischen Container-Discovery-Bereich: Bei Docker-basierten Setups erkennt Traefik neue Container automatisch über Labels. Wenn alle Dienste in Containern laufen und ständig hinzukommen oder wegfallen, ist Traefik oft die praktischere Wahl. Für statische Dienste auf einer VM oder LXC favorisiert man Caddy.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
