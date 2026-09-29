@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selbst gehostete Webanalyse: Plausible, Umami, Matomo im Vergleich</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Selbst gehostete Webanalyse: Was du selbst hosten kannst – und was nicht</h1>
+<p>Du betreibst eine Website, vielleicht für Kundschaft, vielleicht für dein Homelab. Du willst wissen, wie oft welche Seite besucht wird, woher die Besucher kommen, welche Seiten funktionieren und welche nicht. Das ist legitimate Fragestellung. Google Analytics (GA) ist die Standardlösung, mit der viele starten – und viele landen nach einem Blick auf die Datenschutzpflicht, die Logik der Tracking-Cookies und die Dokumentation des Datenprofils des Anbieters wieder raus.</p>
+<p>Dieser Artikel erklärt, warum GA aus Datenschutz- und Technik-Sicht problematisch sein kann, was eine selbst gehostete Analyse konkret kann, welche drei bekannten Open-Source-Tools es gibt, wie man sie einrichtet, und wo ihre Grenzen liegen. Am Ende steht eine konkrete Entscheidungshilfe mit Kosten und Aufwand.</p>
+<h2>Warum Google Analytics datenschutzrechtlich und technisch problematisch sein kann</h2>
+<p>Google Analytics verarbeitet Daten auf Servern von Google. Das hat mehrere Konsequenzen, die für kleine Betreiber und insbesondere für BSI- oder DSGVO-bewusste Unternehmen relevant sind.</p>
+<p><strong>1. IPs und persönliche Daten im Ausland.</strong> GA erfasst IP-Adressen. IP-Adressen können personenbezogene Daten sein (EuGH, C-131/12 „Google-Musterentscheidung&quot;, 2014; C-311/18 „Schrems II&quot;, 2020). Ob deine konkrete IP-Verarbeitung personenbezogen ist, hängt von Kontext ab – aber die Frage taucht auf, sobald du Analytics-Erhebung über das reine reine Datenbewusstsein hinaus auf deine Kund:innen beziehst. Google selbst weist darauf hin, dass IPs pseudonymisiert werden sollen (GA4-Maskierung), aber die Daten liegen weiterhin auf Google-Infrastruktur und können mit anderen Google-Diensten korreliert werden.</p>
+<p><strong>2. Consent-Pflicht für Marketing-Tracking.</strong> Wenn GA für Marketing-, Retargeting- oder Profiling-Zwecke genutzt wird, ist ein Rechtsgrund, der nicht Einwilligung ist, schwierig. Die DSGVO erfordert bei profilbildendem Tracking eine Rechtsgrundlage; in Deutschland ist Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) der übliche Weg für Werbetracking. Das führt zu dem Consent-Banner, den so viele Seiten haben – also ein technischer Aufwand und UX-Nachteil als Folge einer gewählten Analytics-Lösung.</p>
+<p><strong>3. Profil-Aufbau und datenökonomische Abhängigkeit.</strong> GA sammelt mehr als Seitenaufrufe: Geräte-Hints, Referrer-Ketten, event-basierte Verfolgung, User-ID-Integrationen, Conversion-Tracking, Google Ads-Integration. Das ist bewusst gewollt angesichts des Geschäftsmodells (Werbeplattform), aber es bedeutet, dass Analytics-Erhebung und Profil-Aufbau nicht sauber getrennt sind. Wenn du nur Meter- und Reichweitenwissen willst, ist das Profil-Aufbau-Konstrukt Overkill und potenzielle Compliance-Treiber.</p>
+<p><strong>4. Technische Abhängigkeit.</strong> GA ist ein Cloud-Dienst. Wenn Google die Schnittstelle ändert, Reports ändert, auf Daten zugreift oder Account-Modelle ändert, ist das extern vom eigenen Infrastruktur-Kontrolle. Self-Hosted-Lösungen verlegen die Kontrolle auf dein eigenes System.</p>
+<p>Zusammengefasst: Das Kernproblem ist nicht, dass GA illegitim wäre – es ist, dass GA als Marketingprodukt des Ad-Tech-Konzepts konzipiert ist, und das erzeugt DSGVO-Compliance-Arbeit und Consent-Banner, wenn du es für reine Nutzungsstatistiken wählst, für die eine selbsterhobene Lösung ausreichen würde. ## Was eine selbst gehostete Analyse leisten kann – und was nicht</p>
+<p>Eine selbst gehostete Analytics-Lösung kann einige Dinge gut und andere Dinge gar nicht. Klare Erwartungsabgrenzung ist wichtig, sonst landet man bei Enttäuschung.</p>
+<p><strong>Was sie kann:</strong></p>
+<ul>
+<li>Seitenaufrufe und Sessions zählen (besucht, eindeutige Besucher, Verweildauer, Absprungraten)</li>
+<li>Quellen erkennen (Referrer, direkter Verkehr, organische Suche, Social-Media-Links) – je nach Implementierung eingeschränkt</li>
+<li>Geolokalisierung auf Land/Region-Ebene – über Geo-IP-Datenbanken (z.B. MaxMind GeoLite2 free oder käufliche Edition)</li>
+<li>Grundsätzliche Echtzeit-Statistiken (aktueller Traffic)</li>
+<li>Conversion-Ereignisse im einfachen Sinne (z.B. Klick auf Danke-Seite, Formularabsenden) – wenn du sie einbaust</li>
+<li>Daten komplett lokal behalten – keine Datenübermittlung an einen externen Anbieter</li>
+</ul>
+<p><strong>Was sie NICHT leistet:</strong></p>
+<ul>
+<li><strong>Automatisches Retargeting.</strong> Retargeting erfordert Identifikation von Nutzern über Sessions und Geräte hinweg – das bekommen reine Statistik-Tools so nicht. Das braucht ein Tracking-System mit Cookies oder User-IDs und Datenbank-Linking; selbst gehostete Analytics-Tools sind für das konzipiert.</li>
+<li><strong>Echte Conversion-Tracking-Infrastruktur für komplexe E-Commerce-Funnels.</strong> Tools wie Matomo haben Conversion-Funktionen, aber sobald es um mehrkanaliges Attribution, absprungebasierte Umsatz-attribution über mehrere Touchpoints oder Marketing-Mix-Modellierung geht, kommt man an die Grenzen. Selbst gehostete Tools sind Reporting-Tools, keine Attributivitäts-Plattformen.</li>
+<li><strong>Reichweitenvergleiche mit Branchen-KPIs.</strong> Selbst gehostete Daten sind deine Daten. Es gibt keine Branchenvergleichsdatenbank, die du integrierst. Das ist kein Fehler, sondern ein bewusster Abgrenzungscharakter.</li>
+<li><strong>Geräteübergreifende Nutzerfolgung.</strong> Ohne User-ID-Zuordnung oder Device-Graph verfolgst du Nutzer nicht über Geräte. Das ist technisch korrekt, aber eine Einschränkung, wenn du Multi-Device-Behavior verstehen willst.</li>
+<li><strong>Chat-Logging-Auswertung oder Support-Chat-Scraping.</strong> Analytics-Tools messen Navigation, nicht Chat-Inhalte. Wenn du Chat auswerten willst, brauchst du nicht eine Analytik-Plattform, sondern einen Chat-Storage und -Analytiik-Aufbereitungsweg.</li>
+</ul>
+<h2>Die Architektur: eigener Server, eigener Proxy, eigene Domain</h2>
+<p>Die typische Architektur einer selbst ge hosteten Webanalyse ist bersichtlich. Sie besteht aus vier Bausteinen:</p>
+<p>1. <strong>Der Analyse-Ansatz selbst.</strong> Eine Anwendung, die Requests eines Tracking-Skripts entgegennimmt, speichert Metriken, bietet Reporting über ein Interface. Beispiele: Plausible Analytics CE, Umami, Matomo.</p>
+<p>2. <strong>Eine eigene Domain.</strong> Eine Subdomain wie <code>analytics.deineseite.de</code> oder <code>statistik.unternehmen.de</code>. Diese Domain wird im Tracking-Skript als <code>data-domain</code> oder äquivalent referenziert. Das Skript sendet Requests an diese Domain.</p>
+<p>3. <strong>Ein Zertifikat.</strong> Da das Tracking-Skript über HTTPS mit dem Browser kommuniziert, muss die Domain ein gültiges TLS-Zertifikat haben. Let&#x27;s Encrypt via ACME (HTTP- oder DNS-Challenge) ist der Standardweg. Das Zertifikat wird vom Reverse Proxy verwaltet; die Analyse-Anwendung selbst muss keine Zertifikatsadministration durchführen.</p>
+<p>4. <strong>Ein Reverse Proxy, der den Tracking-Pfad vor dem Skript ausblendet.</strong> Das Skript wird in die Ziel-Website eingebunden (HTML <code>&lt;script&gt;</code> oder img-Tag). Der Skript-Code macht Requests an die Analyse-Domain (z.B. <code>https://analytics.meinedomain.de/js/script.js</code> oder <code>/api/event</code>). Der Reverse Proxy leitet diese Requests an die Analyse-Anwendung weiter. Die Analyse-Anwendung läuft hinter dem Proxy und wird nie direkt von außen exponiert. Das ist das saubere Muster: Skript ist extern einbindbar, Backend-Logik ist proxy-geschützt.</p>
+<p><strong>Wo der Zaehlcode hingehört.</strong> Der Analytics-Script-Code gehört in den <code>&lt;head&gt;</code> oder das <code>&lt;body&gt;</code> des getrackten Dokuments. Der konkrete Mechanismus variiert je Tool:</p>
+<ul>
+<li>Plausible: Ein Script-Tag, der auf <code>https://analytics.DEINE_DOMAIN/js/script.js</code> (oder dein Pfad) verweist, plus optional <code>data-domain=&quot;DEINE_DOMAIN&quot;</code>. Das Skript feuert Events an die Analyse-Domain.</li>
+<li>Umami: Ähnlicher Mechanismus, Script-Tag an die Umami-Domain, mit <code>data-collected</code> Attribut für {domain, title oder ähnlichem}.</li>
+<li>Matomo: Script-Tag oder das Matomo-Pixel (img). Matomo hat zudem die Option, das Skript nicht selbst einzubinden, sondern den Matomo-Tracker als Einbindung auszuliefern („auto&quot;-Tracker), was den Einbau vereinfacht.</li>
+</ul>
+<p>Der entscheidende Punkt: <strong>Das Skript gehört in deine Website, nicht in das Backend.</strong> Das Backend (die Analytics-Anwendung) empfängt die Requests, die das Skript schickt. Das Backend läuft auf einem Server mit Reverse Proxy davor. Du brauchst nichts von der Website selbst, außer dass sie das Skript einbindet. Das ist der Architekturvorteil: Analytics-Anwendung und Ziel-Website sind losgelöst voneinander.</p>
+<h2>Drei Ansätze im Vergleich</h2>
+<p>Die bekannten selbst ge hosteten Analytics-Optionen im Kleinen sind <strong>Plausible Community Edition (CE)</strong>, <strong>Umami</strong> und <strong>Matomo On-Premise</strong>. Alle drei existieren, alle drei sind quelloffen, alle drei hosten sich selbst. Sie unterscheiden sich in Anspruch, Ressourcenaufwand und Funktionsumfang.</p>
+<p>Die folgende Tabelle vergleicht sie nach Kriterien, die für die Entscheidung relevant sind. Werte sind zum größten Teil aus den jeweiligen Dokumentationen und einem Einführungs-Setup abgeleitet; konkrete Ressourcenverbräuche hängen von Traffic-Volumen und Konfiguration ab. Wo kein hard fact verfügbar ist, steht „zu prüfen&quot; oder ein plausible Bereich.</p>
+<p>|| Kriterium | Plausible CE | Umami | Matomo On-Premise |</p>
+<p>||---|---|---|---|</p>
+<p>|| <strong>Lizenz</strong> | AGPL-3.0 (Community Edition) | MIT | GPL-3.0 / kommerzielle Lizenz möglich (Core ist quelloffen) |</p>
+<p>|| <strong>Technische Basis</strong> | Elixir/BEAM + SQLite/PostgreSQL + Go-Tracker | Next.js + PostgreSQL (optional SQLite) | PHP + MySQL/MariaDB |</p>
+<p>|| <strong>Speicherbedarf (Anwendung)</strong> | Gering: mehrere Dutzend MB RAM im Betrieb, Datenbank je nach Wahl SQLite (Datei) oder PostgreSQL | Niedrig-Mittel: Anwendung wenige Dutzend bis ~100 MB RAM; PostgreSQL-Datenbank beansprucht je nach Traffic 100 MB–einige GB | Mittel-Hoch: PHP-FPM + Datenbank + Cron-Jobs; PostgreSQL ähnlich wie Umami, aber Oberfläche und Funktionsumfang sind größer |</p>
+<p>|| <strong>Speicherbedarf (Datenbank, zu prüfen)</strong> | SQLite-Datei wächst mit Traffic; bei mehreren Hunderttausend Pageviews/Monat plausibel &lt;1 GB. PostgreSQL ähnlich. | PostgreSQL-Datenbank bei moderaten Traffic-Mengen typischerweise &lt;500 MB/Monat (Schätzwert, zu prüfen je nach Datenmodell). | MariaDB/MySQL-Datenbank bei mittlerem Traffic oft einige hundert MB bis 1-2 GB/Monat; zu prüfen je nach Auflösung der Ereignisse. |</p>
+<p>|| <strong>Erst-Setup-Aufwand</strong> | Niedrig-Mittel: Docker Compose bereitgestellt, Umgebungsvariablen gesetzt, Domain und Zertifikat besorgt. 1–2 Stunden für erstes laufendes Setup. | Niedrig-Mittel: Docker Compose mit PostgreSQL, Umgebungsvariablen gesetzt, Domain und Zertifikat. 1–2 Stunden. | Mittel-Hoch: Docker Compose oder manuelle PHP-Installation + Datenbank-Konfiguration + Super-User im Setup-Wizard. 2–4 Stunden bis zum ersten Dashboard. |</p>
+<p>|| <strong>Funktionsumfang</strong> | Seitenaufrufe, eindeutige Besucher, Session-Dauer, Referrer, Land/Region (mit Geo-IP), Echtzeit. Kein User-ID-Tracking für Geräteübergreifendes. Keine Conversion-Tracking-Deep-Dive wie Wirtschaftlichkeitsanalyse. | Seitenaufrufe, Besucher, Sessions, Referrer, Land/Region (Geo-IP erforderlich), Echtzeit, einfache Conversion-Ereignisse (Eigen-Code). Minimaler Funktionsumfang; Fokus auf einfache Privacy-First-Statistiken. | Umfangreich: Seitenaufrufe, Besucher, Sessions, Referrer, Geo, Kampagnen-Tracking, Conversion-Tracking, Event-Tracking, Custom-Dimensionen, Daten-Import, Segmentierung, Reporting-APIs, Export. Nähert sich dem Funktionsumfang von GA im Basismodul. |</p>
+<p>|| <strong>Cookie-Pflicht</strong> | Ohne Cookies normalerweise nicht nötig (Tracking-Parameter als selbst-bereitstelltes First-Party-Skript, keine Third-Party-Cookie-Tools). Datenbasis local. Rechtsgrund zu prüfen: Legitimate Interest oder Einwilligung je nach Zweck. | Ohne Cookies; gleiche Überlegung wie Plausible. Kein Cookie-Set durch Analytics-Skript im Standard. Rechtsgrund zu prüfen. | Ohne Cookies im Basis-Tracking möglich (Matomo Zählpixel oder cookie-freier Tracker); Matomo bietet aber Cookie-basierte Tracking-Modi an, die dann Consent erfordern würden. Matomo-Dokumentation dokumentiert DSGVO-Compliance-Optionen; zu prüfen ob konkret konfiguriert. |</p>
+<p>|| <strong>Datenhaltung</strong> | Du bestimmst die Aufbewahrung. Standardaufbewahrung zu prüfen in Konfiguration; eine explizite Aufbewahrungsfrist zu setzen ist sinnvoll. | Du bestimmst die Aufbewahrung in der Datenbank. Aufbewahrungsfrist zu konfigurieren. | Du bestimmst die Aufbewahrung in Matomo-Einstellungen (Datenbank-Archivierung, Löschregeln für nonparametric Daten, IPs). Detaillierte Kontrolle vorhanden. |</p>
+<p>|| <strong>Eignung für statische Seiten</strong> | Sehr gut geeignet. Leichtgewichtig, kein Server-seitiges Rendering nötig, Skript einfach einzubinden, Reporting ohne Komplexität. | Geeignet. Einfach und leichtgewichtig; gut für statische Sites und Blogs. | Eher für dynamische Kontexte, wenn Funktionsumfang gebraucht wird; für statische Seiten mit wenigen Anforderungen Overkill, aber technisch machbar. |</p>
+<p>|| <strong>Geo-IP Option</strong> | Optional mit MaxMind GeoLite2 (free) oder käuflicher Edition. Lizenzschlüssel einbinden (to prüfen: das Skript setzt auf MaxMind; Lizenz Bestimmungen beachten). | Geo-IP mit externen Datenbanken, zu prüfen welche Integration verfügbar; Umami kann Geo über zusätzliche Konfiguration anbieten, Details in Dokumentation. | Matomo hat eingebaute Geo-IP mit Lizenzoptionen (MaxMind-Lizenz), oder manuelle Konfiguration; Details zu prüfen. |</p>
+<p>|| <strong>Reporting-API</strong> | Einfaches Reporting, API vorhanden, Authentifizierung zu prüfen (API-Key), um externe Auswertungen zu tun. | Reporting-Oberfläche vorhanden, API-Export/Abfragen zu prüfen in Dokumentation (zu prüfen, welche Formate/export-Möglichkeiten). | Umfassende API für Reporting, Daten-Export (CSV, JSON), Dashboard-Export, API-Authentifizierung. |</p>
+<p>|| <strong>Passend für …</strong> | Blogs, Marketing-Seiten, einfache Websites, Homelab-Präsenz, kleine Unternehmensseiten mit Bedarf an sauberen Grundstatistiken ohne Komplexität. | Einfache Websites, statische Seiten, Blogs, einfache Projektseiten, wenn Fokus auf minimalem Aufwand und Privacy-First. | Firmenseiten mit Conversion-Bedarf, E-Commerce-Licht, Kampagnen-Tracking, zweiichtsensiblyere Reporting-Ansprüche, wenn Funktionsumfang GA-ähnlich gewünscht, aber lokal. |</p>
+<p><strong>Lesehinweis zur Tabelle.</strong> Die Vergleichswerte sind grobe Orientierungshilfen. Ressourcenverbräuche sind je nach Traffic, Anbieter und Hardware abweichend. Speicherbedarf ist ein Schätzwert unter Standardannahmen (z.B. einzelner Hosting-Server, kein Clustering, ohne-Redundanz-Betrieb). Konkrete Werte zu messen, indem du das Setup laufen lässt und mit deinem eigenen Traffic beobachtest, ist der zuverlässige Weg.</p>
+<h2>Anleitung: Plausible Analytics CE mit Docker Compose auf Proxmox</h2>
+<p>Plausible Community Edition läuft als Docker Compose-Stack. Die Komponenten sind: der Plausible-App-Server, ein Datenbank-Backend (standardmäßig SQLite, optional PostgreSQL), und optional eine Umgebungsvariable für Geo-IP (MaxMind).</p>
+<h2>Voraussetzungen</h2>
+<ul>
+<li>Ein Linux-Host (Debian/Ubuntu auf einer Proxmox-VM oder LXC), Docker und Docker Compose installiert.</li>
+<li>Eine Domain, die auf den Host zeigt (z.B. <code>analytics.beispiel.de</code>).</li>
+<li>Port 80 und 443 von außen erreichbar für Let&#x27;s Encrypt (oder DNS-Challenge, wenn HTTP nicht freigegeben werden soll).</li>
+<li>Optional: Ein bestehender Reverse Proxy (z.B. Caddy), der bereits läuft; dann kümmerst du dich nur um den neuen Pfad im Caddyfile.</li>
+</ul>
+<h2>Schritt 1: Verzeichnis und .env erstellen</h2>
+<pre><code>
+mkdir -p /opt/plausible
+cd /opt/plausible
+cp .env.example .env
+</code></pre>
+<p>Die .env-Datei aus dem Plausible CE-Repository (<code>.env.example</code>) enthält die Hauptumgebungsvariablen. Die wesentlichen Variablen, die du setzen musst oder solltest, sind:</p>
+<pre><code>
+# Basis-URL, unter der das Plausible-Interface und der Tracker erreichbar sind
+BASE_URL=https://analytics.beispiel.de
+
+# Secret Key Base – ein zufälliger String für Session-Cookies undinterne Hashes
+SECRET_KEY_BASE=&lt;32-zu-mehr-zeichen-zufaellig-string&gt;
+
+# HTTP/HTTPS Ports (fuer eigene Port-Bindung oder fuer Caddy vorgesehen)
+HTTP_PORT=8080
+HTTPS_PORT=8443
+
+# Optional: Geo-IP mit MaxMind
+# MAXMIND_LICENSE_KEY=&lt;falls MaxMind-Lizenz vorhanden&gt;
+# MAXMIND_EDITION=GeoLite2-City
+</code></pre>
+<p><code>SECRET_KEY_BASE</code> kannst du z.B. mit <code>openssl rand -base64 64</code> oder einem gleichwertigen Zufallsgenerator erzeugen. Das ist ein sensitiver Wert – behandele ihn wie ein Passwort.</p>
+<p>Die Ports <code>HTTP_PORT</code> und <code>HTTPS_PORT</code> sind die Ports, die Plausible selbst bindet. Wenn du Caddy als Reverse Proxy vor Plausible setzt, bindet Plausible typischerweise auf einem lokalen Port (z.B. 8080 für HTTP), und Caddy leitet von 443 auf diesen lokalen Port weiter. Das ist das saubere Muster: Plausible selbst hat kein TLS; Caddy terminiert TLS.</p>
+<h2>Schritt 2: Docker Compose erstellen</h2>
+<p>Die offizielle Compose-Datei aus dem Plausible-Repository (<code>docker-compose.yml</code>) wird bei der Initialisierung mitgeliefert. Sie enthält die Dienste <code>plausible</code>, <code>pb</code> (den PostgreSQL- oder SQLite-Connector, je nach Konfiguration), und ggf. andere Hilfskomponenten. Die genaue Struktur folgt dem Beispiel aus dem Repository; du adaptierst sie auf deine Umgebung.</p>
+<p>Ein minimaler Customizing-Ansatz (mit Caddy im selben Host oder extern) bindet nicht direkt an 80/443, sondern an den lokalen Port:</p>
+<pre><code>
+services:
+  plausible:
+    image: plausible/plausible-ce:latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - &quot;127.0.0.1:8080:8080&quot;
+    volumes:
+      - plausible-data:/app
+volumes:
+  plausible-data:
+</code></pre>
+<p>Die Bindung an <code>127.0.0.1:8080</code> (nicht an <code>0.0.0.0</code>) ist wichtig: Damit ist Plausible nur von localhost erreichbar, und Caddy muss explizit vorgeschaltet werden. Ohne diese Bindung wäre Plausible direkt aus dem Netzwerk erreichbar, was du vermeiden willst, solange Caddy den Traffic filtert.</p>
+<h2>Schritt 3: Starten</h2>
+<pre><code>
+docker compose up -d
+</code></pre>
+<p>Im ersten Start initialisiert Plausible die Datenbank. Das kann einige Sekunden bis Minuten dauern. Das Interface ist nach dem Start unter <code>http://localhost:8080</code> (intern) oder – nach Caddy-Konfiguration – unter <code>https://analytics.beispiel.de</code> erreichbar.</p>
+<p>Das erste Mal meldet sich ein Setup-Assistent oder ein Login; die genaue Mechanismus variieren je Konfiguration. Ein Admin-Benutzer wird erstellt; danach kannst du das Dashboard aufrufen.</p>
+<h2>Schritt 4: Caddy als Reverse Proxy für Plausible</h2>
+<p>Das Caddyfile für die Analyse-Domain:</p>
+<pre><code>
+analytics.beispiel.de {
+    reverse_proxy 127.0.0.1:8080
+
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
+        X-Content-Type-Options &quot;nosniff&quot;
+        Referrer-Policy &quot;strict-origin-when-cross-origin&quot;
+    }
+
+    log {
+        output file /var/log/caddy/analytics.log
+        format console
+    }
+}
+</code></pre>
+<p>Das <code>reverse_proxy 127.0.0.1:8080</code> leitet alle Anfragen an den Plausible-Container weiter. Caddy bindet an 80 und 443, erneuert das Let&#x27;s Encrypt-Zertifikat automatisch, und der Plausible-Container selbst muss sich nicht um TLS kümmern.</p>
+<p><strong>Wichtiger Hinweis für Plausible:</strong> Das Plausible-Tracking-Skript verweist auf <code>BASE_URL</code> aus der .env-Datei. Wenn du den Tracker-Script-Tag in deine Website einbindest, muss das Skript auf derselben Domain wie <code>BASE_URL</code> liegen. Also: Website <code>https://beispiel.de</code>, Tracker-Skript verweist auf <code>https://analytics.beispiel.de/js/script.js</code> (Pfad je nach Version zu prüfen – der Standard für CE ist <code>/js/script.js</code> oder ein ähnlicher Pfad; in der Dokumentation zu verifizieren).</p>
+<h2>Schritt 5: Tracking-Skript in die Website einbinden</h2>
+<p>In dein HTML (oder Template deiner statischen Seite), im <code>&lt;head&gt;</code>:</p>
+<pre><code>
+&lt;script defer data-domain=&quot;beispiel.de&quot; src=&quot;https://analytics.beispiel.de/js/script.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>Eventuell erforderlich: <code>data-domain</code> muss mit der Domain übereinstimmen, die Plausible als <code>data-domain</code> konfiguriert hat. Die exakte Bedeutung des <code>data-domain</code> Attributs ist in der Plausible-Dokumentation zu verifizieren; es identifiziert in der Regel die Domain, deren Traffic gemeldet wird, und kann für Cross-Domain-Tracking verwendet werden (zu prüfen).</p>
+<h2>Schritt 6: Geo-IP optional aktivieren</h2>
+<p>Wenn du Geo-IP (Land/Region-Statistiken) willst, setzt du in der <code>.env</code> die MaxMind-Lizenzschlüssel und Edition. Für die kostenlose GeoLite2-Lizenz musst du einen Account bei MaxMind erstellen und einen Lizenzschlüssel anfordern; der Lizenzschlüssel ist eine konkrete Angabe, die in der .env gesetzt wird. Das ist kein zwingender Bestandteil von Plausible, sondern eine optionale Erweiterung.</p>
+<h2>Schritt 7: Daten und Backups</h2>
+<p>Plausible speichert Daten in einem Docker-Volume (<code>plausible-data:/app</code>). Für Backups mountest du das Volume oder erstellst Snapshots. Die Datenbank (SQLite oder PostgreSQL) liegt im Volume; ein Backup besteht aus einem Mount-Volume oder einem Dump der Datenbank.</p>
+<p>Ein Backup-Kommando (zu prüfen, ob SQLite oder PostgreSQL im genutzten Setup):</p>
+<p>Für SQLite (Beispiel, grob):</p>
+<pre><code>
+docker compose exec plausible sqlite3 /app/plausible.db &quot;.backup &#x27;/backup/plausible-$(date +%Y%m%d).db&#x27;&quot;
+</code></pre>
+<p>Für PostgreSQL: Ein <code>pg_dump</code> des Datenbank-Users. Das ist abhängig von der genutzten Datenbank-Konfiguration.</p>
+<p>Eine präzise Backup-Strategie zu planen, bevor Traffic aufgebaut wird, ist sinnvoll – Daten in der Analytics-Datenbank sind löschbar, aber du willst nicht versehentlich alle Statistiken verlieren.</p>
+<h2>Schritt 8: Aufbewahrung und Löschung</h2>
+<p>Plausible bietet Einstellungen für Datenaufbewahrung (zu prüfen in der Admin-Oberfläche). Du kannst Statistiken für ältere Daten löschen, indem du die entsprechenden Aufbewahrungsregeln konfigurierst. Rohdaten (IP-Adressen etwa) können durch IP-Anonymisierung oder Löschregeln geschützt werden.</p>
+<hr>
+<h2>Anleitung: Umami – kurze Variante für Docker Compose und Caddy</h2>
+<p>Umami ist die schlankere Alternative. Es läuft mit Docker Compose, benötigt eine PostgreSQL-Datenbank, und wird ebenfalls über Caddy oder einen anderen Reverse Proxy proxyt.</p>
+<h2>Schritt 1: Verzeichnis und docker-compose.yml</h2>
+<pre><code>
+mkdir -p /opt/umami
+cd /opt/umami
+</code></pre>
+<p>Eine Compose-Datei für Umami mit PostgreSQL (Beispiel nach Dokumentation von Umami):</p>
+<pre><code>
+services:
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - &quot;127.0.0.1:3000:3000&quot;
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - umami-data:/app/data
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: umami_db
+      POSTGRES_USER: umami_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - umami-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [&quot;CMD-SHELL&quot;, &quot;pg_isready -U umami_user&quot;]
+      interval: 10s
+      retries: 5
+
+volumes:
+  umami-data:
+  umami-db:
+</code></pre>
+<p>Die Umgebungsvariablen in <code>.env</code>:</p>
+<pre><code>
+DATABASE_URL=postgresql://umami_user:CHANGE_ME_PASSWORD_HERE@db:5432/umami_db
+DATABASE_TYPE=postgresql
+UMAMI_SITE_URL=https://analytics.beispiel.de
+APP_SECRET=&lt;openssl rand -hex 32, oder aehnlich zufaelliger 64-stelligen String&gt;
+DISABLE_TELEMETRY=1
+</code></pre>
+<p><code>APP_SECRET</code> ist ein sensitiver Wert. Erstelle ihn mit z.B. <code>openssl rand -hex 32</code>.</p>
+<h2>Schritt 2: Caddy-Eintrag für Umami</h2>
+<pre><code>
+analytics.beispiel.de {
+    reverse_proxy 127.0.0.1:3000
+
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
+        X-Content-Type-Options &quot;nosniff&quot;
+        Referrer-Policy &quot;strict-origin-when-cross-origin&quot;
+    }
+
+    log {
+        output file /var/log/caddy/analytics.log
+        format console
+    }
+}
+</code></pre>
+<p>Den gleichen Caddy-Eintrag wie bei Plausible – die Domain ist dieselbe, nur der Backend-Port ändert sich (3000 statt 8080). Sollte das bereits einen Caddy-Eintrag für eine andere Subdomain sein, musst du eine eigene Subdomain (z.B. <code>statistik.beispiel.de</code>) wählen.</p>
+<h2>Schritt 3: Tracking-Skript einbinden</h2>
+<p>Umami-eigenes Skript (Pfad je nach Version zu prüfen, Standard oft <code>/script.js</code> oder ähnlich, nach je Dokumentation):</p>
+<pre><code>
+&lt;script defer data-domain=&quot;beispiel.de&quot; src=&quot;https://analytics.beispiel.de/script.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>Die <code>data-domain</code> Angabe ist das, was Umami als Domänen-Filter nutzt. Exakte Attribute je Version zu prüfen.</p>
+<h2>Schritt 4: Backup</h2>
+<p>PostgreSQL-Datenbank-Backup bei Umami:</p>
+<pre><code>
+docker compose exec db pg_dump -U umami_user umami_db &gt; /backup/umami-$(date +%Y%m%d).sql
+</code></pre>
+<p>Das Volume <code>umami-db</code> (PostgreSQL-Daten) ist ebenfalls ein Backup-Ziel über Platte; eine gezielte Strategie zu planen.</p>
+<hr>
+<h2>Consent: Braucht eine selbst gehostete Analyse einen Consent-Banner?</h2>
+<p>Kurzantwort: <strong>Es kommt darauf an, was du trackst und unter welcher Rechtsgrundlage.</strong></p>
+<p><strong>Wenn keine Cookies gesetzt werden.</strong> Selbst gehostete Analytics-Tools wie Plausible und Umami setzen in der Standardeinstellung keine Cookies. Das Tracking-Skript führt Server-Statistiken durch, ohne dem Browser ein Cookie auszuliefern. Das vereinfacht die Consent-Situation deutlich: Du musst nicht über „Cookie-Consent&quot; diskutieren für die reine Analytics-Erhebung.</p>
+<p><strong>Aber:</strong> Die Abwesenheit von Cookies befreit nicht von der DSGVO. Die Rechtsgrundlage für die Datenverarbeitung (IP-Adressen, Browser-Hints, Referrer) muss dennoch bestehen. Das kann sein:</p>
+<ul>
+<li><strong>Einwilligung (Art. 6 Abs. 1 lit. a):</strong> Wenn Nutzer aktiv zustimmen müssen. Das ist der Banner-Weg.</li>
+<li><strong>Berechtigtes Interesse (Art. 6 Abs. 1 lit. f):</strong> Wenn die Verarbeitung für berechtigte Interessen des Verantwortlichen notwendig ist, die durch keine schutzwürdige Interessen der Nutzer überwiegt. Für anonymisierte, statistische Nutzungsanalyse ohne Profiling wird dies in der Praxis oft als eine mögliche Rechtsgrundlage diskutiert. Die genaue Einordnung ist rechtskundlich zu prüfen, insbesondere wenn personenbezogene Daten tangiert sind.</li>
+<li><strong>Datenschutz-Folgenabschätzung / Einfachheit:</strong> Wenn die Erhebung minimal ist (keine IPs gespeichert oder anonymisiert, keine User-IDs, keine Cross-Site-Verfolgung, nur Aggregatdaten), ist das Risikoprofil niedriger.</li>
+</ul>
+<p><strong>Praktische Empfehlung für kleine Betreiber:</strong></p>
+<ul>
+<li>Konfiguriere die selbst gehostete Analyse so, dass nur anonymisierte/depersonalisierte Daten gespeichert werden (IPs anonymisieren oder gar nicht speichern, keine User-IDs, keine Third-Party-Integrationen).</li>
+<li>Schreibe eine Datenschutzerklärung, die die Analyse beschreibt, was erhoben wird, wie lange, und dass kein Consent für reine Statistiken erforderlich ist (wenn die Rechtsgrundlage stimmt).</li>
+<li>Wenn du unternehmerisch unsicher bist oder ein Unternehmen mit Compliance-Ansprüchen (z.B. Landwirtschaft, Gesundheitswesen, öffentliche Aufträge), konsultiere einen Datenschutz-Fachbeauftragten. Für private Homepages mit geringem Traffic ist die Rechtsgrundlage diskutierbar und die Abwesenheit von Cookies entlastet.</li>
+</ul>
+<p><strong>Wichtig:</strong> Consent-Management-Tools (Banners) sind nicht das gleiche wie Consent-Pflicht für Analytics. Wenn du keine Cookies setzt und dein Analytics-Purpose auf reine Statistiken beschränkt ist, ist ein Banner nicht automatisch erforderlich – aber eine entsprechende Datenschutz-Grundlage und Dokumentation ist.</p>
+<h2>Datenschutz-Datenpunkte: was genau wird erhoben, wie lange, wie wird gelöscht</h2>
+<p>Für die Dokumentation (z.B. in der Datenschutzerklärung) und für interne Transparenz ist eine explizite Liste hilfreich.</p>
+<p><strong>Was die selbst gehostete Analyse typischerweise erhöht:</strong></p>
+<ul>
+<li>Seitenaufruf (URL, Referrer, Zeitstempel)</li>
+<li>Besucher-IP-Adresse (roh oder anonymisiert – je nach Konfiguration; anonymisierte Speicherung ist empfohlen)</li>
+<li>Browser-Hints (User-Agent, ggf. accept-language, Bildschirmauflösung; die genaue Menge ist toolabhängig und zu konfigurieren)</li>
+<li>Ort (Land, Region) – wenn Geo-IP aktiviert ist und eine Geo-IP-Datenbank (z.B. MaxMind) verwendet wird; die IP selbst wird durch die Geo-IP-Lookup anonymisiert, wenn nur Land gespeichert wird</li>
+<li>Session-Dauer, Absprunge, Seitenprozentsatz (je nach Tool)</li>
+<li>Event-Ereignisse (z.B. Conversion-Markierungen oder Klicks auf bestimmte Elemente) – wenn du sie konfigurierst</li>
+</ul>
+<p><strong>Was in der Regel NICHT erhoben wird (bei Privacy-First-Konfiguration):</strong></p>
+<ul>
+<li>Konto- oder Login-Daten</li>
+<li>Formulardaten (außer du baust sie als Events ein)</li>
+<li>Kreditkarten oder sensible Formulardaten</li>
+<li>Inhalte der Seite (nur die URL, nicht der Seiteninhalt)</li>
+</ul>
+<p><strong>Aufbewahrung:</strong></p>
+<ul>
+<li>Du bestimmst die Aufbewahrungsfrist durch die Konfiguration der Analyse-Software und der Datenbank.</li>
+<li>Empfohlenes Mindest-Szenario: Roh-IP-Adressen anonymisieren oder nicht speichern; aggregierte Statistiken (Seitenaufrufe, Besucherzahlen) für einen definierten Zeitraum (z.B. 12–24 Monate) aufbewahren, dann komprimieren oder löschen.</li>
+<li>Ein Konkretwert ist eine Entscheidung; zum Beispiel: „aggregierte Statistiken werden 12 Monate aufbewahrt, IP-Logs werden nach 30 Tagen anonymisiert&quot;. Das ist eine Konfiguration, keine Vorgeschriebenes.</li>
+</ul>
+<p><strong>Wie der Betreiber seine Rohdaten selbst löscht:</strong></p>
+<ul>
+<li>In der Analyse-Oberfläche (z.B. Umami oder Matomo Admin) gibt es Löschfunktionen für bestimmte Daten oder Zeitfenster.</li>
+<li>In der Datenbank: Ein gezielter Lösch-Job oder eine Aufbewahrungsregel. Bei SQL-basierten Lösungen (PostgreSQL, MySQL) kannst du Daten per Abfrage löschen, z.B. Ereignisse älter als X Tage.</li>
+<li>Backup-Dateien: Backups enthalten Daten; ein Backup, das älter als die Aufbewahrungsfrist ist, sollte ebenfalls gelöscht werden.</li>
+</ul>
+<p><strong>Was zu dokumentieren ist (in Datenschutzerklärung oder internes Datenschutz-Dokument):</strong></p>
+<ul>
+<li>Welche Daten genau erfasst werden (Liste)</li>
+<li>Zweck der Erhebung (analyse von Nutzung, Verbesserung der Website)</li>
+<li>Rechtsgrundlage (z.B. berechtigtes Interesse, Einwilligung, oder eine andere Einordnung)</li>
+<li>Aufbewahrungsfristen</li>
+<li>Dass nur lokal auf dem eigenen Server gespeichert wird und keine Daten an externe Anbieter übermittelt werden</li>
+<li>Wie Nutzer ihre Daten löschen lassen können (kontaktierte URL, E-Mail-Adresse, oder eine interne Aktenlöschung)</li>
+</ul>
+<h2>Kosten und Betriebsaufwand: drei Varianten im Euro- und Megabyte-Vergleich</h2>
+<p>Die Kosten einer selbst gehosteten Analyse setzen sich zusammen aus Server-Kosten (VPS/VM), Betrieb (Updates, Backups, Monitoring), und gegebenenfalls Lizenzkosten (Geo-IP-Datenbank, falls Premium). Die Speicherbedarfe sind Schätzwerte unter Standardannahmen (einzelner Server, keine Redundanz, mittleres Traffic-Volumen).</p>
+<p><strong>Annahmen:</strong></p>
+<ul>
+<li>Ein VPS mit 1 vCPU, 2 GB RAM, 40 GB SSD – üblich für kleine Angebote in Europa – kostet ca. 5–15 €/Monat (zu prüfen je nach Anbieter, z.B. Hetzner, DigitalOcean, OVH, Contabo; Preise variieren).</li>
+<li>Das Analytics-Tool selbst verbraucht im Betrieb welches RAM und CPU – das ist auf dem VPS teilweise oder vollständig belegbar, je nach Traffic.</li>
+<li>Speicherbedarf für Datenbank und App-Speicher auf dem VPS; bei moderaten Traffic-Mengen (z.B. &lt;100.000 Pageviews/Monat) sind mehrere hundert MB bis 1-2 GB im Monat realistisch (Schätzwert, zu prüfen).</li>
+</ul>
+<p>|| Variante | Server-Kosten (geschätzt) | Speicherbedarf (geschätzt, zu prüfen) | Betriebsaufwand (einmalig Setup / monatlich) |</p>
+<p>||---|---|---|---|</p>
+<p>|| <strong>Plausible CE</strong> | VPS 5–15 €/Monat (einzelner Server für Analytics + ggf. anderer Dienste) | Datenbank-Speicher: &lt;500 MB/Monat bei moderatem Traffic (Schätzwert; SQLite/PostgreSQL, zu prüfen); App-Speicher wenige Dutzend MB | Setup: 1–2 Stunden; Wartung: Docker-Image-Updates regelmäßig, Backups der Datenbank; monatlicher Aufwand: ~30–60 Minuten (Updates + Backup-Prüfung) |</p>
+<p>|| <strong>Umami</strong> | VPS 5–15 €/Monat (PostgreSQL + Umami-App auf gleichem oder getrenntem Host) | PostgreSQL-Datenbank bei moderatem Traffic &lt;500 MB–1 GB/Monat (Schätzwert, zu prüfen); App-Speicher wenige Dutzend MB | Setup: 1–2 Stunden; Wartung: Image-Updates, Datenbank-Backups; monatlicher Aufwand: ~30–60 Minuten |</p>
+<p>|| <strong>Matomo On-Premise</strong> | VPS 10–25 €/Monat (PHP/MySQL/MariaDB + mehr RAM, je nach Traffic; bei höherem Funktionsumfang eher 2 vCPU, 4 GB RAM empfohlen) | Datenbank bei moderatem Traffic 500 MB–2 GB/Monat (Schätzwert, zu prüfen); Overhead durch mehr Funktionsumfang und Archivierung | Setup: 2–4 Stunden (inkl. Datenbank-Setup, Admin-Wizard, Konfiguration); Wartung: PHP/Updates, Datenbank-Backups, fehlertolerante Archivierung; monatlicher Aufwand: ~1–2 Stunden |</p>
+<p><strong>Lizenzkosten:</strong></p>
+<ul>
+<li>Plausible CE: Keine Lizenzkosten (AGPL). GeoIP-Lizenz (MaxMind) kostenlos für GeoLite2 free (Lizenzschlüssel erforderlich, kostenlos, zu prüfen ob aktuell); GeoLite2 City käuflich zu prüfen (preisabhängig, aktuell zu verifizieren).</li>
+<li>Umami: Keine Lizenzkosten (MIT).</li>
+<li>Matomo: Die On-Premise-Version ist quelloffen (GPL-3.0); zusätzliche kommerzielle Module oder Support-Optionen sind verfügbar, aber für den Basiskernfall keine Lizenzkosten; käufliche Geo-IP-Lizenz falls genutzt (zu prüfen).</li>
+</ul>
+<p><strong>Hinweis zu Traffic-Volumen.</strong> Diese Schätzspanne sind Richtwerte für kleine bis mittlere Websites (&lt;100.000 Pageviews/Monat). Bei höherem Traffic skalieren die Datenbank-Bedürfnisse und RAM-Ansprüche; dann ist die VPS-Skalierung entsprechend höher. Das ist kein Fehler der Tools, sondern eine Funktion von Datenmenge.</p>
+<hr>
+<h2>Häufige Fehler und was tatsächlich passiert</h2>
+<p><strong>1. Tracker-Skript lädt über HTTP statt HTTPS.</strong> Wenn das Tracking-Skript über <code>http://</code> geladen wird, blockieren moderne Browser Mixed-Content; das Skript wird nicht geladen, und du siehst keine Daten. Lösung: Immer HTTPS in der <code>src</code>-Adresse, und Zertifikat für die Analyse-Domain einrichten.</p>
+<p><strong>2. BASE_URL stimmt nicht mit der Domain überein.</strong> Der Tracker verweist auf die BASE_URL aus der Konfiguration. Wenn BASE_URL <code>https://analytics.altedomain.de</code> ist und das Skript auf <code>https://analytics.andere.de/js/script.js</code> verweist, werden Requests an die falsche Domain gesendet, und du siehst nichts. Lösung: BASE_URL und das Skript-Src-Attribut müssen übereinstimmen.</p>
+<p><strong>3. Caddy-Richtung falsch.</strong> Der Reverse Proxy muss auf den lokalen Port des Analyse-Containers zeigen (z.B. <code>127.0.0.1:8080</code>). Wenn stattdessen <code>localhost</code> oder <code>0.0.0.0</code> verwendet wird, ohne Bindung an localhost, kann der Container direkt erreichbar sein, und Caddy macht keinen Sinn. Ausehender Fehler: Caddy-Eintrag existiert, aber der Backend-Port ist falsch, und der Dienst ist nicht erreichbar.</p>
+<p><strong>4. Daten gespeichert, aber nicht gelöscht.</strong> Wenn du keine Aufbewahrungsregeln konfigurierst, wachsen Datenbanken über die Jahre. Dass die Daten nicht gelöscht werden, ist ein Betriebsfehler, kein Datenschutzfehler pro se – aber wenn du Datenschutz dokumentierst und dann nichts löschst, widerspricht das der Dokumentation. Lösung: Frühzeitig Aufbewahrungsregeln setzen und mit einem Backup-Backup-Strategie.</p>
+<p><strong>5. Backup-Dateien ohne Dauerhaftigkeit.</strong> Ein Backup-Skript, das Datenbankdumps in ein temporäres Directory schreibt, das nicht persistiert ist, führt dazu, dass Backups verschwinden. Lösung: Backups auf persistente Platte oder dedizierte Backup-Location speichern, und regelmäßig prüfen.</p>
+<p><strong>6. Geo-IP-Lizenz nicht eingerichtet, aber Land-Statistiken erwartet.</strong> Wenn Geo-IP nicht konfiguriert ist, bekommst du keine Land-Statistiken. Manche Betreiber erwarten Land-Statistiken von Haus aus; das ist nicht der Fall. Lösung: Geo-IP explizit aktivieren (MaxMind Lizenz oder andere Datenbank) und dokumentieren.</p>
+<p><strong>7. Matomo: Cookie-Tracking aktiviert, ohne Consent.</strong> Matomo kann Cookie-basiertes Tracking aktivieren. Wenn du das aktivierst und ES ist rechtlich erforderlich, fehlt der Consent. Lösung: Standard-Konfiguration auf cookie-freies Tracking stellen, oder Consent-Management einrichten.</p>
+<p><strong>8. Tracking-Skript nicht auf allen Seiten eingebunden.</strong> Wenn das Skript nur auf der Homepage steht, siehst du nur Traffic von der Homepage. Lösung: Skript auf allen getrackten Seiten einbinden (Header- oder Footer-Embed, templat-basiert).</p>
+<hr>
+<h2>FAQ: Häufige Fragen zu selbst gehosteter Webanalyse</h2>
+<p><strong>Brauche ich eine GPU für selbst gehostete Webanalyse?</strong></p>
+<p>Nein. Webanalyse-Tools (Plausible, Umami, Matomo) sind server-side-Anwendungen, die CPU, RAM und Plattenplatz verbrauchen, aber keine GPU. Ein VPS oder eine Proxmox-VM mit ein paar GB RAM und einer gewöhnlichen CPU ist vollständig ausreichend. GPUs sind irrelevant für diese Workloads.</p>
+<p><strong>Darf ich selbst gehostete Analyse bei Firmenkunden einsetzen?</strong></p>
+<p>Grundsätzlich ja – das ist eine datenschutzrechtlich und lizenziell nutzbare Webanalyse. Die Fragen sind: (1) Konfiguration auf Datenschutz-Compliance (keine unnötigen personenbezogenen Daten, Aufbewahrungsfristen, rechtsgrundlagen-konforme Dokumentation), (2) Lizenz der Software (Open-Source-Lizenzen wie AGPL, MIT, GPL sind kommerziell einsetzbar; AGPL ist copyleft, das bedeutet, dass bei Weitergabe der Software Änderungen unter denselben Bedingungen veröffentlicht werden müssen – das ist relevant, wenn du die Software modifizierst und weitergibst, nicht wenn du sie nur im eigenen Betrieb nutzt. Zweideutigkeit mit dem Jen entweder eigenständig über Software-Lizenzprüfung klären). (3) Vertragsklauseln mit Kunden, die Auskunft über Datenverarbeitung erfordern. Für die meisten normalen Website-Kunden ist eine privacy-fokussierte selbst ge hostete Analyse ein legitimer Dienstleistungsbestandteil. Das ist keine Rechtsberatung; für konkrete Fälle konsultiere einen Datenschutz-Fachanwalt oder einen Datenschutzbeauftragten.</p>
+<p><strong>Kann ich mehrere Websites mit einer Analyse-Instanz tracken?</strong></p>
+<p>Ja, bei allen drei Tools mehr Domains verfolgen. Umami und Plausible erlauben die Angabe mehrerer Domains (Über <code>data-domain</code> bei Plausible; Umami hat einen Domain-Verwaltungsbereich im Admin). Matomo unterstützt mehrere Websites in einer Installation, konfiguriert über das Admin-Interface. Die Einzelheiten zu prüfen in der jeweiligen Dokumentation.</p>
+<p><strong>Was passiert, wenn meine Analyse-Domain ein ungültiges Zertifikat hat?</strong></p>
+<p>Der Tracker-Skript-Request wird blockiert oder führt zu Browser-Warnungen. Nutzer, die auf deine Website kommen, fordern das Skript von der Analyse-Domain. Wenn die Analyse-Domain kein gültiges Zertifikat hat, blockiert der Browser den Request (Mixed-Content-Block) oder zeigt eine Warnung an und das Skript wird nicht geladen. Die Folge: keine Daten im Dashboard. Lösung: Zertifikat einrichten und regelmäßig prüfen, dass es erneuert wird.</p>
+<p><strong>Ist ein nicht-authentifiziertes Analyse-Interface ein Sicherheitsproblem?</strong></p>
+<p>Ja, wenn das Analyse-Interface öffentlich erreichbar ist und keine Authentifizierung hat. Dann kann jeder Traffic-Daten sehen. Die Lösung: Analyse-Interface hinter Authentifizierung schützen (Benutzer-Login in der Analyse-Software), oder nur über das interne Netz oder VPN erreichbar machen. Bei einer öffentlichen Website-Analyse ist das Interface des Tools normalerweise nicht öffentlich sein; nur das Tracking-Skript ist öffentlich (das ist gewollt).</p>
+<hr>
+<h2>Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
+<ul>
+<li><a href="{slug: caddy-reverse-proxy-https}">Caddy als Reverse Proxy: HTTPS für alle eigenen Dienste</a> – für den Reverse-Proxy-Setup und die Caddyfile-Beispiele, die in der Plausible/Umami-Anleitung genutzt werden</li>
+<li><a href="{slug: monitoring-ohne-cloud}">Monitoring ohne Cloud: Selbst hosten, selbst wissen – was läuft auf dem Server?</a> – für den Kontext, dass Monitoring und Analyse verschiedene Anliegen sind und nicht vermischt werden sollten; Monitoring beobachtet Infrastruktur, Analyse beobachtet Nutzungsverhalten</li>
+<li><a href="{slug: proxmox-kleine-unternehmen}">Proxmox VE für kleine Unternehmen</a> – falls Proxmox als Host-Plattform genutzt wird und du die Analyse auf einer VM oder LXC betreiben willst</li>
+<li><a href="{slug: docker-vs-vm}">Docker vs. VM</a> – für die Entscheidung, ob Analytics-Tools besser als Docker-Container oder in einer VM laufen sollen</li>
+<li><a href="{slug: backup-strategie-selfhoster}">Backup-Strategie für Selfhoster</a> – Analytics-Daten sind Backup-relevant; die Backup-Dokumentation ergänzt die Backup-Hinweise im Artikel</li>
+</ul>
+<hr>
+<h2>Bildvorschläge</h2>
+<p><strong>Bild 1</strong></p>
+<ul>
+<li>Typ: Screenshot des Plausible Dashboards im Browser (Plausible CE oder Demo-Ansatz)</li>
+<li>Inhalt: Dashboard mit Seitenaufrufen über Zeit (Liniendiagramm), eindeutige Besucher-Sparkline, Referrer-Übersicht als Balkendiagramm, Top-Seiten als Liste – Screenshot mit realistischer Farbgebung (hell/blau/weiß, typisch für Plausible-Design)</li>
+<li>Alt-Text: Plausible Analytics Dashboard – Seitenaufrufe, eindeutige Besucher und Referrer-Übersicht auf einem eigenen Server</li>
+</ul>
+<p><strong>Bild 2</strong></p>
+<ul>
+<li>Typ: Schematisches Architekturdiagramm: Website → Caddy → Analyse-Tool, Tracking-Skript eingebunden in HTML</li>
+<li>Inhalt: Eine Website (Browser) mit eingebundenem <code>&lt;script&gt;</code>-Tag, der Requests an <code>analytics.beispiel.de</code> sendet; Caddy leitet an Plausible/Umami weiter; Datenbank und App laufen hinter Caddy; vollständiger Requestpfad als Pfeil</li>
+<li>Alt-Text: Architektur einer selbst gehosteten Webanalyse – Tracking-Skript in Website, Caddy als Reverse Proxy, Analyse-Anwendung und Datenbank lokal</li>
+</ul>
+<p><strong>Bild 3</strong></p>
+<ul>
+<li>Typ: Vergleichstabelle als Infografik (vereinfacht), drei Spalten für Plausible, Umami, Matomo</li>
+<li>Inhalt: Drei waagerechte Spalten, jeweils mit Symbolen für „leichtgewichtig&quot; (Umami), „umfangreich&quot; (Matomo), „privacy-first&quot; (Plausible); Pfeile und Labels zu Aufwand, Funktionsumfang, Datenloch</li>
+<li>Alt-Text: Vergleich selbst gehosteter Webanalyse-Tools Plausible, Umami und Matomo nach Aufwand, Funktionsumfang und Datenschutz</li>
+</ul>
+<p><strong>Bild 4</strong></p>
+<ul>
+<li>Typ: Screenshot des Umami-Dashboards (ähnlich zu Bild 1, alternativer Analysetool)</li>
+<li>Inhalt: Umami Dashboard mit Besucher-Zeitreihe, Referrer-Liste und einfachen Echtzeit-Zahlen – minimalistisches Design, hell</li>
+<li>Alt-Text: Umami Analytics Dashboard – minimale Statistiken zu Besuchern, Referrern und Seitenaufrufen auf eigener Instanz</li>
+</ul>
+<p><strong>Bild 5</strong></p>
+<ul>
+<li>Typ: Screenshot Caddyfile-Beispiel im Editor (z.B. VS Code)</li>
+<li>Inhalt: Caddyfile mit dem <code>analytics.beispiel.de</code>-Block, <code>reverse_proxy 127.0.0.1:8080</code> und Security-Headers sichtbar –{Code}-Hintergrund, Zeilennummern optional</li>
+<li>Alt-Text: Caddyfile-Konfiguration für selbst gehostete Webanalyse – Reverse Proxy Block für Plausible oder Umami auf Caddy</li>
+</ul>
+<hr>
+<h2>Quellen</h2>
+<p>Die Artikelinformationen stützen sich auf folgende öffentlich zugängliche Quellen (Zugriff zum Zeitpunkt der Erstellung; Angaben zur Version, Lizenz und Konfiguration sind aus diesen Quellen übernommen; aktuelle Änderungen sind zu prüfen):</p>
+<p>1. <strong>Plausible Community Edition – Docker Compose und Konfiguration</strong> – GitHub-Repository <code>plausible/community-edition</code> (https://github.com/plausible/community-edition) und Wiki-Konfigurationsseite (https://github.com/plausible/community-edition/wiki/configuration) – Umgebungsvariablen <code>BASE_URL</code>, <code>SECRET_KEY_BASE</code>, <code>HTTP_PORT</code>, <code>HTTPS_PORT</code>, MaxMind GeoIP-Optionen.</p>
+<p>2. <strong>Plausible: Self-hosted web analytics</strong> – https://plausible.io/self-hosted-web-analytics – AGPL Community Edition, Feature-Übersicht.</p>
+<p>3. <strong>Umami – offizielle Dokumentation</strong> – https://docs.umami.is/docs/install – Docker-Compose-Beispiel mit PostgreSQL, Umgebungsvariablen <code>DATABASE_URL</code>, <code>DATABASE_TYPE</code>, <code>UMAMI_SITE_URL</code>, <code>APP_SECRET</code>, <code>DISABLE_TELEMETRY</code>.</p>
+<p>4. <strong>Umami – GitHub</strong> – https://github.com/umami-software/umami – MIT-Lizenz, Versions- und Release-Status (zu prüfen; v3.x wurden im Zeitraum 2025–2026 referenziert).</p>
+<p>5. <strong>Matomo On-Premise – Docker-Installation</strong> – Matomo GitHub-Repository <code>matomo-org/docker</code> (https://github.com/matomo-org/docker) und Matomo-Installations-FAQ (https://matomo.org/faq/how-to-install/install-matomo-with-docker/) – Docker Compose mit MariaDB/MySQL, Umgebungsvariablen <code>MATOMO_DATABASE_HOST</code>, <code>MATOMO_DATABASE_USERNAME</code>, <code>MATOMO_DATABASE_PASSWORD</code>, <code>MYSQL_ROOT_PASSWORD</code>, <code>MYSQL_DATABASE</code>, <code>MYSQL_USER</code>, <code>MYSQL_PASSWORD</code>.</p>
+<p>6. <strong>Matomo – Datenschutz und DSGVO-Compliance</strong> – https://matomo.org/matomo-on-premise/ und entsprechende Dokumentation zur IP-Anonymisierung und Datenhaltung.</p>
+<p>7. <strong>EuGH-Rechtsprechung zu IP-Adressen und personenbezogenen Daten</strong> – C-131/12 („Google-Musterentscheidung&quot;, 2014), C-311/18 („Schrems II&quot;, 2020) – grundlegendes Datenreferentum zu IP-Adressen als potenziell personenbezogene Daten; keine eigene Rechtsberatung.</p>
+<p>8. <strong>DSGVO Art. 6 (Rechtsgrundlagen)</strong> – offizieller Text der DSGVO, zur Einordnung von Einwilligung vs. berechtzimmt Interesse bei Analysezwecken.</p>
+<p><strong>Hinweis zu Versionsangaben.</strong> Versionsnummern für Plausible CE, Umami und Matomo sind aus öffentlich zugänglichen Quellen zum Zeitpunkt der Recherche übernommen. Software-Versionen ändern sich regelmäßig; vor einem Setuperstellungstermin die aktuellen Tags im jeweiligen Repository zu prüfen.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
