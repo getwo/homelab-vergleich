@@ -423,4 +423,14 @@
   <url><loc>https://homelab.brillianze.de/artikel/reverse-proxy-vergleich.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/speicherhardware-nas-mini-pc-server.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/vlan-netzsegmentierung.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/caddy-reverse-proxy-https.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/cloud-hoster-vs-eigener-server.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/email-authentifizierung-dkim-spf-dmarc.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/lokale-rag-pipeline.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/medien-server-jellyfin-navidrome.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/paperless-ngx-dokumentenarchiv.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/passwortmanager-selbst-hosten.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/selbst-gehostete-webanalyse.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/sso-selbst-gehostet.html</loc><priority>0.8</priority></url>
+  <url><loc>https://homelab.brillianze.de/artikel/zeiterfassung-projektverwaltung-selbst-gehostet.html</loc><priority>0.8</priority></url>
 </urlset>
