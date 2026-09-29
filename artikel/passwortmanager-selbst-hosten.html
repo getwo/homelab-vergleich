@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passwortmanager selbst hosten: Vaultwarden, KeePass und Bitwarden Cloud im Vergleich</title>
+<meta name="description" content="Vaultwarden, KeePass und Bitwarden Cloud im direkten Vergleich: Wo liegen die Daten, wie funktioniert Sync, 2FA und Wiederherstellung – und was ist der richtige Weg für kleine Firmen?">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Passwortmanager selbst hosten: Vaultwarden, KeePass und Bitwarden Cloud im Vergleich</h1>
+<h2>Das Problem: Passwörter als Sammelrisiko</h2>
+<p>In kleinen Firmen, Vereinen und anderen Organisationen mit fünf bis 50 Mitarbeitern sammeln sich Passwörter auf unübersichtliche Weise. Ein gemeinsamer Mailkonto-Zugang schwebt in einer Exceldatei auf einem geteilten Laufwerk. Der Admin hat den Router-PIN auf einem Post-it. Beim Ausscheiden eines Mitarbeiters werden nicht alle Zugänge zurückgezogen, weil niemand weiß, welche Konten welche Person genutzt hat. Die Situation löst sich nicht von selbst – je größer die Organisation, desto unübersichtlicher wird es.</p>
+<p>Dabei gibt es eine einfache Wahrheit: Ein strukturierter Passwortmanager ist keine Komforteinrichtung, sondern die günstigste Gegenmaßnahme gegen den häufigsten Angriffsvektor – gestohlene oder geratenen Zugangsdaten. Die Entscheidung ist nicht, ob man einen benötigt, sondern welchen Ansatz passt: eine Cloud-Lösung von außen, eine selbst gehostete Instanz oder ein lokal arbeitendes Programm.</p>
+<p>Dieser Artikel vergleicht die drei gängigen Wege – Bitwarden Cloud, selbst gehosteten Vaultwarden und KeePass – und grenzt sie von rein clientseitigen Lösungen ab, die nach einer Lizenz dann ohne Server laufen. Am Ende steht keine Marketingentscheidung, sondern eine handlungsfähige Einrichtung für Vaultwarden sowie ein kurer Überblick über KeePass-Sync-Varianten und ihre Risiken.</p>
+<h2>Vergleich: Welche Lösung passt?</h2>
+<p>Die folgende Tabelle fasst die wesentlichen Unterschiede zusammen. Keine Spalte ist per se besser – jede hat ihr Werkstück.</p>
+<p>| Kriterium | Bitwarden Cloud | Vaultwarden (selbst gehostet) | KeePass | Clientseitig nach Lizenz (z.B. 1PW/B insolvent) |</p>
+<p>|---|---|---|---|---|</p>
+<p>| Speicherort der Daten | Server von Bitwarden / Azure | Eigener Server, eigene Datenbank | Lokale Datei (.kdbx), bei Sync an einem Sync-Ziel | Früher lokal oder Cloud des Herstellers |</p>
+<p>| Sync | Automatisch über Cloud | Eigen gestaltet (HTTPS/richtige Backup-Strategie) | Manuell oder über Sync-Ziel (Nextcloud/USB/Git) | Früher über Cloud-Sync des Herstellers |</p>
+<p>| Web-UI | Ja (Browser, Mobile) | Ja (Identisch zur Bitwarden-UI) | Nein (nur Desktop-Clients, KeePassXC u.ä.) | Früher Web/Client über Hersteller |</p>
+<p>| 2FA | Ja (App, YubiKey u.a.) | Ja (identisch konfigurierbar) | Ja (in der Datei, aber kein zentrales Admin-2FA) | Früher über Hersteller |</p>
+<p>| Wiederherstellung | Via E-Mail/Codes des Anbieters | Selbst verantwortet (Admin-Reset, Seed, Backup) | Lokale Wiederherstellung, Sync-Ziel verantwortet | Früher über Hersteller-Support |</p>
+<p>| Eignung für kleine Firmen | Schnell startbar, je Nutzer kostend | Günstig, volle Kontrolle, eigene Verwaltung | Eher für Einzelpersonen oder sehr kleine Teams | Nicht empfohlen, da Hersteller unabhängig |</p>
+<p>Die zentrale Unterscheidung: Bei Bitwarden Cloud und Vaultwarden liegt eine zentrale Passwortdatenbank vor, auf die Nutzer zugreifen – mit der Folge, dass ein Administrator Zugänge verwalten, Mitarbeiter hinzufügen und austragen kann. KeePass ist primär eine lokale Datei; Sync ergibt sich aus der Infrastruktur, nicht aus dem Programm selbst. Das macht KeePass für verteilte Teams unhandlich, für einzelne Administratoren mit sichtbaren Sync-Pfaden aber pragmatisch.</p>
+<p>Eine wichtige Abgrenzung: Vaultwarden ist eine eigenständige, selbst gehostete Server-Implementierung des Bitwarden-Protokolls. Es ist kein Plugin, kein Skript und kein Kundenportal – es ist der Server, vor dem die Clients authschon. Der Artikel behandelt keinen bestehenden Kundenbereich oder Tooling-Skripte, die Passwörter bei einem Hersteller verwalten; die Entscheidung liegt bei der Organisation.</p>
+<h2>Vaultwarden selbst stehen: Eine praxisnahe Einrichtung</h2>
+<p>Vaultwarden läuft in der Regel in Docker. Das folgende docker-compose-Grundgerüst zeigt den Einstieg mit SQLite (einfach, für kleine Umgebungen) und einem Hinweis, wie Postgres dazu kommt.</p>
+<h2>docker-compose.yml – Grundgerüst (SQLite)</h2>
+<pre><code>
+version: &quot;3.8&quot;
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=https://vaultwarden.brillianze.de
+      - WEBSOCKET_ENABLED=true
+      - SIGNUPS_ALLOWED=false
+      - ADMIN_TOKEN=ändern!
+    volumes:
+      - ./data:/data
+    ports:
+      - &quot;127.0.0.1:8000:80&quot;
+</code></pre>
+<p>Der Docker-Container speichert seine Daten unter <code>/data</code>. Bei SQLite liegt die Datenbank dort als <code>db.sqlite3</code>. Für den produktiven Einsatz sollte der <code>ADMIN_TOKEN</code> ein zufälliger, langer Wert sein und nicht im Code liegen – im echten Setup besser über eine Umgebungsdatei oder Docker-Secret.</p>
+<h2>Option mit Postgres statt SQLite</h2>
+<p>Wenn mehrere Nutzer, höhere Verfügbarkeit oder klarere Backup-Grenzen gewünscht sind, bietet sich Postgres an. Dann fügt man einen zweiten Service hinzu und verweist Vaultwarden auf die Datenbank:</p>
+<pre><code>
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    environment:
+      - DOMAIN=https://vaultwarden.brillianze.de
+      - DATABASE_URL=postgres://vwuser:passwort@db:5432/vaultwarden
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=vwuser
+      - POSTGRES_PASSWORD=passwort
+      - POSTGRES_DB=vaultwarden
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+</code></pre>
+<p>Frühzeitig Entscheidung treffen: SQLite reicht für viele kleine Firmen; Postgres lohnt sich, wenn man bereits PostgreSQL pflegt, längere Backups oder Wiederherstellungstests plant. Der Wechsel nachträglich ist möglich, erfordert aber ein Datenbank-Migration-Skript – im Zweifel von Anfang an right decision fällen.</p>
+<h2>Caddy als Reverse Proxy für HTTPS</h2>
+<p>Ein eigenständiger Vaultwarden ohne TLS ist keine Option, wenn Zugänge über das Internet genutzt werden. Caddy erzeugt automatisch Let&#x27;s-Encrypt-Zertifikate und leitet die Verbindungen weiter. Eine einfache Caddyfile-Konfiguration:</p>
+<pre><code>
+vaultwarden.brillianze.de {
+    reverse_proxy localhost:8000
+}
+</code></pre>
+<p>Caddy muss dafür sichtbar nach außen sein (Port 80/443) und die Domain auf den Server zeigen. In einer rein internen Umgebung ohne offizielle Domain lohnt sich ein eigenes Zertifikat oder Caddy mit <code>http</code>-Modus – aber dann kein automatischer TLS.</p>
+<h2>Erstes Admin-Konto registrieren</h2>
+<p>Nach dem Start kann sich zunächst jeder registrieren, wenn <code>SIGNUPS_ALLOWED=true</code> ist. In der Praxis setzt man das auf <code>false</code> und erstellt den ersten Administrator über das Admin-Interface: Aufruf von <code>https://vaultwarden.brillianze.de/admin</code> mit dem <code>ADMIN_TOKEN</code> im Header oder als Query-Parameter (je nach Vaultwarden-Version; in neueren Versionen über den Admin-Token als Authorization-Header). Dort erstellt man den ersten Admin-Benutzer. Danach werden weitere Nutzer über die Administrationsoberfläche oder bei aktiviertem Invite-Modus per Einladung eingestellt.</p>
+<p>Punkt: Der erste Admin ist die Person, die im Fehlerfall Zugriff auf die Datenbank und die Konfiguration hat. Diese Rolle sollte einer zuverlässigen Person mit Backup-Zugriff zugeordnet sein.</p>
+<h2>Backup der Datenbank</h2>
+<p>Beim SQLite-Setup reicht ein kopiertes <code>db.sqlite3</code> nicht immer, weil die Datei während des Kopierens beschrieben werden kann. Sicherer: Vaultwarden bietet ein Backup-Kommando über die CLI des Containers oder man nutzt ein Skript, das den Container kurz anhält oder ein transaction-angelehntes Dump erstellt. Konkret:</p>
+<pre><code>
+docker exec vaultwarden backup-db
+</code></pre>
+<p>Diese Funktion erstellt ein Backup der SQLite-Datenbank im <code>/data</code>-Verzeichnis (abhängig von der Version). Bei Postgres setzt man auf <code>pg_dump</code> wie in früheren Artikeln beschrieben (z.B. <code>datenbank-backups.md</code> im selben Ordner). Ein Backup-Skript legt Backups an, rotates sie nach sieben Tagen täglich, vier Wochen wöchentlich und zwölf Monate monatlich – sinnvolle Hausregeln für kleine Umgebungen.</p>
+<p>Wichtig: Ein Backup ohne getestete Wiederherstellung ist kein Backup. Lies die Checkliste im Artikel <code>datenbank-backups.md</code> für PostgreSQL/MySQL – das Prinzip gilt hier gleich.</p>
+<h2>KeePass als Alternative: Lokal, flexibel, aber anderweitig Sync-abhängig</h2>
+<p>KeePass verwaltet Passwörter in einer verschlüsselten <code>.kdbx</code>-Datei. Das Programm selbst hat keine Server-Komponente. Sync bedeutet, dass diese Datei auf mehrere Geräte kommt – mit den üblichen Sync-Methoden.</p>
+<h2>Drei Sync-Varianten und ihre Risiken</h2>
+<p><strong>1. Nextcloud (oder ein anderer WebDAV/Cloud-Sync Dienst)</strong></p>
+<p>Die <code>.kdbx</code>-Datei liegt in einem Nextcloud-Ordner, der auf allen Geräten synchronisiert wird. Vorteil: Kein eigener Server für den Sync nötig, wenn Nextcloud ohnehin läuft. Risiko: Konflikt, wenn zwei Geräte gleichzeitig schreiben – KeePass versucht, Konflikte aufzulösen, aber keine Garantie auf konsistente Historie. Ein versehentliches Entsperren der Datei ohne Masterpasswort kann den Zugang blockieren.</p>
+<p><strong>2. USB-Stick</strong></p>
+<p>Die Datei liegt auf einem USB-Stick, der manuell zwischen Geräten getragen wird. Vorteil: Kein Netzwerk-Angriffsfläche für den Sync, volle Kontrolle. Risiko: Verlust des Sticks, falsche Geräte, veraltete Kopien. Kein automatischer Sync – bei fünfzehn Mitarbeitern unmöglich.</p>
+<p><strong>3. Git</strong></p>
+<p>Die <code>.kdbx</code>-Datei wird in ein Git-Repository committed. Vorteil: Versionshistorie, theoretisch Rückverfolgung. Risiko: Passwortdatei in Git ist eine schlechte Idee, wenn das Repository öffentlich oder unsicher zugänglich ist – auch private Repos haben Zugriffsrisiken. Konflikte beim Merge, große Dateien im History. Für sehr kleine Teams mit sichtbarer Kontrolle theoretisch denkbar, aber nicht die erste Wahl.</p>
+<p>Die gemeinsame Lehre: KeePass ist für einzelne Administratoren oder sehr kleine Teams gut, die eine klare Sync-Regel akzeptieren. Für verteilte Teams mit Rollenrechten ist ein zentraler Server (Vaultwarden) meist die bessere Wahl.</p>
+<h2>Sicherheit: Was kann schiefgehen und was hilft</h2>
+<h2>Konkrete Risiken</h2>
+<p>1. <strong>Server kompromittiert.</strong> Wenn der Vaultwarden-Server angegriffen wird, kann ein Angreifer unter Umständen Zugriff auf verschlüsselte Datenbankdumps oder Konfiguration erhalten. Auch wenn die Passwörter verschlüsselt gespeichert sind, kann die Kryptografie bei schwachen Masterpasswörtern ins Wanken geraten.</p>
+<p>2. <strong>Datenbank-Dump ohne Kontrolle.</strong> Ein Backup, das nicht verschlüsselt wird und an einen unsicheren Ort wandert (externe Festplatte, Cloud ohne Verschlüsselung), ist ein Risiko bei Verlust oder Raiden.</p>
+<p>3. <strong>Fehlendes 2FA für administrative Zugänge.</strong> Der Admin-Account ohne Zwei-Faktor-Authentifizierung ist ein Einzelpunkt des Versagens. Auch wenn Clients 2FA nutzen, gehört der Admin-Zugang selbst ins 2FA.</p>
+<p>4. <strong>Fehlender Master-Passwort-Weg.</strong> Wenn der Admin das Masterpasswort verliert oder keinRecovery-Option existiert, sind die Daten ohne Brute-Force nicht mehr zugänglich. Ein dokumentierter, sicherer Wiederherstellungsweg gehört zur Einrichtung.</p>
+<h2>Gegenmaßnahmen</h2>
+<ul>
+<li><strong>HTTPS zwingend</strong> (Caddy oder anderer Reverse Proxy mit Let&#x27;s Encrypt).</li>
+<li><strong>2FA für alle administrativen Accounts</strong> aktivieren, idealerweise mit App oder Hardware-Key.</li>
+<li><strong>Backups verschlüsselt</strong> ablegen, z.B. mit GPG oder age, und separat vom Server aufbewahren.</li>
+<li><strong>Masterpasswort-Richtlinien</strong>: starke, einzigartige Passwörter für den Admin-Account; Recovery-Option dokumentiert, aber nicht unsicher abgelegt.</li>
+<li><strong>Regelmäßige Wiederherstellungstests</strong> – kein Backup ohne Test.</li>
+<li><strong>Updates von Vaultwarden und Docker-Basis regelmäßig</strong> – Sicherheitslücken in Container Images sind real.</li>
+</ul>
+<h2>DSGVO und Verantwortung in kleinen Organisationen</h2>
+<p>Passwortmanager sind keine reine Technik-Entscheidung, sondern berühren personenbezogene Daten (Zugangsdaten zu Diensten, teilweise mit Namen, E-Mails, Metadaten). Für kleine Firmen und Vereine bedeutet das: Klarheit über Rollen, Löschpflichten und Aufbewahrung.</p>
+<h2>Rollen und Rechte</h2>
+<p>Vaultwarden erlaubt die Unterscheidung von Administratoren und normalen Nutzern. Administratoren können Organisationen verwalten, Nutzer einladen und entfernen, einen Teil der Konfiguration sehen. Normale Nutzer haben Zugriff auf ihre eigenen Vault-Einträge. In der Praxis sollte der Admin-Zugang auf ein oder zwei Personen beschränkt sein, nicht auf alle IT-Berechtigten ohne Unterscheidung.</p>
+<h2>Löschpflichten und Aufbewahrung</h2>
+<p>Wenn ein Mitarbeiter ausscheidet, sollten seine Zugänge entfernt oder übertragen werden, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Das bedeutet: Admin entfernt den Nutzer aus Vaultwarden, überprüft, ob gemeinsame Organisationszugänge übernommen sind, und löscht die persönliche Datenbank des Ausgeschiedenen, wenn dies vereinbart ist. Eine Regel im Unternehmen hilft: &quot;Wer geht, dessen Zugänge werden innerhalb von zwei Werktagen überprüft und bereinigt.&quot;</p>
+<p>Bei KeePass liegt die Verantwortung bei der Person oder dem Sync-Ziel, das die Datei hält – eine explizite Übergaberegel ist hier wichtiger als bei einem zentralen Server.</p>
+<h2>Dokumentation</h2>
+<p>Der Einsatz eines Passwortmanagers sollte dokumentiert sein: Welche Lösung, wer hat Admin-Zugang, wo sind die Backups, wie erfolgt die Wiederherstellung, welche Rollen gibt es. Diese Dokumentation gehört in eine interne Sicherheitsdokumentation, nicht notwendigerweise öffentlich.</p>
+<h2>Häufige Fehler – drei realistische Beispiele</h2>
+<p>1. <strong>&quot;Wir sichern die SQLite-Datei mit rsync.&quot;</strong> Die SQLite-Datei wird waehrend des Kopiervorgangs beschrieben; das Backup ist inkonsistent. Bei Wiederherstellung meldet Vaultwarden dann Fehler oder verliert Daten. Lösung: Vaultwarden-eigenes Backup oder ein Dump-Verfahren, nicht simples Dateikopieren unter Last.</p>
+<p>2. <strong>&quot;Der Admin-Token steht in der compose-Datei im Git-Repo.&quot;</strong> Der Admin-Token ist der Schlüssel zum Administrationsinterface. Wenn er in einem öffentlichen oder leicht zugänglichen Repository liegt, ist der Schutz wertlos. Lösung: Token in eine Umgebungsdatei, Docker-Secret oder ein Vault, und das Repository sauber halten.</p>
+<p>3. <strong>&quot;Wir nutzen KeePass und syncen über Nextcloud – funktioniert schon.&quot;</strong> Bis zwei Personen gleichzeitig die Datei bearbeiten und ein Konflikt entsteht, mit dem eine Eintrage verlorengehen. Ohne klare Nutzungsregel (&quot;nur eine Person gleichzeitig aktiv&quot;) entstehen Datenverluste, die in einem zentralen Server durch Serialisierung vermieden würden.</p>
+<h2>FAQ</h2>
+<p><strong>Kann ich Vaultwarden ohne Domain und ohne öffentliches Internet nutzen?</strong></p>
+<p>Ja, für rein lokale Umgebungen. Dann muss aber HTTPS anders gelöst werden (selbstsignierte Zertifikate oder lokales PKI wie im BsN-Homelab üblich). Die Clients müssen das Zertifikat vertrauen. Ohne TLS ist die Verbindung unverschlüsselt – für Passwortdaten nicht acceptable.</p>
+<p><strong>Ist Vaultwarden dasselbe wie Bitwarden?</strong></p>
+<p>Vaultwarden ist eine eigenständige Implementierung des Bitwarden-Protokolls, die sich kompatibel zu den offiziellen Clients verhält. Die Bitwarden-Cloud ist der kommerzielle Dienst von Bitwarden. Beide können die gleichen Clients nutzen; die Daten liegen aber unterschiedlich.</p>
+<p><strong>Muss ich Postgres nutzen?</strong></p>
+<p>Nein. SQLite reicht für viele kleine Umgebungen. Postgres lohnt sich bei größeren Teams, wenn man bereits PostgreSQL pflegt oder spezielle Backup-/Wiederherstellungsanforderungen hat. Die Entscheidung ist keine Frage der Sicherheit allein, sondern der Wartbarkeit.</p>
+<p><strong>Wie speichere ich die 2FA-Codes für den Admin-Zugang?</strong></p>
+<p>Am besten mit einer App, die der Administrator ohne den Passwortmanager ausführen kann – oder einem Hardware-Key. Wenn der 2FA-Schlüssel nur im Passwortmanager liegt, ist der Zufall ein Zufall.</p>
+<p><strong>Was passiert, wenn ich den Admin-Token verliere?</strong></p>
+<p>Ohne den Admin-Token ist der Administrationszugang nicht mehr verfügbar. Ein Wiederherstellungsweg ist über die Datenbank möglich (je nach Version und Konfiguration), aber nicht bequem. Daher: Token sicher ablegen, z.B. im eigenen Passwortmanager für Admin-Tools oder einem separaten, sicheren Vault.</p>
+<h2>Schluss: Die Entscheidung ist eine Infrastruktur-Entscheidung</h2>
+<p>Die Wahl eines Passwortmanagers ist weniger eine Entscheidung über ein einzelnes Tool als eine Entscheidung über Datenhoheit, Sync und Verantwortung. Vaultwarden gibt kleine Firmen die volle Kontrolle über die Daten und die Struktur, behält aber die Bekanntheit der Bitwarden-Clients und UI. KeePass ist eine valide Alternative für kleine Teams, die eine lokale Datei und klare Sync-Regeln akzeptieren. Bitwarden Cloud ist der schnellste Einstieg, wenn man keine eigenen Server betreuen will.</p>
+<p>Passt man die Einrichtung an die eigene Infrastruktur an – HTTPS, Backup, 2FA, Rollen –, ist ein selbst gehosteter Vaultwarden für viele kleine Unternehmen die vernünftigste Mischung aus Kontrolle und Komfort.</p>
+<h2>Interne Links zu weiteren Artikeln</h2>
+<ul>
+<li>[Sicherer Fernzugriff auf den Heimserver] – wie man den Own Server und die Zugänge schützt, bevor Passwörter über das Internet wandern: <code>sicherer-fernzugriff-heimserver.md</code></li>
+<li>[SSO und Benutzerverwaltung selbst gehostet] – wie man zentrale Zugänge für mehrere Dienste einrichtet, damit ein Passwortmanager nicht die einzige Struktur bleibt: <code>sso-und-benutzerverwaltung-selbst-gehostet.md</code></li>
+<li>[Datenbank-Backups richtig planen: PostgreSQL, MySQL und die Container-Falle] – wie man das Backup von Vaultwarden-Datenbanken (besonders Postgres) korrekt und testbar aufsetzt: <code>datenbank-backups.md</code></li>
+</ul>
+<h2>Bildvorschlag</h2>
+<ul>
+<li><strong>Dateiname</strong>: <code>images/vaultwarden-admin-dashboard-2026.png</code></li>
+<li><strong>Alt-Text</strong>: Screenshot der Vaultwarden-Administrationsoberfläche mit Organisationsübersicht, Nutzerliste und Backup-Status</li>
+<li><strong>Zielformat</strong>: PNG, max. 1600 px breit, auf 2x für Retina-Schärfe gerendert; Vorschaugröße im Artikel auf 800 px, Klick auf Vollgröße</li>
+</ul>
+<h2>Hinweis zum Status</h2>
+<p>Dieser Artikel liegt als <strong>Draft</strong> vor. Die Veröffentlichung erfolgt erst nach inhaltlicher Prüfung durch Benjamin. Insbesondere die konkreten Befehle (docker-compose, Caddy, Backup-Skripte) sind für eine veröffentlichte Version ggf. an die tatsächliche BsN- oder Kunden-Infrastruktur anzupassen und gegen aktuelle Vaultwarden- und Docker-Versionen zu verifizieren.</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
