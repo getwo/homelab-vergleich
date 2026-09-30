@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zertifikate im eigenen Netz: ACME, Let&#x27;s Encrypt und eine eigene CA</title>
+<meta name="description" content="ACME, Let&#x27;s Encrypt und eine eigene CA im Homelab: Ablauf, Challenge-Typen, Toolvergleich und Monitoring fuer HTTPS auf allen internen Diensten.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Zertifikate im eigenen Netz: ACME, Let&#x27;s Encrypt und eine eigene CA</h1>
+<p>Wer im Homelab oder im kleinen Firmennetz mehr als zwei oder drei Dienste betreibt, landet irgendwann bei derselben Frage: Wie bekommt jede Weboberfläche ein gültiges HTTPS-Zertifikat, ohne dass die Verwaltung zur Daueraufgabe wird? Dieser Artikel ordnet die Begriffe, beschreibt den Standardablauf von ACME, vergleicht drei Werkzeuge und zeigt die typischen Fehler in der Praxis.</p>
+<h2>Wofuer TLS ueberhaupt</h2>
+<p>TLS verschluesselt die Verbindung zwischen Browser und Dienst und stellt sicher, dass die Antworten unverändert beim Empfänger ankommen. Fehlt es, passiert im LAN genau das Gleiche wie im offenen Internet, nur mit kürzerer Wegstrecke:</p>
+<ul>
+<li><strong>Mitlauschen:</strong> Ohne Verschlüsselung liest jedes Gerät im selben Netz die Zugangsdaten im Klartext mit. Ein ungeswitchtes WLAN oder ein kompromittierter Switch genügen.</li>
+<li><strong>Veränderte Antworten:</strong> Ein Angreifer oder ein fehlgeleitetes Proxy kann Inhalte und Antworten unterwegs abändern, ohne dass es auffällt.</li>
+<li><strong>Browser-Warnungen:</strong> Chromium und Firefox zeigen bei fehlendem oder falschem Zertifikat eine Vollbild-Warnung. Nutzer klicken sie weg oder brechen ab — beides kostet Vertrauen.</li>
+<li><strong>Nicht erreichbare WebSchnittstellen:</strong> Viele moderne Dienste erzwingen HTTPS und schalten sonst ihre Weboberfläche oder ihre API gar nicht frei. Ohne Zertifikat bleibt der Zugriff dauerhaft gestört.</li>
+</ul>
+<p>Kurz: TLS ist heute keine Kür, sondern die Grundvoraussetzung dafür, dass Dienste überhaupt nutzbar sind.</p>
+<h2>Oeffentliche CA gegen eigene CA</h2>
+<p>Bei einer <strong>öffentlichen CA</strong> wie Let&#x27;s Encrypt prüft eine anerkannte Stelle die Domain und stellt ein Zertifikat aus. Der Vorteil: Das Zertifikat gilt auf jedem Endgerät sofort, weil die Root-Zertifikate bereits im Betriebssystem und in jedem Browser ausgeliefert werden.</p>
+<p>Bei einer <strong>eigenen CA</strong> betreibst du die Vertrauenswurzel selbst. Das Problem verschiebt sich damit vom Ausstellen zum Verteilen: Jedes Endgerät muss die Root der eigenen CA importiert haben, sonst bleibt die Warnung. Das gelingt bei fünf verwalteten Rechnern mit einem Skript, ist bei fremden Gästen aber mühsam.</p>
+<p>| Kriterium | Oeffentliche CA | Eigene CA |</p>
+<p>|---|---|---|</p>
+<p>| Vertrauensverwaltung | auf jedem Gerät bereits vorhanden | Root muss auf jedes Gerät importiert werden |</p>
+<p>| Einrichtungsaufwand | gering, ACME automatisiert | hoch: CA aufsetzen, Root verteilen, ggf. CRL betreiben |</p>
+<p>| Verteilung | keine | pro Gerät, per Skript oder MDM |</p>
+<p>| Wildcard | möglich, meist per DNS-01 | beliebig viele Namen frei wählbar |</p>
+<p>| Geeignet ab | Internet-Dienste, fremde Besucher | viele interne Namen, Offline-Netze, keine oeffentliche Domain |</p>
+<p>Eine eigene CA ist die richtige Wahl, sobald die Dienste nur nach innen zeigen, ein öffentlicher Name fehlt oder das Netz nicht dauerhaft am Internet haengt. Fuer Dienste, die von aussen erreichbar sein muessen, bleibt die oeffentliche CA der einfachere Weg.</p>
+<h2>Der ACME-Ablauf in drei Schritten</h2>
+<p>ACME automatisiert die Ausstellung in drei Schritten. Danach uebernimmt ein Renewal-Hook das Ausrollen des erneuerten Zertifikats.</p>
+<pre><code>
+  (1) Schluesselpaar          (2) Challenge               (3) Ausstellung
+  +--------------+            +-------------+             +---------------+
+  | Account-Key  |  -------&gt;  | HTTP-01     |  -------&gt;   | CA prueft die |
+  | Domain-Key   |            | DNS-01      |             | Challenge und |
+  | (privat)     |            | TLS-ALPN-01 |             | signiert das  |
+  +--------------+            +-------------+             | Zertifikat    |
+                                                          +-------+-------+
+                                                                  |
+                                                                  v
+                                                        +-------------------+
+                                                        | Renewal-Hook      |
+                                                        | Dienst neu laden  |
+                                                        +-------------------+
+</code></pre>
+<p>1. <strong>Schluesselpaar:</strong> Der Client erzeugt einen Account-Schluessel und ein Domain-Schluesselpaar. Der private Schluessel bleibt lokal.</p>
+<p>2. <strong>Challenge:</strong> Der Client meldet der CA einen Nachweis, dass er die Domain kontrolliert — als Datei auf Port 80, als DNS-Eintrag oder ueber ein Sonderzertifikat.</p>
+<p>3. <strong>Ausstellung:</strong> Die CA prueft den Nachweis, signiert das Zertifikat und liefert es aus. Der Renewal-Hook schiebt das Ergebnis an den Webserver und laedt den Dienst neu.</p>
+<h2>Die Challenge-Typen</h2>
+<p>| Typ | Voraussetzung | Port | Hinterlegung bei 80/443 | Wann noetig |</p>
+<p>|---|---|---|---|---|</p>
+<p>| HTTP-01 | Webserver auf Port 80 erreichbar | 80 | Datei unter /.well-known/acme-challenge/ | Einzeldomin(s) mit offenem Port 80 |</p>
+<p>| DNS-01 | Kontrolle ueber DNS | kein Port noetig | TXT-Eintrag _acme-challenge | Wildcard, Port 80 gesperrt, viele IPs |</p>
+<p>| TLS-ALPN-01 | Nur-Port-443-Betrieb | 443 | TLS-Sonderzertifikat waehrend der Pruefung | Wenn nur 443 erreichbar ist |</p>
+<p>DNS-01 ist der einzige Typ, mit dem sich Wildcard-Zertifikate ausstellen lassen. Ist Port 80 gesperrt, scheidet HTTP-01 aus. Betreibt eine Domain viele IP-Adressen hinter einem Loadbalancer, ist DNS-01 ebenfalls der robusteste Weg.</p>
+<h2>Toolvergleich: Certbot, acme.sh und Caddy</h2>
+<p>| Tool | Renew-Mechanismus | Konfigurationsaufwand | Timer oder Haken |</p>
+<p>|---|---|---|---|</p>
+<p>| Certbot | eigener Timer (systemd) oder Cron | mittel, pro Dienst Konfig anpassen | Renew-Run per systemd-Timer |</p>
+<p>| acme.sh | eigener Cron-Eintrag | gering, Shell-Skript | Cron-Eintrag |</p>
+<p>| Caddy | im Server eingebaut | sehr gering, Zertifikat in der Config | automatische Erneuerung, Haken im Server |</p>
+<p>Certbot und acme.sh loesen die Erneuerung ueber einen externen Zeitplan, meist als systemd-Timer oder Cron. Caddy bringt ACME in den Webserver ein und erneuert im Hintergrund.</p>
+<p>Wichtig ist ein Punkt, der leicht uebersehen wird: Der Haken laeuft <strong>nach</strong> der Erneuerung und <strong>muss</strong> den Dienst neu laden. Schlaegt der Reload fehl — etwa weil der Dienst anders heisst oder die Berechtigung fehlt — liegt das neue Zertifikat auf der Platte, der Dienst liefert aber weiter das alte aus. Nach spaetestens 90 Tagen steht der Nutzer vor einer Ablaufwarnung.</p>
+<h2>Betrieb: Fristen, Renew-Fenster und Monitoring</h2>
+<p>Let&#x27;s Encrypt stellt Zertifikate mit <strong>90 Tagen</strong> Laufzeit aus. Empfohlen wird die Erneuerung bei <strong>30 Tagen Restlaufzeit</strong>. Der Rechenweg: 90 − 30 = 60 Tage Nutzung, 30 Tage Puffer als Ausfallreserve. Bleibt die Erneuerung einmal aus, kann sie noch im Fenster nachgeholt werden.</p>
+<p>Monitoring sollte das <strong>Ablaufdatum als Warnschwelle</strong> kennen, nicht nur den Port. Eine sinnvolle Staffelung:</p>
+<ul>
+<li>Warnung bei weniger als 21 Tagen Restlaufzeit.</li>
+<li>Kritisch bei weniger als 7 Tagen.</li>
+<li>Alarm, wenn der Renewal-Dienst seit ueber 24 Stunden nicht erfolgreich war.</li>
+</ul>
+<p>Faellt der Renewal-Dienst aus, laeuft das vorhandene Zertifikat weiter, bis es ablaeuft. Danach liefern alle abhaengigen Dienste eine Browser-Warnung aus. Eine Alarmierung auf den Dienst selbst ist deshalb genauso wichtig wie die Warnung auf das Ablaufdatum.</p>
+<h2>Stolperfallen mit Loesung</h2>
+<ul>
+<li><strong>Fehlendes Intermediate in der Kette:</strong> Der Browser meldet ein unvollstaendiges Zertifikat. Loesung: die vollstaendige Kette (fullchain) ausliefern, nicht nur das Leaf-Zertifikat.</li>
+<li><strong>Falsche Reihenfolge der Kette:</strong> Das Intermediate muss direkt hinter dem Leaf stehen. Loesung: Reihenfolge Leaf, Intermediate, Root einhalten.</li>
+<li><strong>Falsch gesetzte SAN-Namen ohne Wildcard:</strong> Ein Name fehlt im SAN, die Verbindung bricht. Loesung: jeden benoetigten Namen explizit ins SAN schreiben oder auf Wildcard umstellen.</li>
+<li><strong>Domain-Umbrella mit Intermediate ohne Root:</strong> Der Client findet die Wurzel nicht. Loesung: die Kette bis zur vertrauten Root vervollstaendigen.</li>
+<li><strong>CRL gegen OCSP:</strong> Manche Clients, etwa schannel unter Windows, erzwingen eine Sperrpruefung per CRL. Loesung: eine CRL bereitstellen, wenn OCSP nicht genuegt.</li>
+<li><strong>Falsche Schreibweise der SAN:</strong> <code>DNS:*.intern.example.de</code> und <code>intern.example.de</code> sind verschiedene Eintraege. Loesung: Wildcard und Apex jeweils als eigenen SAN-Eintrag fuehren.</li>
+</ul>
+<h2>Praxisbeispiel fuer ein Homelab mit rund 10 internen Diensten</h2>
+<p>Ein Homelab betreibt zehn Dienste unter einer Wildcard-Domain. Die oeffentlich erreichbaren Dienste laufen mit einem Let&#x27;s-Encrypt-Wildcard ueber DNS-01, die rein internen ueber die eigene CA.</p>
+<pre><code>
+                 Internet
+                    |
+              +-----v------+
+              |  Reverse-  |
+              |  Proxy     |  &lt;-- Let&#x27;s Encrypt Wildcard (*.example.de)
+              +--+------+--+
+                 |      |
+     +-----------+      +-------------+
+     |                                |
++----v----+   +----------------+   +--v---------+
+| oeffentl.|   | interne       |   | interne    |
+| Dienste  |   | Dienste       |   | Dienste    |
+| (LE-Cert)|   | (eigene CA)   |   | (eigene CA)|
++---------+   +----------------+   +------------+
+  Wiki          NAS               Monitoring
+  Cloud         Router            Passwort-Tresor
+  Mail          Backup            Git
+</code></pre>
+<p>Mit oeffentlichem Zertifikat laufen Dienste, die auch von aussen oder von Familienmitgliedern genutzt werden. Ueber die interne CA laufen reine Verwaltungsdienste. Als Ausnahme werden Endgeraete, die keine eigene Root importieren koennen — etwa ein Fernseher oder ein Drucker — entweder mit einem oeffentlichen Zertifikat versorgt oder bewusst ueber HTTP im getrennten VLAN betrieben.</p>
+<h2>Fazit</h2>
+<p>Die Wahl haengt am Profil, nicht an der Technik:</p>
+<ul>
+<li><strong>Privat:</strong> Eine oeffentliche CA (Let&#x27;s Encrypt) mit HTTP-01 oder DNS-01 deckt fast alles ab. Der Aufwand bleibt minimal.</li>
+<li><strong>Familie:</strong> Wildcard ueber DNS-01 fuer die gemeinsam genutzten Dienste, ergaenzt um eine kleine interne CA fuer reine Verwaltungsdienste.</li>
+<li><strong>Kleine Firma:</strong> Eine eigene CA mit sauber verteilter Root lohnt sich, sobald viele interne Namen und mehrere Endgeraete verwaltet werden. Fuer nach aussen sichtbare Dienste bleibt die oeffentliche CA erste Wahl.</li>
+</ul>
+<p>In allen Faellen gehoert Monitoring mit Alarmierung auf Ablaufdatum <strong>und</strong> Renewal-Dienst dazu. Ohne das ist jede Automatisierung nur eine Frage der Zeit bis zur naechsten abgelaufenen Kette.</p>
+<h2>FAQ</h2>
+<h2>Wie lange laufen Let&#x27;s-Encrypt-Zertifikate?</h2>
+<p>Seit 2024 mit 90 Tagen Laufzeit. Die Erneuerung ist bei 30 Tagen Restlaufzeit vorgesehen, also nach 60 Tagen Nutzung.</p>
+<h2>Wann brauche ich zwingend DNS-01?</h2>
+<p>Immer dann, wenn ein Wildcard-Zertifikat benoetigt wird, Port 80 gesperrt ist oder eine Domain viele IP-Adressen umfasst.</p>
+<h2>Kann ich eine eigene CA fuer oeffentlich erreichbare Dienste nutzen?</h2>
+<p>Technisch ja, praktisch nein: Fremde Browser vertrauen der eigenen Root nicht. Fuer Dienste mit externen Besuchern ist eine oeffentliche CA noetig.</p>
+<h2>Warum liefert mein Dienst trotz Erneuerung ein altes Zertifikat aus?</h2>
+<p>Weil der Renewal-Hook zwar das Zertifikat ersetzt, den Dienst aber nicht neu geladen hat. Der Dienst muss nach der Erneuerung neu gestartet oder neu geladen werden.</p>
+<h2>Was passiert, wenn der Renewal-Dienst ausfaellt?</h2>
+<p>Das vorhandene Zertifikat laeuft bis zum Ablaufdatum weiter. Danach zeigen alle abhaengigen Dienste eine Browser-Warnung. Deshalb ist eine Alarmierung auf den Dienst genauso wichtig wie auf das Ablaufdatum.</p>
+<h2>Interne Verlinkungen</h2>
+<ul>
+<li><strong>caddy-reverse-proxy-https</strong> — Ankertext: &quot;Reverse Proxy mit automatischem HTTPS einrichten&quot;</li>
+<li><strong>sso-selbst-gehostet</strong> — Ankertext: &quot;Single Sign-on im eigenen Netz betreiben&quot;</li>
+<li><strong>monitoring-ohne-cloud</strong> — Ankertext: &quot;Monitoring ohne Cloud-Anbindung aufbauen&quot;</li>
+<li><strong>fernzugriff-heimserver-tailscale-wireguard</strong> — Ankertext: &quot;Sicherer Fernzugriff per Tailscale oder WireGuard&quot;</li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
