@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backups mit Restic, Borg und Kopia: lokale Snapshots, Offsite-Kopien und Wiederherstellung im Vergleich</title>
+<meta name="description" content="Restic, Borg und Kopia im Vergleich: Speicherprinzip, Aufbau, Offsite-Kopien, Restore-Praxis und Aufbewahrung. Praxisnah für Homelab und kleine Firmen ohne Cloud-Zwang.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Backups mit Restic, Borg und Kopia: lokale Snapshots, Offsite-Kopien und Wiederherstellung im Vergleich</h1>
+<p>Restic, Borg und Kopia dominieren die datenschutzfreundliche Datensicherung auf eigenen Systemen. Alle drei erzeugen verschlüsselte, deduplizierte Snapshots und lassen sich ohne Cloud-Zwang betreiben - für ein kleines Homelab ebenso wie für eine Firma mit 10 bis 30 Mitarbeitern. Die Unterschiede liegen im Detail: Speicherformat, Aufbau, Offsite-Tauglichkeit und die Frage, wie weh ein verlorener Schlüssel tut. Dieser Artikel vergleicht die drei Kandidaten sachlich.</p>
+<h2>Warum ein Backup ohne Restore-Test kein Backup ist - typische Fehlannahmen</h2>
+<p>Die häufigste Fehlannahme lautet, ein fehlerfrei durchgelaufener Backup-Job sei bereits ein Backup. Ein Job, der grün meldet, beweist nur, dass Daten geschrieben wurden - nicht, dass sie lesbar, vollständig und in der richtigen Reihenfolge wiederherstellbar sind. Typische Fehlannahmen in kleinen Umgebungen:</p>
+<ul>
+<li>Eine Kopie auf derselben Maschine oder demselben NAS gilt als Backup, obwohl sie sich mit dem Original dieselbe Ausfallursache teilt.</li>
+<li>Ein Synchronisationslauf wird mit einem versionsbehafteten Snapshot verwechselt. Wird eine Datei versehentlich gelöscht oder verschlüsselt, überträgt die Synchronisation den Schaden nur.</li>
+<li>Laufende Datenbanken werden als Dateiordner kopiert, ohne dass ein konsistenter Zustand eingefroren wird. Das Ergebnis ist ein Archiv, das beim Wiederherstellen Referenzfehler zeigt.</li>
+<li>Der Verschlüsselungsschlüssel liegt im selben Ordner wie das Backup. Fällt das Zielmedium aus, sind Kopie und Schlüssel zugleich weg.</li>
+</ul>
+<p>Ein Backup ist erst dann eines, wenn mindestens eine Wiederherstellung geübt und protokolliert wurde. Deshalb behandelt dieser Vergleich die Restore-Praxis als gleichrangigen Punkt.</p>
+<h2>Die drei Kandidaten als Vergleichstabelle</h2>
+<p>Die folgende Tabelle fasst die Kernmerkmale zusammen. Angaben zu Speicherformaten und Plattformen beziehen sich auf die zum Redaktionszeitpunkt aktuellen stabilen Versionen; Versionsnummern ändern sich, das beschriebene Prinzip bleibt.</p>
+<p>| Merkmal | Restic | Borg | Kopia |</p>
+<p>|---|---|---|---|</p>
+<p>| Speicherprinzip | Content-adressierte Chunks, Deduplizierung über alle Snapshots | Deduplizierte Chunks in einem Repository, Segment-Dateien | Content-adressierte Chunks, Deduplizierung mit konfigurierbarer Splitter-Größe |</p>
+<p>| Snapshot-Format | Eigenes Repository-Format, ein Verzeichnis pro Repo | Eigenes Repository-Format, append-only-tauglich | Eigenes Repository-Format, wahlweise Verzeichnis, S3 oder WebDAV |</p>
+<p>| Dateisysteme | Dateisystem-unabhängig, sichert Verzeichnisse | Dateisystem-unabhängig, sichert Verzeichnisse | Dateisystem-unabhängig, optional Dateisystem-Snapshots (Btrfs, ZFS) |</p>
+<p>| Plattform | Linux, macOS, Windows, BSD | Linux, macOS, BSD (Windows nur eingeschränkt über WSL) | Linux, macOS, Windows, Docker |</p>
+<p>| Aufbau | Einzelne Binärdatei, reine Kommandozeile | Paket oder Binärdatei, reine Kommandozeile | Binärdatei mit Servermodus, GUI, CLI und Weboberfläche |</p>
+<p>| Status | Aktives Projekt, breite Distribution | Aktives Projekt, lange Historie, institutionelle Nutzung | Aktives Projekt, jünger, schnelle Entwicklung |</p>
+<p>| Besonderheiten | Einfache Offsite-Backends (S3, B2, SFTP), <code>check</code> prüft die Integrität | Effizient bei vielen Änderungen, append-only-Modus gegen Ransomware | Richtlinien pro Ordner, Snapshot-Zeitpläne und Aufbewahrung integriert |</p>
+<p>Keines der Werkzeuge ist grundsätzlich überlegen. Restic punktet bei schlankem Offsite-Betrieb, Borg bei sparsamem Speicherverbrauch unter Linux, Kopia bei integrierter Bedienung und Richtlinienverwaltung.</p>
+<h2>Aufbau und Betrieb: Konfigurationsaufwand, Rechte, Datenbanken</h2>
+<p>Der Grundaufbau ist kurz. Ein Restic-Repository entsteht mit <code>restic init</code>, ein Borg-Repository mit <code>borg init</code>, Kopia über <code>kopia repository create</code>. Für einen täglichen Lauf genügen wenige Zeilen: ein Aufruf mit Ziel, ein Aufbewahrungsbefehl und ein Zeitgeber in Form eines systemd-Timers oder Cron-Eintrags. Grosse Konfigurationsdateien braucht keines der Werkzeuge.</p>
+<p>Administratorrechte sind an einer Stelle unvermeidbar: Wer Systemverzeichnisse wie <code>/etc</code> oder <code>/var/lib</code> sichern will, muss den Lauf mit passenden Rechten ausführen, weil einzelne Dateien nur für <code>root</code> lesbar sind. Ein häufiges Rechteproblem: Wird ein Backup als normaler Benutzer erstellt und als <code>root</code> wiederhergestellt, gehören die Dateien anschliessend dem falschen Eigentümer. Die Wiederherstellung sollte mit derselben Benutzerkennung laufen wie das Backup, oder die Eigentümer werden danach gezielt angepasst.</p>
+<p>Laufende Datenbanken stellen alle drei vor dasselbe Problem: Ein reiner Dateisystem-Snapshot einer aktiven PostgreSQL- oder MariaDB-Instanz kann inkonsistent sein. Sauber ist ein logischer Dump vor dem Lauf - <code>pg_dump</code> bei PostgreSQL, <code>mysqldump</code> bei MariaDB - oder ein kurzes Einfrieren des Dateisystems, damit der Snapshot einen konsistenten Stand sieht. Die Reihenfolge lautet: erst Datenbank konsistent sichern, dann Volumes und Konfigurationsdateien.</p>
+<h2>Offsite und Zweitkopie: Szenarien, Alternativen, Kosten</h2>
+<p>Eine zweite Kopie am selben Ort schützt nicht vor Brand, Diebstahl oder Überspannung. Für den Offsite-Anteil haben sich mehrere Szenarien bewährt:</p>
+<ul>
+<li>NAS zu NAS: Zwei Geräte an unterschiedlichen Standorten synchronisieren ein Restic- oder Borg-Repository. Restic schreibt direkt über SFTP auf ein entferntes Ziel, Borg arbeitet über SSH. Günstig, setzt aber voraus, dass der Zweitstandort zuverlässig erreichbar ist.</li>
+<li>NAS zu Cloud-Objektspeicher: Restic und Kopia sprechen von Haus aus S3-kompatible Ziele, Borg benötigt ein Zusatzwerkzeug wie <code>rclone</code>. Da alle drei clientseitig verschlüsseln, sieht der Anbieter nur unlesbare Chunks.</li>
+<li>Zweitstandort zu Hause: Eine zweite Wohnung oder ein Elternhaus mit Internetanschluss kann das entfernte Repository aufnehmen.</li>
+<li>Rustic und rsync als Alternative: Rustic ist eine Neuimplementierung des Borg-Formats und kann gemischte Umgebungen mit Borg-Repositories bedienen. <code>rsync</code> bleibt sinnvoll für schnelle, unversionierte Spiegelungen, bietet aber weder Deduplizierung noch Snapshots und darf nie die einzige Kopie sein.</li>
+</ul>
+<p>Die Kostenfaktoren sind Bandbreite, Speicher und Rechenzeit. Die erste vollständige Übertragung ist immer die größte Last; jede weitere Sicherung überträgt nur geänderte Chunks. Bei mehreren hundert Gigabyte dauert die Erstsicherung über eine übliche Hausanschluss-Bandbreite oft einen oder mehrere Tage. Da Deduplizierung und Kompression die abgelegte Menge deutlich reduzieren, ist die monatliche Speichermiete bei einem Objektspeicher meist gering, häufig im Bereich weniger Euro pro Monat für kleinere Bestände. Preise verschieben sich und sind nur als Preisrahmen zu verstehen, nicht als Zusage.</p>
+<h2>Restore-Praxis: Datei, Verzeichnis, Komplettrest, Testumgebung</h2>
+<p>Die Wiederherstellung entscheidet, ob das Konzept trägt. Vier Stufen lassen sich unterscheiden, und alle drei Werkzeuge beherrschen sie:</p>
+<ul>
+<li>Einzelne Datei: Restic holt sie mit <code>restic restore --include</code>, Borg entpackt über <code>borg extract</code> mit Pfadangabe, Kopia über <code>kopia snapshot restore</code>. Diese Stufe ist die tägliche Uebung und in Minuten erledigt.</li>
+<li>Ganzes Verzeichnis: Derselbe Aufruf mit einem Pfad auf Verzeichnisebene. Hier zeigt sich, ob Zeitstempel und Rechte korrekt mitgeführt wurden.</li>
+<li>Komplettrest auf leere Hardware: Der Ernstfall. Nach einem Hardwaretausch wird das Repository auf die neue Maschine gebracht und das System zurückgeschrieben. Dienste, Bootloader und Netzwerkkonfiguration sind separat wiederherzustellen - ein reines Datei-Backup deckt das nicht ab.</li>
+<li>Testumgebung auf einer VM: Die sauberste Methode ist eine virtuelle Maschine ohne Zugang zum Produktionsnetz, in der die Wiederherstellung geübt und die Anwendung gestartet wird. Erst wenn die Anwendung ihre Daten liest, ist die Wiederherstellung belegt.</li>
+</ul>
+<p>Zu jedem Test gehört ein kurzes Protokoll: Datum, Umfang, benötigte Zeit, Fehler. Ohne dieses Protokoll wird der Test nicht regelmäßig wiederholt. Für eine kleine Firma bietet es sich an, ihn quartalsweise und nach jeder größeren Änderung an der Backup-Konfiguration einzuplanen.</p>
+<h2>Aufbewahrung: stündlich, täglich, wöchentlich, Speicherbedarf</h2>
+<p>Aufbewahrung bestimmt, wie weit zurück ein Datenstand reicht, ohne dass das Ziel vollläuft. Restic nutzt <code>forget --keep-hourly --keep-daily --keep-weekly --keep-monthly</code>; Borg arbeitet mit <code>prune</code> und denselben Intervallen; Kopia verwaltet Aufbewahrungsrichtlinien pro Datenquelle.</p>
+<p>Ein bewährter Ausgangspunkt für ein kleines Homelab ist die Großvater-Vater-Sohn-Methode: die letzten Tage, sieben Wochen, zwölf Monate. Entscheidend ist nicht die maximale Frequenz, sondern die Frage, wie viel Datenverlust im Ernstfall verkraftbar ist.</p>
+<p>Der Speicherbedarf wächst durch Deduplizierung deutlich langsamer als die Summe der Snapshot-Größen vermuten lässt. Der erste Snapshot belegt den vollen Datenbestand, jeder weitere nur die Differenz. Der Verbrauch ist daher näherungsweise linear zur Menge der echten Änderungen plus einem kleinen Aufschlag für Metadaten. Wer starke Deduplizierung will, sollte Snapshots nicht zu aggressiv löschen, weil das Entfernen die gemeinsam genutzten Chunks erst dann freigibt, wenn kein verbleibender Snapshot sie noch braucht.</p>
+<h2>Stolperfallen je Lösung</h2>
+<ul>
+<li>Verschlüsselungsschlüssel und Schlüsselverlust: Ein verlorener Schlüssel macht das gesamte Repository unlesbar, auch bei vollständigen Daten. Der Schlüssel oder die Passphrase gehört getrennt vom Backup aufbewahrt, an einem anderen Ort als das Zielmedium.</li>
+<li>Kryptomüll nach Hardwaretausch: Bei Restic lässt sich ein Repository mit <code>restic rebuild-index</code> reparieren, wenn Index-Dateien beschädigt sind. Bei Borg und Kopia ist der Umgang mit defekten Segment- oder Blob-Dateien jeweils unterschiedlich; wichtig ist, den offiziellen Reparaturweg zu kennen, bevor er gebraucht wird.</li>
+<li>Zu aggressives Pruning: Wer Snapshots löscht, bevor genug neue existieren, verliert im schlimmsten Fall genau die Stufen, die im Ernstfall gebraucht werden. Aufbewahrung lieber zu großzügig beginnen.</li>
+<li>Bandbreiten- und CPU-Kosten: Deduplizierung und Kompression kosten Rechenzeit. Auf schwacher Hardware verlängert sich besonders der erste Lauf spürbar. Für Offsite-Ziele ist die Bandbreite der begrenzende Faktor.</li>
+<li>Rechteprobleme bei Root-Dateien: Wie oben beschrieben, führen unterschiedliche Benutzerkennungen zwischen Backup und Restore zu falschen Eigentümern.</li>
+<li>Differenz gegen vollständig: Inkrementelle oder differenzielle Läufe sind effizient, aber die Abhängigkeit vom vorherigen Snapshot bedeutet, dass eine beschädigte Vorstufe mehrere spätere Stände unbrauchbar machen kann. Deshalb sollte die Integrität regelmäßig geprüft werden - Restic bietet dafür <code>check</code>, Borg <code>check</code>, Kopia <code>snapshot verify</code>.</li>
+<li>Verschlüsselung der Backup-Metadaten: Alle drei Werkzeuge verschlüsseln nicht nur Inhalte, sondern auch Dateinamen und Metadaten. Das ist ein Vorteil für den Datenschutz auf fremden Zielen, bedeutet aber, dass ohne Schlüssel nicht einmal die Struktur lesbar ist - ein weiterer Grund, den Schlüssel sicher und getrennt zu verwahren.</li>
+</ul>
+<h2>Empfehlung: kleines Büro, Privathomelab, gemischte Umgebung</h2>
+<ul>
+<li>Kleines Büro mit 10 bis 30 Mitarbeitern: Wer VMs und Container betreibt und Verwaltungsaufwand minimieren will, fährt mit Kopia gut, weil Richtlinien, Zeitpläne und Aufbewahrung integriert sind. Ein vorhandener Proxmox Backup Server lässt sich sinnvoll um ein dateibasiertes Werkzeug für Nicht-VM-Daten ergänzen.</li>
+<li>Privathomelab: Restic ist wegen der einfachen Offsite-Backends und der einzelnen Binärdatei meist die unkomplizierteste Wahl. Wer streng mit Speicherplatz haushalten muss und unter Linux arbeitet, findet in Borg den sparsameren Kandidaten.</li>
+<li>Gemischte Umgebung mit VMs: Eine bewährte Aufteilung besteht aus einem dateibasierten Werkzeug für Daten und Konfigurationen und einer VM-basierten Sicherung für die Virtualisierungsebene. Rustic kann als Brücke dienen, wo Borg-Repositories und eine moderne Implementierung zusammenkommen sollen.</li>
+</ul>
+<p>Unabhängig von der Wahl gilt derselbe Grundsatz: erst sichern, dann prüfen, dann wiederherstellen und das Ergebnis protokollieren. Kein Werkzeug entbindet von dieser Routine.</p>
+<h2>FAQ</h2>
+<h2>Welches Werkzeug eignet sich für Anfänger ohne Kommandozeilen-Erfahrung?</h2>
+<p>Kopia ist die zugänglichste Wahl, weil es eine grafische Oberfläche, eine Weboberfläche und Richtlinien pro Ordner mitbringt. Restic und Borg sind reine Kommandozeilenwerkzeuge und setzen etwas Einarbeitung voraus, sind dafür schlanker und weit verbreitet.</p>
+<h2>Kann ich ein Restic-Backup später mit Borg oder Kopia weiterverwenden?</h2>
+<p>Nein. Die drei Formate sind nicht untereinander kompatibel. Ein Wechsel erfordert einen neuen vollständigen Lauf in das Zielwerkzeug. Rustic kann zwar Borg-Repositories lesen, ersetzt aber nicht die Migration zwischen den Formaten.</p>
+<h2>Wie oft sollte ich einen Restore-Test durchführen?</h2>
+<p>Für ein Homelab genügt ein quartalsweiser Test eines kritischen Datensatzes. In einer kleinen Firma sollte mindestens einmal pro Quartal eine repräsentative Wiederherstellung in einer isolierten VM erfolgen, zusätzlich nach jeder Änderung an der Backup-Konfiguration.</p>
+<h2>Was passiert, wenn ich den Verschlüsselungsschlüssel verliere?</h2>
+<p>Ohne Schlüssel oder Passphrase ist das gesamte Repository unlesbar, auch wenn alle Daten vollständig vorhanden sind. Es gibt keinen offiziellen Weg zur Wiederherstellung. Deshalb muss der Schlüssel getrennt und an mehreren Orten aufbewahrt werden.</p>
+<h2>Sind alle drei Werkzeuge für Offsite-Kopien geeignet?</h2>
+<p>Ja. Restic und Kopia sprechen S3-kompatible Objektspeicher direkt an, Borg benötigt dafür ein Zusatzwerkzeug wie <code>rclone</code>. In allen Fällen werden die Daten clientseitig verschlüsselt, sodass der Speicheranbieter nur unlesbare Chunks sieht.</p>
+<h2>Interne Verlinkungen</h2>
+<ul>
+<li>Ankertext: &quot;3-2-1-Backup-Strategie&quot; -&gt; Zielslug: <code>backup-3-2-1</code></li>
+<li>Ankertext: &quot;Datenbank-Backups richtig planen&quot; -&gt; Zielslug: <code>datenbank-backups</code></li>
+<li>Ankertext: &quot;Proxmox Backups automatisieren&quot; -&gt; Zielslug: <code>proxmox-backups-automatisieren</code></li>
+<li>Ankertext: &quot;Proxmox Backup Server&quot; -&gt; Zielslug: <code>proxmox-backup-server</code></li>
+</ul>
+<h2>Veröffentlichungs-Hinweise</h2>
+<ul>
+<li>Zielsystem: Homelab-Auto-Publish-Pipeline. Die Datei liegt im Draft-Ordner und wird vom täglichen Lauf (<code>homelab_daily_publish.py</code>) über die YAML-Frontmatter erkannt.</li>
+<li>Erwartete Pflichtfelder im Frontmatter: <code>title</code>, <code>slug</code>, <code>meta_description</code>, <code>focus_keyword</code>, <code>date</code> (2026-09-29). Der Slug <code>restic-borg-kopia-backup-vergleich</code> bestimmt den Dateinamen der Ausgabe unter <code>site/artikel/</code>.</li>
+<li>Interne Links in diesem Entwurf sind als Slug-Liste hinterlegt und müssen beim Rendern in <code>../artikel/&lt;slug&gt;.html</code> aufgelöst werden. Die vier Zielartikel existieren bereits im Artikelverzeichnis.</li>
+<li>Keine Affiliate- oder Partner-Links enthalten. Preise sind als Preisrahmen formuliert und nicht als Zusage. Keine erfundenen Messwerte.</li>
+<li>Bitte beim Rendern darauf achten, dass die Vergleichstabelle als HTML-Tabelle übernommen wird und die FAQ-Fragen als <code>&lt;h3&gt;</code> erscheinen.</li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
