@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesh-WLAN im Heimnetz: UniFi, TP-Link Omada und OpenWrt im Vergleich</title>
+<meta name="description" content="Mesh-WLAN für Homelab und kleine Firmen ohne Cloud-Zwang: UniFi, TP-Link Omada und OpenWrt mit 802.11s im sachlichen Vergleich — Kaufkriterien, Stücklisten, VLAN-Anbindung, Stolperfallen, Sicherheit und Migrationspfad.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Mesh-WLAN im Heimnetz: UniFi, TP-Link Omada und OpenWrt im Vergleich</h1>
+<p>„Mesh&quot; klingt nach einer fertigen Lösung: mehrere Knoten, ein Name, überall Empfang. Der Begriff beschreibt zunächst nur, dass mehrere Funkknoten untereinander ein Netz bilden und Clients zwischen ihnen wandern. Ob das sinnvoll ist, hängt an Gerätezahl, Fläche und der Frage, ob man sich an eine Hersteller-Cloud binden will. Dieser Artikel vergleicht drei Wege für Homelabs und Firmen mit 10 bis 30 Mitarbeitern.</p>
+<h2>Braucht das Homelab überhaupt Mesh — oder reichen ein guter Access Point plus VLAN-Plan?</h2>
+<p>Die ehrliche Antwort lautet meist: <strong>ein guter Access Point reicht oft, Mesh braucht man erst bei Fläche oder Dichte.</strong> Ein einzelner Wi-Fi-6-AP deckt in einem offenen Grundriss realistisch 80 bis 120 Quadratmeter brauchbar ab. Erst bei über 150 Quadratmetern pro Etage, Betondecken oder mehreren Etagen wird ein zweiter Funkknoten nötig.</p>
+<p>Entscheidend ist die Gerätedichte, nicht die Personenzahl:</p>
+<ul>
+<li><strong>Pro Etage:</strong> 25 bis 45 Geräte (Laptops, Handys, Tablets, Drucker, IoT wie Steckdosen, Sensoren, Kameras).</li>
+<li><strong>Pro Nutzer:</strong> 2 bis 3 Geräte im Schnitt — Arbeitslaptop, Handy, häufig ein Tablet.</li>
+<li><strong>Störungen durch Client-Dichte:</strong> Ab etwa 30 bis 40 aktiven Geräten pro Funkzelle steigen Latenz und Retry-Rate spürbar. Ursache ist der Overhead: Jedes Gerät belegt Sendezeit für Beacons und Hintergrundpakete. Hinzu kommen fremde Netze in dicht bebauten Gebieten.</li>
+</ul>
+<p>Konsequenz: <strong>Zwei bis drei Funkknoten an einem gemeinsamen Verteiler lösen das Dichte-Problem besser als ein einzelner „Super-AP&quot;.</strong> Mesh ist kein Ersatz für Segmentierung, sondern eine Frage der Funkabdeckung — Details im Artikel zur VLAN-Netzsegmentierung.</p>
+<h2>Drei Ansätze im Überblick</h2>
+<p>| Merkmal | UniFi (AP + UniFi OS/Cloud-Gateway) | TP-Link Omada (AP + Controller) | OpenWrt (802.11s) |</p>
+<p>|---|---|---|---|</p>
+<p>| Management | UniFi Network, lokal oder selbst gehostet | Omada Controller, Hardware oder Software | LuCI pro Gerät, kein zentraler Controller |</p>
+<p>| Cloud-Zwang | Nein im lokalen Betrieb | Nein mit lokalem Controller | Keiner |</p>
+<p>| 6 GHz | Ja, bei Wi-Fi-6E/7 | Ja, bei Wi-Fi-6E/7 | Nur mit passender Hardware |</p>
+<p>| PoE | Meist PoE+ aus UniFi-Switches | PoE+ aus Omada-Switches oder Injektoren | Meist Injektor oder Netzteil |</p>
+<p>| Preisrahmen | Mittel bis hoch | Mittel | Niedrig, hoher Eigenaufwand |</p>
+<p>| Eignung Kundenprojekte | Gut, ausgereift für mehrere Standorte | Gut, wirtschaftlich für kleine Objekte | Bedingt, wartungsintensiv |</p>
+<p><strong>UniFi</strong> liefert ein geschlossenes Ökosystem: APs, Switches und Gateway verwalten sich über eine gemeinsame, lokal laufende Oberfläche — Vorteil ist die Konsistenz, Nachteil die Markenbindung. <strong>TP-Link Omada</strong> funktioniert ähnlich, ist aber oft günstiger und läuft mit lokaler Controller-Hardware völlig cloudfrei. <strong>OpenWrt mit 802.11s</strong> ist die Bastler-Variante: Consumer-Router mit freier Firmware bilden ein echtes Funk-Mesh — günstig, aber 802.11s halbiert pro Hop die Bandbreite und ist nicht mit herstellereigenen Mesh-Systemen kompatibel.</p>
+<h2>Kaufkriterien im Einzelnen</h2>
+<p><strong>802.11ax und ax2:</strong> Wi-Fi 6 bringt keine höhere Spitzenrate pro Gerät, sondern bessere Effizienz bei vielen Clients. ax2 ergänzt Uplink-OFDMA und Stromsparen. Wi-Fi 6 ist das Minimum, 6E/7 nur bei echtem 6-GHz-Bedarf.</p>
+<p><strong>6 GHz und 160 MHz:</strong> 6 GHz ist sauber belegt und frei von Altgeräten, aber nur mit 6E/7-Hardware nutzbar. 160-MHz-Kanäle erhöhen die Spitzenrate, sind dicht belegt aber kaum durchgängig verfügbar und stören Nachbarn — 80 MHz ist meist stabiler.</p>
+<p><strong>Multi-Link Operation (MLO):</strong> Bündelt mehrere Frequenzbänder gleichzeitig (Wi-Fi 7). Nutzen real, aber geräteabhängig — heute kein Muss.</p>
+<p><strong>PoE-Budget am Switch:</strong> Ein PoE+-Switch liefert typisch 30 Watt pro Port. Ein 8-Port-Switch mit 60 bis 120 Watt reicht für zwei bis drei APs, doch die Summe aller Ports zählt. Wer Kameras oder Telefone anschließt, braucht mehr und sollte PoE++ (Typ 3/4) prüfen.</p>
+<p><strong>Managementfreier Betrieb im reinen LAN:</strong> Lässt sich der AP ohne Internetzugang vollständig einrichten? UniFi und Omada können das mit lokalem Controller, OpenWrt ist per Definition cloudfrei.</p>
+<p><strong>Roaming über 3 bis 4 Etagen:</strong> Nahtloses Roaming erfordert 802.11k/v/r. Bei mehreren Etagen sollte die Wahl auf ein einheitliches Controller-System fallen.</p>
+<p><strong>Geräte-Interoperabilität:</strong> Herstellerübergreifendes Roaming ist Glückssache. Ein UniFi- und ein Omada-AP bilden kein gemeinsames Mesh, sondern zwei Netze mit gleichem Namen — Folge sind klebrige Clients. Ein System, alle APs vom gleichen Hersteller.</p>
+<h2>Konkrete Stücklisten mit Preisrahmen</h2>
+<p>Alle Preise sind <strong>grobe Preisrahmen</strong> für Neuware, keine Tagespreise.</p>
+<p><strong>Fall A — kleines Büro, circa 25 Geräte:</strong></p>
+<ul>
+<li>2× Wi-Fi-6-AP (PoE-fähig): je circa 100–180 €, zusammen circa 200–360 €</li>
+<li>1× PoE-Switch, 8 Ports mit Budget: circa 100–200 €</li>
+<li>1× lokaler Controller (Box oder kleiner Server): circa 80–200 €</li>
+<li>Optional: Gateway/Firewall für VLAN-Routing: circa 100–300 €</li>
+</ul>
+<p><strong>Rahmen grob: 400–1000 €</strong>, je nachdem ob ein Rechner als Controller mitgenutzt wird.</p>
+<p><strong>Fall B — Privathaus mit 3 Etagen, circa 40–60 Geräte:</strong></p>
+<ul>
+<li>3× Wi-Fi-6-AP (PoE-fähig): zusammen circa 300–540 €</li>
+<li>1× PoE-Switch, 8–16 Ports: circa 120–250 €</li>
+<li>Verkabelung zwischen den Etagen: variabel</li>
+<li>Optional: Gateway mit VLAN-Support: circa 100–300 €</li>
+</ul>
+<p><strong>Rahmen grob: 500–1100 €</strong>, ohne Kabelarbeiten. APs gehören an Kabel; Funk-Backhaul nur, wenn keins liegt, denn es kostet Bandbreite.</p>
+<h2>Anbindung an bestehenden VLAN- und Reverse-Proxy-Plan</h2>
+<p>Ein WLAN erbt die Struktur, die dahinter liegt:</p>
+<ul>
+<li><strong>Management-VLAN:</strong> Controller, APs und Switch managen sich in einem eigenen, abgeschirmten Netz ohne Client-Internetzugang.</li>
+<li><strong>IoT-VLAN:</strong> Smart-Home-Geräte, Sensoren, Kameras mit eigener SSID; kein Zugriff aufs übrige Netz, Internet nur gezielt.</li>
+<li><strong>Gastnetz:</strong> Eigene SSID mit <strong>Client-Isolation</strong>, nur Internet, kein Zugriff auf interne Dienste.</li>
+<li><strong>PoE-Switch:</strong> VLAN-fähig (802.1Q), genug Budget, ein Trunk-Port trägt alle VLANs getaggt zum Router.</li>
+<li><strong>DHCP-Optionen für IPv6:</strong> <strong>DHCPv6-PD</strong> verteilt Präfixe an die VLANs, RA mit Managed-Flag steuert die Adressvergabe.</li>
+</ul>
+<h2>Stolperfallen mit je Lösung</h2>
+<p><strong>Firmware-Automatik im Betrieb:</strong> Ein Auto-Update kann einen AP mittags neustarten. <em>Lösung:</em> Updates ins Wartungsfenster legen, Automatik aus.</p>
+<p><strong>Cloud-Zwang beim Herstellerwechsel:</strong> Ein System ohne lokalen Betrieb bindet dauerhaft. <em>Lösung:</em> Vor dem Kauf prüfen, ob der Controller lokal läuft.</p>
+<p><strong>Gemischte Hersteller im selben Mesh:</strong> Sie bilden kein gemeinsames Mesh, sondern parallele Netze. <em>Lösung:</em> Ein Hersteller pro Standort.</p>
+<p><strong>Controller-Ausfall:</strong> Fällt der lokale Controller aus, laufen die APs mit der letzten Konfiguration weiter, Änderungen sind nicht möglich. <em>Lösung:</em> Backups automatisieren, Ersatzgerät bereithalten.</p>
+<p><strong>Vendor-Lock-in beim Controller:</strong> Die Konfiguration liegt oft in proprietärem Format. <em>Lösung:</em> Regelmäßige Exports, dokumentiertes Layout.</p>
+<p><strong>Auto-Kanalwahl und Roaming-Flickern:</strong> Eine aggressive Kanalwahl lässt APs laufend wechseln, Clients springen. <em>Lösung:</em> Kanäle fest zuweisen, Sendeleistung reduzieren, 802.11k/v/r prüfen.</p>
+<h2>Sicherheit</h2>
+<p><strong>WPA3</strong> ist Standard und sollte für neue SSIDs aktiv sein; WPA2 bleibt als Übergang. <strong>802.1X</strong> bindet Geräte an ein RADIUS-Backend und ist für Firmen die saubere Lösung. <strong>PPSK</strong> ist der pragmatische Kompromiss: pro Gerät oder Gruppe ein eigenes Passwort, ohne RADIUS. <strong>WPS gehört deaktiviert</strong> — ein bekanntes Einfallstor. Ein <strong>Gastnetz mit Client-Isolation</strong> verhindert Zugriffe zwischen Gästen und ins interne Netz. Schlüssel gehören in einen Passwortmanager und werden bei Verdacht pro SSID rotiert.</p>
+<h2>Ausfallverhalten und Notbetrieb</h2>
+<p>Fällt der Router aus, kann das WLAN intern weiterarbeiten: Clients bleiben im selben VLAN verbunden, solange Switch und APs laufen. Aus fallen Internet, Cloud-Dienste und externe DNS-Auflösung — ein lokaler DNS verhindert, dass gar nichts mehr geht. Kritisch ist der Strom: Ohne <strong>USV</strong> schaltet schon ein kurzer Ausfall alles ab; eine kleine USV für Switch und Controller hält das Netz am Leben. Mesh-Knoten ohne Kabel verlieren bei Stromausfall einzelner APs zusätzlich ihre Backhaul-Strecke.</p>
+<h2>Migrationspfad: vom alten SOHO-Router auf Mesh</h2>
+<p>1. <strong>Neue Infrastruktur parallel aufbauen</strong> (Switch, Controller, VLANs), ohne den Alt-Router abzuschalten.</p>
+<p>2. <strong>Einen neuen AP testweise</strong> als eigenes Test-SSID betreiben, Roaming prüfen.</p>
+<p>3. <strong>Umschaltfenster</strong> außerhalb der Arbeitszeit, 30 bis 60 Minuten reichen meist.</p>
+<p>4. <strong>SSID und Passwort übernehmen,</strong> damit Clients automatisch wieder verbinden.</p>
+<p>5. <strong>Alt-Router erst nach erfolgreicher Prüfung</strong> außer Betrieb nehmen.</p>
+<p>Parallel laufen darf alles, was den Uplink nicht teilt: neuer Controller, APs im Testbetrieb, VLAN-Vorbereitung. Nur das Umschalten des Uplinks selbst ist der kritische Moment.</p>
+<h2>Fazit mit Empfehlung je Kundenprofil</h2>
+<ul>
+<li><strong>Privat:</strong> Ein bis zwei Wi-Fi-6-APs an einem PoE-Switch, ohne Cloud; oft genügt ein guter Access Point plus Kabel. Mesh nur bei Fläche oder Etagen.</li>
+<li><strong>Familie:</strong> Zwei bis drei APs an einem gemeinsamen Controller, getrennte SSIDs für Familie, IoT, Gast — Preisrahmen im mittleren dreistelligen Bereich.</li>
+<li><strong>Kleine Firma (10–30 Mitarbeiter):</strong> Herstellerreines System mit lokalem Controller, PoE-Switch mit Budget, VLAN-Trennung von Management, Arbeitsplatz, IoT und Gast. Hier zahlt sich das ausgereifte Management von UniFi oder Omada aus; OpenWrt bleibt die Ausnahme für Technik-affine Häuser.</li>
+</ul>
+<p>Kernaussage: <strong>Mesh löst Funkabdeckung, nicht Netzstruktur.</strong> Wer ohne Cloud plant, prüft, ob der Controller lokal läuft, ob die APs PoE-fähig sind und ob Roaming 802.11k/v/r unterstützt.</p>
+<h2>FAQ</h2>
+<h2>Was ist der Unterschied zwischen Mesh und Roaming?</h2>
+<p>Mesh verbindet mehrere Funkknoten untereinander, Roaming reicht einen Client von Knoten zu Knoten weiter. Ein Mesh erleichtert Roaming, ist aber keine Voraussetzung — kabelgebundene APs an einem Controller roamen ebenfalls sauber.</p>
+<h2>Reicht ein einzelner Wi-Fi-6-Access-Point für ein Einfamilienhaus?</h2>
+<p>Bei offenem Grundriss und unter circa 120 Quadratmetern pro Etage häufig ja. Bei Betondecken, mehreren Etagen oder über 40 Geräten pro Bereich lohnt der zweite Knoten.</p>
+<h2>Ist 6 GHz (Wi-Fi 6E/7) Pflicht?</h2>
+<p>Nein. 6 GHz entlastet dichte Umgebungen, ist aber kein Muss. Wi-Fi 6 auf 5 GHz reicht für die meisten Homelabs und kleinen Büros.</p>
+<h2>Läuft Mesh-WLAN auch ohne Internet?</h2>
+<p>Ja. Ohne Internet bleiben Clients im selben VLAN verbunden, sofern Switch und APs Strom haben. Nur externe DNS-Auflösung und Internetzugriff fallen weg.</p>
+<h2>Woran scheitern gemischte Hersteller im selben Netz?</h2>
+<p>An fehlender Interoperabilität für schnelles Roaming und gemeinsame Steuerung. Zwei Hersteller ergeben zwei Systeme mit gleichem SSID-Namen — Folge sind klebrige Clients und häufige Wechsel.</p>
+<h2>Interne Verlinkungen</h2>
+<p>1. <strong>Slug:</strong> <code>vlan-netzsegmentierung</code> — <strong>Ankertext:</strong> „Wie ein VLAN-Plan Management, IoT und Gast sauber trennt&quot;</p>
+<p>2. <strong>Slug:</strong> <code>caddy-reverse-proxy-https</code> — <strong>Ankertext:</strong> „Reverse Proxy und HTTPS für die internen Oberflächen der Netzwerkverwaltung&quot;</p>
+<p>3. <strong>Slug:</strong> <code>monitoring-ohne-cloud</code> — <strong>Ankertext:</strong> „Netzwerk und Controller ohne Cloud überwachen&quot;</p>
+<p>4. <strong>Slug:</strong> <code>fernzugriff-heimserver-tailscale-wireguard</code> — <strong>Ankertext:</strong> „Fernzugriff auf das Netzwerkmanagement ohne offene Ports&quot;</p>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
