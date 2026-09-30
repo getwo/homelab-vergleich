@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Werbeblocker selbst hosten: Pi-hole, AdGuard Home und Browser-Erweiterungen im ehrlichen Vergleich</title>
+<meta name="description" content="Pi-hole oder AdGuard Home selbst hosten statt nur Browser-Erweiterungen: Funktionsweise, Vergleichstabelle, Docker-Grundgerüst, DoH/DoT-Reihenfolge und ehrliche Grenzen.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Werbeblocker selbst hosten: Pi-hole, AdGuard Home und Browser-Erweiterungen im ehrlichen Vergleich</h1>
+<h2>Warum ein zentraler DNS-Blocker mehr bringt als zehn Einzel-Erweiterungen</h2>
+<p>Browser-Erweiterungen wie uBlock Origin filtern Werbung im Browser – und nur dort. Das Smart-TV, Apps auf dem Handy, die Spielkonsole, die Wetter-App mit Werbebanner: alles unberührt. Ein zentraler DNS-Blocker setzt eine Ebene tiefer an. Er filtert für jedes Gerät im Netz, das ihn als DNS-Server nutzt. Statt fünf Erweiterungen zu pflegen, die jeder Browser-Hersteller umgehen kann, gibt es eine Liste, ein Protokoll, eine Wahrheit.</p>
+<p>Dazu ehrlich: In geteilten Haushalten greift der Filter nur, wenn die Geräte wirklich über den eigenen DNS laufen. Wer das Handy im Mobilfunknetz oder per fest eingestelltem DNS (manche Smart-TVs, manche IoT-Steckdosen) betreibt, wird nicht gefiltert. Eine Beispielrechnung: Zahlt ein Haushalt monatlich rund 3 € für „werbefreie&quot; Abos auf drei Geräten, sind das 3 × 12 = 36 € im Jahr – ersetzt der eigene Resolver diese Abos, amortisiert sich ein stromsparender Mini-PC (rund 15–30 € Strom im Jahr) bereits im ersten Jahr. Der zentrale Blocker ist ein Netz-Werkzeug, kein Geräte-Zwang.</p>
+<h2>Funktionsweise in drei Schritten</h2>
+<p>1. <strong>DNS-Anfrage:</strong> Das Gerät fragt den Resolver, welche IP-Adresse hinter <code>werbung.example</code> steckt.</p>
+<p>2. <strong>Filterliste:</strong> Der Blocker gleicht den Namen mit seiner Blockliste ab.</p>
+<p>3. <strong>Leere Antwort:</strong> Steht der Name auf der Liste, antwortet der Server mit <code>0.0.0.0</code> – das Gerät bekommt keine erreichbare Adresse, die Anzeige lädt nicht.</p>
+<pre><code>
+   Geraet              Router/NAS (Pi-hole)          Upstream-DNS
+     |                        |                          |
+     |-- DNS: werbung.de? ---&gt;|                          |
+     |                        |-- Abgleich Filterliste   |
+     |                        |--&gt; nicht gefunden -------&gt;| 1.1.1.1
+     |                        |&lt;-- echte IP --------------|
+     |&lt;-- echte IP -----------|                          |
+     |                        |
+     |-- DNS: werbung.de? ---&gt;|  (steht auf Blockliste)
+     |&lt;-- 0.0.0.0 (leer) -----|
+     |  Anzeige laedt nicht   |  Log: &quot;werbung.de blockiert&quot;
+</code></pre>
+<p>Entscheidend: Der Blocker sieht nur, <strong>welche Namen</strong> angefragt werden – nicht die Inhalte der Seiten und nicht die verschlüsselten Verbindungen dahinter.</p>
+<h2>Pi-hole: Funktionen als DNS-Server, Listenverwaltung, Query-Log</h2>
+<p>Pi-hole ist die bekannteste Lösung und im Kern ein DNS-Server, der eine Filterliste anwendet. Was es kann:</p>
+<ul>
+<li><strong>DNS-Server</strong> für das ganze Netz, mit Weiterleitung an konfigurierbare Upstream-Server.</li>
+<li><strong>Listenverwaltung:</strong> mehrere Ad- und Regex-Listen, per Weboberfläche aktualisierbar (Standardliste: StevenBlack-Hosts).</li>
+<li><strong>Query-Log:</strong> jede Anfrage sichtbar – erlaubt, blockiert, gekacht. Nützlich zur Diagnose („Warum lädt ein Bild nicht?&quot;) und zur Rechnungsprüfung („Welches Gerät funkt fern?&quot;).</li>
+<li><strong>Feste Zonen/DNS-Einträge</strong> für lokale Namen, ein Werbeblocker as DNS-Server.</li>
+</ul>
+<p>Was es <strong>nicht</strong> kann: Pi-hole filtert nur auf DNS-Ebene. YouTube-Werbung, die über dieselbe Domain wie die Videos läuft (HTTP-Ebene), bleibt unsichtbar – dafür braucht es wieder eine Browser-Erweiterung. Ebenso keine HTTPS-Inspektion: Der Blocker sieht keine URLs hinter verschlüsselten Verbindungen. Pi-hole selbst bringt keine DoH-/DoT-Gegenstelle mit, sondern arbeitet als klassischer DNS-Server.</p>
+<h2>AdGuard Home: Unterschiede zu Pi-hole</h2>
+<p>AdGuard Home deckt dieselbe Aufgabe – netzweit DNS filtern – ist aber anders gebaut:</p>
+<ul>
+<li><strong>Eigene, mitgelieferte Filterlisten</strong> statt reiner Hosts-Dateien; zusätzlich <strong>Benutzerregeln</strong> mit Filter-Syntax (ähnlich uBlock) und Wildcards/Regex.</li>
+<li><strong>Blocking-Mode wählbar:</strong> <code>0.0.0.0</code>, <code>NXDOMAIN</code>, „Refused&quot; oder eine eigene Antwort (z. B. Pixel). Pi-hole antwortet im Standard starr.</li>
+<li><strong>Mobil nutzbar:</strong> AdGuard Home läuft auch auf Handy/Router-AP und bietet <strong>eingebautes DNS-over-HTTPS und DNS-over-TLS</strong> als Server direkt mit.</li>
+<li><strong>Kindersicherung/Elternkontrolle</strong> und <strong>Clientspezifische Regeln</strong> sind stärker ausgebaut.</li>
+</ul>
+<p>Ehrliche Nachteile: Die Oberfläche ist mächtiger, dadurch für Nichttechniker anfangs unübersichtlicher. Manche Umsteiger vermissen das schlichte Pi-hole-Query-Log. Und die größere Funktionsfülle verleitet zu Regelwildwuchs – wer zu viele Blocklisten stapelt, sperrt sich das eigene Smart Home aus.</p>
+<h2>Vergleichstabelle</h2>
+<p>| Kriterium | Pi-hole | AdGuard Home |</p>
+<p>|---|---|---|</p>
+<p>| DNS-Filterung | Ja, host/s-Regex | Ja, volle Filter-Syntax + Wildcards |</p>
+<p>| HTTP-/YouTube-Filterung | Nein | Nein (nur per Browser-Erweiterung) |</p>
+<p>| Speicherverbrauch (typisch) | 512 MB – 1 GB RAM | 512 MB – 1 GB RAM |</p>
+<p>| Bedienoberfläche | schlicht, query-zentriert | umfangreich, regel-zentriert |</p>
+<p>| Docker-Einrichtung | sehr einfach (Image <code>pihole/pihole</code>) | einfach (Image <code>adguard/adguardhome</code>) |</p>
+<p>| Nichttechniker-Tauglichkeit | hoch | mittel |</p>
+<p>| Lizenz | EUPL-1.2 (GPL-nah) | GPL-3.0 |</p>
+<h2>Kombination mit DNS-over-HTTPS/-TLS und eigenem Resolver</h2>
+<p>Reihenfolge im Netz (von innen nach außen):</p>
+<p>1. Gerät fragt <strong>Pi-hole/AdGuard Home</strong> (im LAN, klassisch Port 53).</p>
+<p>2. Der Blocker fragt den <strong>Upstream</strong> (z. B. Cloudflare <code>1.1.1.1</code>, Quad9 <code>9.9.9.9</code>) – idealerweise per <strong>DoH/DoT</strong> verschlüsselt.</p>
+<p>3. Optional davor/lokal: eigener <strong>Resolver (Unbound)</strong> für volle Kontrolle statt fremdem Upstream.</p>
+<p>Typische Fehler: (a) <strong>DoH im Browser aktiv</strong> – der Browser umgeht den lokalen DNS komplett und sendet direkt per HTTPS, dann blockiert Pi-hole nichts. Lösung: „Secure DNS&quot; im Browser auf „Ausschalten&quot; oder den Blocker selbst als DoH-Endpunkt eintragen (kann AdGuard Home nativ). (b) <strong>DoH/DoT auf dem Router</strong> aktiviert, wodurch der Blocker als Zwischenschicht übersprungen wird. (c) Doppelter Resolver, bei dem die Geräte am Filter vorbeifragen. Reihenfolge-Merkregel: Erst filtern, dann verschlüsseln, dann auflösen.</p>
+<h2>Praxis: Docker-Compose-Grundgerüst für Pi-hole</h2>
+<pre><code>
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - &quot;53:53/tcp&quot;
+      - &quot;53:53/udp&quot;
+      - &quot;8080:80/tcp&quot;
+    environment:
+      TZ: &quot;Europe/Berlin&quot;
+      WEBPASSWORD: &quot;sicheres-passwort-hier&quot;
+      PIHOLE_DNS_: &quot;1.1.1.1;9.9.9.9&quot;
+    volumes:
+      - &quot;./etc-pihole:/etc/pihole&quot;
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+</code></pre>
+<p>Netz- und DHCP-Anpassung: Im Router den <strong>DHCP-DNS auf die Pi-hole-IP</strong> setzen, damit alle Geräte den Filter nutzen. Stolperfallen: (1) <strong>DHCP-Vergabe am Pi-hole ausschalten</strong>, wenn der Router DHCP macht – zwei DHCP-Server im Netz sorgen für Adresschaos. (2) <strong>Port 53</strong> muss frei sein – läuft ein anderer DNS-Dienst (systemd-resolved, dnsmasq) auf der Maschine, scheitert der Start. (3) Eine <strong>zweite Instanz im WLAN</strong> nicht vergessen, wenn ein Gäste-WLAN einen eigenen DHCP-Server hat – sonst filtern Gäste nicht.</p>
+<h2>Grenzen und Sicherheitsaspekte</h2>
+<p>Ein DNS-Blocker kann <strong>nicht</strong>: HTTPS-Inhalte filtern, Werbung auf derselben Domain wie Inhalte (YouTube) blocken, verschlüsselte Anfragen sehen, oder Geräte mit fest eingestelltem DNS/DoH umleiten. Auch ohne Filterliste korrekt: Er ist kein Malware-Schutz im vollen Sinne.</p>
+<p>Datenschutz: Der Blocker sieht alle von innen angefragten <strong>Domainnamen</strong> – also auch, welche Geräte wann welche Seiten aufrufen. Wer das Log zeigt/speichert, protokolliert damit faktisch das Surfverhalten. Für Privat ideal als reine Statistik, aber Logs regelmäßig und gezielt aufbewahren. Kleine Firmen: Wenn der DNS-Log zur <strong>Überwachung von Mitarbeitern</strong> genutzt wird, greift schnell das <strong>Bundesdatenschutzgesetz (§ 26 BDSG)</strong> und eine Betriebsvereinbarung / DSGVO-Information wird nötig; eine <strong>Protokollierungspflicht</strong> besteht z. B. für TK-Anbieter (§ 100 TKG § 91 ff.), nicht für normale Firmennetze. Faustregel: Log nur so lange wie nötig, nicht personenbezogen auswerten, Zugriff schützen.</p>
+<h2>Fazit: Empfehlung je Kundenprofil</h2>
+<ul>
+<li><strong>Privat (1–2 Geräte):</strong> Browser-Erweiterung (uBlock Origin) reicht. Der Aufwand für einen eigenen DNS-Server zahlt sich kaum aus, wenn meist nur ein Browser surft.</li>
+<li><strong>Familie / geteilter Haushalt:</strong> Ein Pi-hole (oder AdGuard Home) ergibt Sinn, sobald mehrere Geräte, Fernseher und Kindergeräte mitschauen. Pi-hole ist der schnellere Einstieg, AdGuard Home die flexiblere Dauerlösung.</li>
+<li><strong>Kleine Firma (bis ~25 Arbeitsplätze):</strong> Zentraler DNS-Filter plus DoH/DoT zum Upstream, Logs datenschutzkonform begrenzen. AdGuard Home wegen DoH/DoT-Server, Client-Regeln und Elternkontrolle, oder Pi-hole für maximale Einfachheit. Kombination mit einem eigenen Resolver (Unbound) für maximale Kontrolle.</li>
+</ul>
+<h2>Häufige Fragen</h2>
+<h2>Blockiert Pi-hole YouTube-Werbung?</h2>
+<p>Nein. YouTube liefert Videos und Werbung über dieselbe Domain aus. Nur eine Browser-Erweiterung kann hier zusätzlich filtern.</p>
+<h2>Kann ich Pi-hole und einen eigenen Resolver (Unbound) kombinieren?</h2>
+<p>Ja. Pi-hole filtert und leitet an Unbound weiter, Unbound löst rekursiv auf. Reihenfolge: Gerät → Pi-hole → Unbound → Internet.</p>
+<h2>Warum blockiert mein Blocker nichts mehr, seit ich DoH im Browser aktiviere?</h2>
+<p>Der Browser umgeht den lokalen DNS. „Secure DNS&quot; ausschalten oder den Blocker als DoH-Endpunkt eintragen (AdGuard Home kann das nativ).</p>
+<h2>Reicht ein Raspberry Pi?</h2>
+<p>Für ein typisches Heimnetz (20–50 Geräte) reicht ein Raspberry Pi 4 oder ein Mini-PC. AdGuard Home und Pi-hole brauchen je nach Liste 512 MB bis 1 GB RAM.</p>
+<h2>Ist ein selbst gehosteter DNS-Blocker legal?</h2>
+<p>Ja, im eigenen Netz. Bei Firmen ist zu beachten, dass Logs über Mitarbeiter-Surfverhalten datenschutzrechtlich (§ 26 BDSG, DSGVO) geregelt sein müssen.</p>
+<h2>Quellen</h2>
+<ul>
+<li>Pi-hole Dokumentation: https://docs.pi-hole.net/</li>
+<li>Pi-hole GitHub: https://github.com/pi-hole/pi-hole</li>
+<li>Pi-hole Docker: https://github.com/pi-hole/docker-pi-hole</li>
+<li>AdGuard Home GitHub/Wiki: https://github.com/AdguardTeam/AdGuardHome</li>
+<li>AdGuard Home Projektseite: https://adguard.com/adguard-home/overview.html</li>
+<li>Unbound Resolver: https://unbound.docs.nlnetlabs.nl/</li>
+</ul>
+<h2>Interne Verlinkungen</h2>
+<ul>
+<li><strong>passwortmanager-selbst-hosten</strong> — Ankertext: „Passwörter selbst verwalten statt Cloud-Abos&quot; (verweist auf <code>passwortmanager-selbst-hosten.md</code>; thematisch verwandt: Zugriffskontrolle im eigenen Netz).</li>
+<li><strong>vlan-netzsegmentierung</strong> — Ankertext: „Netzsegmentierung mit VLANs&quot; (verweist auf <code>vlan-netzsegmentierung.md</code>; ideal als Folgeschritt, um DNS-Server und Gäste-WLAN zu trennen).</li>
+<li><strong>monitoring-ohne-cloud</strong> — Ankertext: „Monitoring ohne Cloud&quot; (verweist auf <code>monitoring-ohne-cloud.md</code>; passt zur Überwachung des Pi-hole-Query-Logs und Dienst-Uptime).</li>
+<li><strong>docker-vs-vm</strong> — Ankertext: „Docker oder VM: was passt?&quot; (verweist auf <code>docker-vs-vm.md</code>; erklärt die Grundlage für das Pi-hole-Docker-Grundgerüst).</li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
