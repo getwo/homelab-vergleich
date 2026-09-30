@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalender, Kontakte und Notizen selbst hosten: Radicale, Baikal, Nextcloud und Joplin im Vergleich</title>
+<meta name="description" content="Vergleich von Radicale, Baikal, Nextcloud und Joplin für den eigenen Kalender-, Kontakt- und Notiz-Betrieb: Docker-Setup, Clients, Sync auf Android und iOS sowie Sicherheits- und Backup-Grundregeln.">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header>
+<div class="wrap">
+<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
+<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
+</div>
+</header>
+<main class="wrap">
+<article class="content" style="max-width:800px;">
+
+<h1>Kalender, Kontakte und Notizen selbst hosten: Radicale, Baikal, Nextcloud und Joplin im Vergleich</h1>
+<p>Die meisten Homelab-Betreiber und kleinen Firmen verwenden mindestens einen Cloud-Dienst für Kalender, Kontakte oder Notizen – sei es Google Kalender, Apple Kontakte oder ein Notizbuch bei einem großen Anbieter. Die Abonnements sind bequem, aber die Konsequenzen werden oft unterschätzt: Daten liegen auf fremden Servern, das Entfernen des Abonnements kann den Zugriff auf Jahre Arbeitsgeschichte abschneiden, und ein Export ist selten vollständig.</p>
+<p>Wer die Kontrolle über diese Daten zurückerhalten will, hat heute mehrere reife Open-Source-Optionen. Dieser Artikel vergleicht vier Kandidaten – Radicale, Baikal, Nextcloud und Joplin – und zeigt, wie ein eigener Betrieb mit Docker aussieht, welche Clients funktionieren und was bei der Migration von Cloud-Diensten zu beachten ist.</p>
+<h2>Warum Cloud-Kalender, -Kontakte und -Notizen problematisch sind</h2>
+<p>Die Grundbedenken gegenüber Cloud-Diensten für persönliche Synchronisationsdaten fallen in mehrere Kategorien, die sich teilweise überschneiden:</p>
+<p><strong>Datenabhängigkeit.</strong> Wenn Kalender, Kontakte und Notizen bei einem Anbieter liegen, gehört die Historie zu diesem Anbieter. Ein Serveraustausch, ein genehmigungsbedürftiger Datenzugriff oder ein vertragliches Ende des Anbieters kann den Zugriff einschränken, ohne dass der Nutzer direkt eingreifen kann. Bei Kalendern bedeutet das konkret: Über Jahre eingetragene Termine, Meeting-Notizen und wiederkehrende Einträge sind dann nur noch schwer wiederherstellbar.</p>
+<p><strong>Abo-Zwang und Preisentwicklung.</strong> Cloud-Abos sind wiederkehrende Pflichtzahlungen. Selbst wenn die monatlichen Kosten zunächst niedrig erscheinen, summieren sie sich über die Nutzungsdauer. Bei kleineren Firmen kann die Summe mehrerer Abos (Kalender, Kontakte, Notizen, Cloud-Speicher) schnell mehrere hundert Euro im Jahr erreichen – ohne dass eine eigene Lösung einen vergleichbaren laufenden Betrag erfordert.</p>
+<p><strong>Kündigungsfolgen.</strong> Das Beenden eines Abonnements ist selten eine einfache technische Aktion. Viele Dienste geben zum Zeitpunkt der Kündigung nur eine begrenzte Exportfunktion frei oder stellen diese gar nicht bereit. Kontakte und Kalender gehören zu den Daten, bei denen der Export oft unvollständig ist – beispielsweise weil nicht alle Informationen in einem standardkonformen Format verfügbar sind oder rückwirkende Informationen fehlen.</p>
+<p><strong>Datenschutz und DSGVO.</strong> Für Betreiber in der EU ist die DSGVO relevant, weil personenbezogene Daten verarbeitet werden. Kalender enthalten Termine mit Zeitpunkten, Orten und Teilnehmern – oft auch mit persönlichen Informationen überPrivatpersonen oder Geschäftskontakte. Kontakte enthalten Namen, E-Mail-Adressen, Telefonnummern. Notizen können sehr unterschiedliche Inhalte haben, gehören aber ebenfalls zu den Daten, für die eine Verarbeitungsfestlegung sinnvoll ist. Bei einem Cloud-Dienst liegt die Verantwortung für die Datenschutzmaßnahmen zumindest teilweise beim Anbieter; bei einer eigenen Lösung liegt sie beim Betreiber.</p>
+<p><strong>Fehlender Export.</strong> Viele Cloud-Dienste bieten einen Export an, aber der Export ist selten in einem Format, das ohne Weiteres in eine andere Lösung übernommen werden kann. Kontakte werden oft im vCard-Format exportiert, aber mit Unregelmäßigkeiten. Kalender-Exporte in iCal-Form sind möglich, enthalten aber häufig nicht alle Eigenschaften. Notizen sind oft proprietär und lassen sich nicht ohne Weiteres exportieren.</p>
+<h2>Vergleichstabelle der vier Kandidaten</h2>
+<p>Die folgende Tabelle fasst die wesentlichen Unterschiede zwischen den vier Lösungen zusammen. Die Einschätzungen beziehen sich auf den typischen Einsatz in einem kleinen Homelab oder einer kleinen Firma ohne dedizierten Admin.</p>
+<p>| Kriterium | Radicale | Baikal | Nextcloud | Joplin |</p>
+<p>|---|---|---|---|---|</p>
+<p>| Fokus | Kalender (CalDAV) und optionally Kontakte (CardDAV) | Kalender (CalDAV) und Kontakte (CardDAV) | Komplette Produktsuite inkl. Kalender, Kontakte, Dateisync, vielen Apps | Notizen mit Ende-zu-Ende-Verschlüsselung (E2EE) |</p>
+<p>| Protokolle | CalDAV (primär), CardDAV (Option) | CalDAV, CardDAV | CalDAV (via CalDAV-App), CardDAV (via CardDAV-App), WebDAV | Eigene Sync-API, Sync über WebDAV (optional) |</p>
+<p>| Speicherbedarf | Sehr gering (einzelne CAL- und VCF-Dateien) | Gering (SQLite-Datenbank, Dateien) | Höher (Datenbank, Dateisystem, viele PHP-Dateien) | Gering bis mittel (Notizen als Markdown-Dateien, evtl. synchronisierte Datenbank) |</p>
+<p>| CPU-/RAM-Bedarf | Minimal (Python-basiert, leichtgewichtig) | Niedrig (PHP-basiert, etwas mehr als Radicale) | Mittel (PHP-FPM, Datenbank, viele parallele Anfragen möglich) | Gering (Desktop-/Mobileanwendung, Sync-Server optional) |</p>
+<p>| Lizenz | GPL v3 (Radicale), AGPL v3 (manche Branches) | AGPL v3 | AGPL v3 (Community), kommerzielle Lizenzen für Enterprise-Features | MIT-Lizenz (Desktop- und Mobile-Apps), Serverkomponenten variieren |</p>
+<p>| Einstieg | Einfach (ein Container oder Python-Host, wenige Konfigurationen) | Einfach (Docker-Image, Einrichtungs-Assistent) | Komplexer (Datenbank, Webserver, Caching, viele Konfigurationen möglich) | Einfach (Desktop-Anwendung oder Mobile-App installieren, Sync einrichten) |</p>
+<p>| Clients | CalDAV-kompatible Kalender-Apps (iOS, Android, Thunderbird, Evolution, diverse Desktop-Clients) | CalDAV-kompatible Clients | Viele offizielle Apps (iOS, Android, Desktop), drittanbieter-Clients über CalDAV/CardDAV | Joplin-Desktop, -Mobile, -CLI; verschiedene Sync-Optionen |</p>
+<p>Die Wahl zwischen den Lösungen hängt also weniger von technischen Konzepten ab als von der Frage, ob eine umfassende Suite (Nextcloud) oder spezialisierte Einzelkomponenten (Radicale/Baikal für Kalender und Kontakte, Joplin für Notizen) passen.</p>
+<h2>Einstieg mit Docker – Realistische Konfigurationen</h2>
+<p>Alle vier Lösungen lassen sich mit Docker betreiben. Die folgenden Schnipsel sind als Ausgangspunkt gedacht, nicht als vollständige Produktionskonfiguration. Für den produktiven Betrieb gehört eine HTTPS-Ververbindung mit einem gültigen Zertifikat (z. B. über ACME/Let&#x27;s Encrypt), Authentifizierung und regelmäßige Wartung dazu.</p>
+<h2>Radicale (Kalender und optional Kontakte)</h2>
+<p>Radicale ist ein leichtgewichtiger CalDAV-Server. Nach der Installation bietet er Kalender-Endpunkte für Clients. Für CardDAV (Kontakte) wird im Standard-Radicale-Setup häufig eine zusätzliche Komponente benötigt.</p>
+<p>Ein minimaler <code>docker-compose.yml</code>-Eintrag:</p>
+<pre><code>
+version: &quot;3&quot;
+services:
+  radicale:
+    image: radicaleorg/radicale:latest
+    ports:
+      - &quot;5232:5232&quot;
+    volumes:
+      - ./radicale-data:/var/lib/radicale
+    environment:
+      - RADICALE_CONFIG=/etc/radicale/config
+    restart: unless-stopped
+</code></pre>
+<p>Damit steht Radicale auf <code>localhost:5232</code> bereit. Für den Produktivbetrieb gehört eine Reverse-Proxy-Konfiguration mit HTTPS und eine Authentifizierung hinzu.</p>
+<h2>Baikal (Kalender und Kontakte)</h2>
+<p>Baikal ist eine PHP-Anwendung, die CalDAV und CardDAV kombiniert und einen Web-Interaktions-Assistenten für die Einrichtung anbietet.</p>
+<pre><code>
+version: &quot;3&quot;
+services:
+  baikal:
+    image: sdiwi/baikal:latest
+    ports:
+      - &quot;8080:80&quot;
+    volumes:
+      - ./baikal-data:/var/www/baikal/specific/data
+    restart: unless-stopped
+</code></pre>
+<p>Baikal startet mit einem Einrichtungs-Assistenten, der im Browser unter <code>http://&lt;server&gt;:8080</code> erreichbar ist. Danach sind Kalender und Kontakte über CalDAV- bzw. CardDAV-Protokoll verfügbar.</p>
+<h2>Nextcloud (Suite mit Kalender und Kontakten)</h2>
+<p>Nextcloud ist die umfassendste Option und wird häufig über offizielle Docker-Images oder über Distributionen wie Cloudron oder YunoHost installiert.</p>
+<pre><code>
+version: &quot;3&quot;
+services:
+  nextcloud:
+    image: nextcloud:latest
+    ports:
+      - &quot;8080:80&quot;
+    volumes:
+      - ./nextcloud-data:/var/www/html
+      - ./nextcloud-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_PASSWORD=example
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    depends_on:
+      - db
+    restart: unless-stopped
+  db:
+    image: mariadb:10
+    volumes:
+      - ./nextcloud-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_PASSWORD=example
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    restart: unless-stopped
+</code></pre>
+<p>Nextcloud bringt Kalender und Kontakte über Kalender- und Kontakt-Apps mit. Für den produktiven Betrieb sind Datenbank, HTTPS und Profiling-Einstellungen relevant.</p>
+<h2>Joplin (Notizen)</h2>
+<p>Joplin ist eine Notizanwendung mit Ende-zu-Ende-Verschlüsselung. Die Desktop- und Mobile-Anwendungen sind die primären Clients; der Sync kann über verschiedene Ziele erfolgen, darunter WebDAV, Nextcloud, Joplin Cloud oder S3-kompatible Speicher.</p>
+<pre><code>
+version: &quot;3&quot;
+services:
+  joplin:
+    image: joplin/server:latest
+    ports:
+      - &quot;22357:22357&quot;
+    volumes:
+      - ./joplin-data:/home/joplin/data
+    environment:
+      - JOplin_USERNAME=admin
+      - JOplin_PASSWORD=example
+    restart: unless-stopped
+</code></pre>
+<p>Der Joplin-Server ist optional – viele Nutzer synchronisieren direkt über WebDAV oder einen Nextcloud-Speicher, ohne einen eigenen Server zu betreiben. Für Ende-zu-Ende-Verschlüsselung ist in der Desktop-Anwendung ein Verschlüsselungsprofil zu aktivieren.</p>
+<h2>Kalender-Sync mit mobilen Geräten</h2>
+<p>Die praktische Nutzbarkeit von selbst gehosteten Kalendern und Kontakten hängt stark davon ab, wie gut die Synchronisation mit mobilen Geräten funktioniert.</p>
+<h2>Android</h2>
+<p>Auf Android funktionieren CalDAV-Kalender und CardDAV-Kontakte mit verschiedenen Clients. Beliebte Kalender-Apps sind DAVx5 (für CalDAV/CardDAV-Daten) oder AnkiCal (oder ähnliche Clients). Für Kontakte eignen sich oft CardDAV-kompatible Kontakt-Synchronisationen. Der Sync läuft in der Regel über Polling – das Gerät fragt in Intervallen beim Server nach Änderungen. Ein echtes Push-Sync (also sofortige Aktualisierung ohne Polling-Intervall) ist mit selbst gehosteten CalDAV-Servern über CalDAV-Push schwieriger als bei großen Cloud-Anbietern; die einzelnen Clients und der Server müssen die unterstützte Methode unterstützen.</p>
+<h2>iOS</h2>
+<p>Auf iOS sind Kalender und Kontakte im System integriert und unterstützen CalDAV und CardDAV direkt. Unter „Einstellungen &gt; Kalender &gt; Konten&quot; oder „Einstellungen &gt; Kontakte &gt; Konten&quot; kann ein neuer CalDAV- bzw. CardDAV-Konto eingetragen werden. Das iCloud-eigenen Konten ist dabei nicht betroffen. Die Einrichtung erfordert die Server-URL, einen Benutzernamen und ein Passwort.</p>
+<h2>Stolperfallen mit Zertifikaten</h2>
+<p>Bei HTTPS-Verbindungen mit selbst signierten oder ungültigen Zertifikaten verweigern viele mobile Clients den Verbindungsaufbau oder fragen mehrfach nach. Für den produktiven Betrieb ist ein von einer offiziellen CA signiertes Zertifikat (z. B. über Let&#x27;s Encrypt) deutlich einfacher. Zertifikatsfehler sind einer der häufigsten Gründe, warum CalDAV/CardDAV-Synchronisationen keine Termine oder Kontakte übertragen.</p>
+<h2>Push- statt Poll-Sync</h2>
+<p>Many Cloud-Anbieter bieten einen Push-Sync über Webhooks oder spezielle Kanäle an. Bei selbst gehosteten CalDAV-Servern ist Push-Sync nicht immer verfügbar oder nur eingeschränkt. Das bedeutet: Änderungen auf dem Server werden nicht sofort an das mobile Gerät übermittelt, sondern erst, wenn das Gerät den Server nach Änderungen fragt. Das Polling-Intervall kann in den Client-Einstellungen oft angepasst werden – kürzere Intervalle bedeuten häufigere Abfragen und mehr Datenverkehr.</p>
+<h2>Joplin als Notiz-Alternative</h2>
+<p>Joplin ist eine Open-Source-Notizanwendung, die Markdown als Format verwendet und Ende-zu-Ende-Verschlüsselung (E2EE) anbietet.</p>
+<h2>Ende-zu-Ende-Verschlüsselung</h2>
+<p>Joplin bietet die Option, Notizen Ende-zu-Ende zu verschlüsseln. Das bedeutet, dass die Notizen auf dem Sync-Ziel (z. B. WebDAV-Server oder Nextcloud) verschlüsselt liegen und nur mit dem Entschlüsselungsschlüssel auf dem Client lesbar sind. Der Sync-Server sieht die verschlüsselten Daten, aber nicht den Inhalt. Das ist ein wesentlicher Unterschied zu Sync-Lösungen, bei denen der Server die unverschlüsselten Daten sieht.</p>
+<h2>Sync über WebDAV</h2>
+<p>Neben Joplin Cloud (einem kommerziellen Dienst) kann Joplin über WebDAV synchronisieren. Das bedeutet, dass ein WebDAV-fähiger Server – beispielsweise Nextcloud oder ein eigener WebDAV-Server – als Sync-Ziel verwendet werden kann.</p>
+<h2>Notizformate</h2>
+<p>Joplin speichert Notizen primär als Markdown-Dateien. Das ist ein offener Standard, der ohne Joplin lesbar ist. Bei Bedarf können Notizen auch im Joplin-eigenen Format exportiert werden. Das Markdown-Format erleichtert die Migration aus Joplin heraus, falls nötig.</p>
+<h2>Grenzen der Suche</h2>
+<p>Die Volltextsuche in Joplin funktioniert lokal sehr gut, wenn die Notizen verschlüsselt liegen, dann nur mit dem lokalen Index. Ein Sync-zentraler Suchdienst ist nicht verfügbar, da der Server die verschlüsselten Daten nicht durchsuchen kann. Das bedeutet, dass die Suche auf dem Gerät stattfindet, auf dem Joplin läuft. Bei Nutzung mehrerer Geräte muss die Suche auf jedem Gerät separat stattfinden – ein Unterschied zu zentralen Cloud-Suchdiensten.</p>
+<h2>Sicherheit, Backups und Restore</h2>
+<p>Wer Kalender, Kontakte und Notizen selbst betreibt, übernimmt auch die Verantwortung für den Schutz dieser Daten.</p>
+<p><strong>Welche Daten sind relevant?</strong> Kalender enthalten Termine mit Zeitpunkten, Orten und teilweise persönlichen Notizen. Kontakte enthalten Namen, E-Mail-Adressen, Telefonnummern und ggf. weitere persönliche Informationen. Notizen können sehr unterschiedliche Inhalte umfassen – von allgemeinen Einträgen bis zu sensiblen Dokumenten. Alle drei Datenkategorien gehören zu den Daten, die regelmäßig gesichert werden sollten.</p>
+<p><strong>Wie oft?</strong> Für Kalender und Kontakte ist tägliches oder wöchentliches Backup sinnvoll, da Termine und Kontakte regelmäßig aktualisiert werden und ein Datenverlust über mehrere Tage oder Wochen beträchtliche Auswirkungen haben kann. Notizen sind weniger zeitkritisch, aber auch sie sollten regelmäßig gesichert werden, weil der inhaltliche Verlust von Notizen oft unmöglich wiederherstellbar ist.</p>
+<p><strong>Format der Backups.</strong> Bei selbst gehosteten Lösungen sind Datenbanken (SQLite, MySQL/MariaDB) und Dateisysteminhalte (Kalender-Dateien, Kontakt-Dateien, Notizdateien) zu sichern. Ein Backup sollte sowohl die Datenbank als auch die Dateien enthalten. Für Nextcloud sind zusätzlich Konfigurationsdateien und ggf. Datenbanken für Apps zu berücksichtigen.</p>
+<p><strong>Exportfunktion als Pflicht.</strong> Eine eigene Lösung ist nur so sicher wie ihr schlechteste Wiederherstellungsstrategie. Daher ist eine Exportfunktion Pflicht – nicht nur für den Fall, dass die eigene Lösung ausfällt, sondern auch für den Fall, dass ein Wechsel zu einer anderen Lösung nötig wird. Die Exportfunktion muss in einem offenen, standardisierten Format verfügbar sein, das ohne die eigene Software lesbar ist (z. B. vCard für Kontakte, iCal für Kalender, Markdown oder HTML für Notizen).</p>
+<h2>Entscheidungshilfe: Wer nimmt was?</h2>
+<p>Die Wahl hängt von der gewünschten Komplexität und den Anforderungen ab.</p>
+<p><strong>Nextcloud</strong> ist sinnvoll für Nutzer und kleine Firmen, die eine zentrale Suite mit Dateisync, Kalender und Kontakten wollen und bereit sind, die höhere Komplexität in Kauf zu nehmen. Der Einstieg ist aufwändiger, aber die Pflege von einem Server für viele Funktionen ist einfacher als die Pflege mehrerer Einzelkomponenten.</p>
+<p><strong>Radicale und Baikal</strong> sind geeignet für Nutzer, die ausschließlich Kalender und Kontakte synchronsieren wollen und keine weitere Suite benötigen. Radikale ist minimaler; Baikal bietet CardDAV nativ und ist etwas mehr Konfigurationsaufwand. Beide eignen sich für kleine Homelab-Umgebungen und sind einfach zu betreiben.</p>
+<p><strong>Joplin</strong> ist die Wahl für Notizen, bei denen Ende-zu-Ende-Verschlüsselung und Markdown-Format Priorität haben. Joplin lässt sich gut mit WebDAV oder einem eigenen Sync-Server synchronisieren und ist unabhängig von der Kalender- und Kontaktlösung.</p>
+<h2>Migrations-Reihenfolge in fünf Schritten</h2>
+<p>1. <strong>Export aus der Cloud.</strong> Alle Kalender, Kontakte und Notizen aus dem aktuellen Cloud-Dienst exportieren – in den gebotenen Formaten, auch wenn sie nicht perfekt sind. Der Export ist der Sicherheitspuffer für den Fall, dass etwas schiefgeht.</p>
+<p>2. <strong>Daten prüfen.</strong> Die exportierten Daten auf Vollständigkeit und Format prüfen. Bei Kontakten bedeutet das: Sind alle Felder vorhanden? Sind Duplikate vorhanden? Bei Kalendern: Wurden alle Kalender exportiert?</p>
+<p>3. <strong>Selbst gehostete Lösung aufsetzen.</strong> Die gewählte Lösung (z. B. Baikal für Kalender und Kontakte, Joplin für Notizen) mit Docker aufsetzen, HTTPS einrichten,Authentifizierung konfigurieren.</p>
+<p>4. <strong>Daten importieren.</strong> Die exportierten Daten in die neue Lösung importieren. Bei CalDAV/CardDAV bedeutet das oft, die Daten über den Client zu synchronisieren und ggf. manuell zu überprüfen. Bei Joplin kann der Import aus Markdown- oder anderen Formaten erfolgen.</p>
+<p>5. <strong>Client neu konfigurieren.</strong> Die mobilen Geräte und anderen Clients auf die neue Selbst gehostete Lösung umstellen. Dabei die Synchronisation überwachen und prüfen, ob alle Daten korrekt übertragen wurden.</p>
+<h2>FAQ</h2>
+<h2>Welche Daten bleiben auf meinem Server, wenn ich einen Cloud-Kalender wechsle?</h2>
+<p>Bei einer selbst gehosteten Lösung bleiben alle Kalender-, Kontakt- und Notizdaten auf dem eigenen Server. Bei Kalendern und Kontakten bedeutet das, dass die Daten auf dem Server gespeichert werden und nur über das CalDAV- bzw. CardDAV-Protokoll an die Clients gesendet werden. Bei Joplin mit Ende-zu-Ende-Verschlüsselung liegen die Daten auf dem Sync-Ziel verschlüsselt – der Server sieht nur verschlüsselte Daten.</p>
+<h2>Ist push-sync bei selbst gehosteten Kalendern möglich?</h2>
+<p>Push-Sync ist bei selbst gehosteten CalDAV-Servern eingeschränkt verfügbar. Viele mobile Clients arbeiten mit Polling – sie fragen in regelmäßigen Abständen den Server nach Änderungen. Wahre Push-Telegramm-Nachrichten (sofortige Übermittlung ohne Polling-Intervall) sind bei CalDAV nicht immer verfügbar und hängen von Server und Client ab.</p>
+<h2>Was passiert, wenn mein Server ausfällt?</h2>
+<p>Daten, die auf dem eigenen Server gespeichert sind, sind beim Serverausfall nicht verfügbar. Der Zugriff auf Kalender, Kontakte und Notizen ist dann nicht möglich. Regelmäßige Backups und eine möglichst redundante Serverausführung reduzieren das Risiko. Eine Exportfunktion vor dem Ausfall ist unerlässlich.</p>
+<h2>Brauche ich HTTPS für CalDAV und CardDAV?</h2>
+<p>HTTPS wird dringend empfohlen, weil Benutzername und Passwort über das Netzwerk gesendet werden. Ohne Verschlüsselung sind die Zugangsdaten im Klartext übertragen. Für mobile Clients ist HTTPS oft auch Voraussetzung für die Synchronisation, da viele Clients mit unbeencrypted Verbindungen nicht arbeiten.</p>
+<h2>Kann ich mehrere Kalender bei einem selbst gehosteten Server führen?</h2>
+<p>Ja, das ist einer der Vorteile von CalDAV. Ein Server kann mehrere Kalender (z. B. für verschiedene Personen, Projekte oder Bereiche) verwalten. Jeder Kalender wird über eine eigene URL adressiert, und Clients können mehrere Kalender abonnieren und synchronisieren.</p>
+<hr>
+<h2>Interne Verlinkungen</h2>
+<ul>
+<li><strong><a href="/artikel/nextcloud-vs-cloud-dienste">Nextcloud vs. Cloud-Dienste: Was lohnt sich wirklich?</a></strong> – Vertiefung zur Entscheidung zwischen Cloud-Abo und eigener Suite, mit Kostenbetrachtung und Pflegeaufwand.</li>
+<li><strong><a href="/artikel/passwortmanager-selbst-hosten">Passwortmanager selbst hosten: Vaultwarden, KeePass und Bitwarden Cloud im Vergleich</a></strong> – Ergänzender Beitrag für den sicheren Betrieb von Zugangsdaten im eigenen Server-Betrieb.</li>
+<li><strong><a href="/artikel/backup-strategie-selfhoster">Kein Backup ist sicher, bis es getestet ist: Die 3-2-1-Strategie für Self-Hoster</a></strong> – Backup-Grundregeln mit konkreten Umsetzungen für Docker-Container und Proxmox-Hosts.</li>
+<li><strong><a href="/artikel/open-source-alternativen-cloud-dienste">Die 5 besten Open-Source-Alternativen zu gängigen Cloud-Diensten</a></strong> – Übersichtsartikel mit Nextcloud als zentraler Alternative zu Google Drive, Dropbox und iCloud.</li>
+</ul>
+<h2>Veroeffentlichungs-Hinweise</h2>
+<p>Dieser Artikel ist für die Homelab-Auto-Publish-Pipeline bestimmt. Vor dem Release zu prüfen:</p>
+<ul>
+<li><strong>YAML-Frontmatter</strong> vollständig und korrekt (title, slug, meta_description, focus_keyword, date, kategorie, tags, author, status).</li>
+<li><strong>Interne Verlinkungen</strong> auf existierende Artikel prüfen – Slugs und Ankertexte auf Übereinstimmung mit veröffentlichten Artikeln kontrollieren (insbesondere <code>nextcloud-vs-cloud-dienste</code> und <code>backup-strategie-selfhoster</code> sind bereits vorhanden).</li>
+<li><strong>Abkürzungsverzicht:</strong> Keine erfundenen Messwerte, Preise oder Links. Alle genannten Portnummern sind Standardwerte; für produktiven Betrieb HTTPS mit gültigen Zertifikaten erforderlich.</li>
+<li><strong>Tone-Check:</strong> Nuchtern und sachlich, keine Sponsoring-Elemente, keine subjektiven Aussagen über „besser&quot; oder „schlechter&quot;, sondern Fakten und Kompromisse.</li>
+<li><strong>Word-Count:</strong> Ziel 1200 bis 1500 Wörter. Bei Zu- oder Abweichung anpassen.</li>
+<li><strong>Meta-Description:</strong> Unter 160 Zeichen, enthält Fokus-Keyword.</li>
+<li><strong>Publish-Status:</strong> Vor dem Push auf <code>status: published</code> setzen und im Dispatch- und Schichtwechsel-Cron vermerken.</li>
+</ul>
+
+<p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
+
+</article>
+</main>
+<footer>
+<div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
+</footer>
+</body>
+</html>
