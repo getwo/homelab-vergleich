@@ -8,3 +8,8 @@ header{position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border);ba
 /* Shared older article and utility pages */.grid{padding:24px 0 40px}.grid h2{font-size:1.4rem}.content{max-width:800px;margin:0 auto;padding:40px 20px 60px;overflow-wrap:anywhere}.content h1{font-size:clamp(1.8rem,4vw,2.5rem);line-height:1.2}.content h2{font-size:1.35rem;line-height:1.35;margin-top:32px}.content h3{font-size:1.1rem}.content a{color:var(--accent)}.content pre{background:var(--card);border:1px solid var(--border);padding:14px;border-radius:8px;overflow:auto}.content code{font-size:.92em}.content table{width:100%;border-collapse:collapse;display:block;overflow-x:auto}.content th,.content td{border:1px solid var(--border);padding:8px 12px}.content img{max-width:100%;height:auto}
 @media(max-width:730px){header .wrap{align-items:flex-start;flex-direction:column;padding-block:10px;gap:8px}header nav{display:flex;flex-wrap:wrap;gap:12px}header nav a{margin:0}header .brand img{width:122px}.brand span{font-size:.82rem}header{position:relative}.topic{scroll-margin-top:16px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card{transition:none}}
+
+/* Zwei echte Marken im Header – Originalfarben unverändert. */
+.brand-identity{display:flex;align-items:center;gap:14px;min-width:0}
+.bsn-mark{width:144px;height:64px;object-fit:contain;padding:4px;background:#f6f5f2;border-radius:7px;flex:none}
+@media(max-width:730px){.brand-identity{gap:8px}.brand-identity .brand{gap:7px}.brand-identity .brand img{width:100px}.brand-identity .brand span{font-size:.78rem;max-width:98px}.bsn-mark{width:82px;height:44px;padding:3px}}
