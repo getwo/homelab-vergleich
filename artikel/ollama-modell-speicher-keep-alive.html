@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ollama Keep Alive: Modelle im Speicher steuern</title>
+<meta name="description" content="Wie Ollama Modelle vorlädt und wieder freigibt: Keep-Alive-Optionen, Speicherkonflikte und Prüfschritte für den lokalen LLM-Betrieb im Homelab.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/ollama-modell-speicher-keep-alive.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>Ollama Keep Alive: geladene Modelle gezielt verwalten</h1>
+<p>Ein heruntergeladenes Modell ist nicht dasselbe wie ein <em>geladenes</em> Modell. Die Dateien liegen auf Datenträgern; bei einer Anfrage benötigt Ollama zusätzlich Arbeitsspeicher oder Grafikspeicher. Wer zwischen verschiedenen Modellen wechselt, bemerkt deshalb Wartezeiten beim erneuten Laden. Ollamas FAQ beschreibt standardmäßig fünf Minuten Verweildauer im Speicher und erklärt zugleich die Möglichkeiten zum Vorladen, Stoppen und Überprüfen.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Hier geht es ausschließlich um diese Betriebsentscheidung, nicht um die Installation oder die Modellwahl.</p>
+<h2>Welche Einstellung welchen Zweck hat</h2>
+<p><code>keep_alive</code> lässt sich pro Anfrage an <code>/api/generate</code> oder <code>/api/chat</code> übergeben. Die Dokumentation nennt eine Zeitspanne wie <code>10m</code>, eine Zahl in Sekunden, negative Werte für dauerhaftes Halten und <code>0</code> zum sofortigen Entladen nach der Antwort.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Die Server-Variable <code>OLLAMA_KEEP_ALIVE</code> setzt dagegen eine allgemeine Vorgabe; ein API-Wert hat Vorrang. Notiere deshalb bei der Fehlersuche sowohl die Serverkonfiguration als auch die tatsächlich gesendeten API-Felder.</p>
+<p>Das Wort „dauerhaft“ beschreibt hier das Verbleiben im Speicher während des laufenden Betriebs, nicht eine Garantie über Neustarts oder Speichermangel hinweg. Möchtest du ein Modell sofort freigeben, dokumentiert Ollama außerdem <code>ollama stop</code>. Die API-Referenz führt eine Anfrage mit <code>keep_alive: 0</code> als Entladebeispiel auf.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Eine globale, unbegrenzte Frist kann sinnvoll sein, wenn genau ein Modell kontinuierlich gebraucht wird; bei wechselnden Aufgaben bindet sie möglicherweise Speicher ohne Nutzen.</p>
+<h2>Speicherbudget vor Bequemlichkeit</h2>
+<p>Bei mehreren gleichzeitig angefragten Modellen zählt nicht nur die Größe der Gewichtsdateien. Ollamas FAQ beschreibt, dass Modelle bei genügend verfügbarem RAM beziehungsweise VRAM gleichzeitig geladen werden können. Fehlt Speicher, werden neue Anfragen eingereiht, bis bestehende Modelle frei werden; auch parallele Anfragen pro Modell erhöhen den Kontextspeicherbedarf.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Ein kleineres <code>keep_alive</code> kann so dem nächsten Modell Raum schaffen, erhöht aber möglicherweise die Ladehäufigkeit. Ein größeres reduziert wiederholtes Laden, solange die Reservierung nicht andere Dienste verdrängt.</p>
+<p>Unterscheide vor einer Änderung drei Symptome: langsamer <em>erster</em> Aufruf, dauerhaft langsame Generierung und wartende Anfragen. Nur der erste Fall weist unmittelbar auf Modell-Laden hin. Die Generate-API beschreibt <code>load_duration</code> im Antwortobjekt; damit lässt sich die Ladephase von der eigentlichen Auswertung unterscheiden, ohne fremde Benchmarks zu übernehmen.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Vergleiche identische Aufgaben bei unverändertem Modell und Kontext, sonst misst du verschiedene Vorgänge.</p>
+<h2>Prüfablauf für den eigenen Dienst</h2>
+<p>Sieh zunächst mit dem in der FAQ dokumentierten <code>ollama ps</code> nach, welche Modelle geladen sind und ob die Ausgabe CPU, GPU oder eine Mischung als Prozessor anzeigt.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Sende danach eine gewöhnliche Anfrage über deinen üblichen Client. Prüfe erneut die geladenen Modelle und die erwartete Ablaufzeit. Für häufig benötigte Modelle beschreibt die FAQ eine leere API-Anfrage als Vorladeweg; nutze dafür bewusst ein kurzes oder negatives Keep-Alive nur, wenn das Speicherbudget es hergibt.<a href="#quelle-1" aria-label="Quelle 1">[1]</a></p>
+<p>Teste anschließend eine zweite Modellanfrage und beobachte, ob sie wartet oder ob das erste Modell verdrängt wird. Stelle die bisherige Frist wieder her, falls weitere Dienste Speicher benötigen. Diese Prüfschritte sind eine Anleitung, keine Behauptung über Messwerte auf bestimmter Hardware. Auch das Betriebssystem und die Anzahl paralleler Clients beeinflussen das Ergebnis; dokumentiere daher Konfiguration und beobachtetes Verhalten getrennt.</p>
+<section aria-label="Quellen"><h2>Quellen</h2><ol>
+<li id="quelle-1"><a href="https://docs.ollama.com/faq" rel="noopener noreferrer">Ollama: FAQ zu Keep Alive und geladenen Modellen</a></li>
+<li id="quelle-2"><a href="https://docs.ollama.com/api/generate" rel="noopener noreferrer">Ollama: Generate-API und Ladezeit</a></li>
+</ol></section>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body>
+</html>

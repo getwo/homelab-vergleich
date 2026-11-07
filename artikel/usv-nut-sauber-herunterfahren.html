@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>USV mit NUT: Homelab sauber herunterfahren</title>
+<meta name="description" content="Network UPS Tools verteilt USV-Status an mehrere Homelab-Systeme. So planst und prüfst du das geordnete Herunterfahren ohne Scheinsicherheit.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/usv-nut-sauber-herunterfahren.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>USV und NUT: Homelab geordnet abschalten</h1>
+<p>Eine unterbrechungsfreie Stromversorgung hält Systeme bei Netzausfall zunächst am Leben. Ohne passende Reaktion verlagert sie den harten Stromverlust nur auf den Moment, in dem der Akku leer ist. Network UPS Tools, kurz NUT, kann den Status einer unterstützten USV bereitstellen und mehrere Rechner zum rechtzeitigen Herunterfahren koordinieren. Seine Dokumentation unterscheidet Treiber für das Gerät, den Datenserver upsd und den Überwachungsdienst upsmon. Für die Praxis zählen nicht nur laufende Prozesse, sondern die richtige Zuständigkeit und ein getesteter Ablauf bis zum letzten angeschlossenen Gerät. <a href="#quelle-1">[1]</a></p>
+<h2>Wer beobachtet wen?</h2>
+<p>Der Treiber liest die USV; upsd gibt deren Zustand für berechtigte Clients frei. upsmon überwacht, ob die Versorgung noch ausreicht, und kann das Abschalten veranlassen. In einer Umgebung mit mehreren Rechnern gibt es eine primäre Instanz, die das weitere Vorgehen mit sekundären Instanzen abstimmt. Die NUT-Dokumentation beschreibt dabei das FSD-Signal für ein erzwungenes Herunterfahren. Schalte also nicht wahllos einzelne Hosts per Skript ab, ohne die Reihenfolge und Kommunikation der beteiligten Systeme zu beachten. <a href="#quelle-1">[1]</a> <a href="#quelle-2">[2]</a></p>
+<p>Ein Proxmox-Host mit darauf laufenden VMs und Containern muss seine Gäste rechtzeitig herunterfahren können. Ein Netzwerk-Switch zwischen USV-Server und Clients braucht ebenfalls Versorgung bis zum Ende der Kommunikation. Kläre deshalb für jedes Netzteil, jede Steckdose und jeden Switch, ob sie wirklich an der USV hängen. Ein Rechner mit Netzwerkzugang, aber ohne USV-Strom, kann den Abschaltbefehl trotzdem zu spät erhalten.</p>
+<h2>Grenzen: Signale sind keine Garantien</h2>
+<p>Eine USV meldet nur Informationen, die Treiber und Gerät tatsächlich liefern. Angezeigte Restlaufzeit ist kein Ersatz für einen Test unter der eigenen Last. Auch ein NUT-Server auf einem Host, der zuerst herunterfährt, kann die sekundären Clients danach nicht mehr koordinieren. Plane ausreichend Zeit für Datenbanken, Container und Dateisysteme ein; vermeide Annahmen über fixe Akkuminuten oder pauschal sichere Schwellen. NUT erklärt, wie upsmon Stromstatus und erforderliche Versorgung verarbeitet. Wer mehrere Netzteile oder USV-Geräte nutzt, muss deren Zuordnung explizit verstehen. <a href="#quelle-2">[2]</a></p>
+<p>Halte den NUT-Datenserver nur auf den benötigten Schnittstellen erreichbar und schütze die Zugangsdaten. Die offizielle Konfigurationsanleitung beschreibt sowohl die Freigabe von upsd für entfernte Clients als auch den Umgang mit Konfigurationsdateien, die Passwörter enthalten. Eine öffentlich erreichbare Verwaltungsoberfläche ist für das Abschalten eines internen Homelabs nicht erforderlich. Plane zudem einen Ausfall der Kommunikation ein: Wenn der NUT-Server oder der Switch unerreichbar wird, braucht jeder betroffene Rechner ein bewusst gewähltes Verhalten. Teste den Kommunikationsverlust getrennt vom Netzausfall, damit du die Ursache einer fehlenden Abschaltung eindeutig erkennst. <a href="#quelle-1">[1]</a></p>
+<h2>Prüfschritte für einen kontrollierten Test</h2>
+<p>Erstelle zuerst eine Übersicht der an der USV angeschlossenen Geräte und der NUT-Rollen. Prüfe dann, ob alle Clients den realen USV-Zustand sehen und Berechtigungen stimmen. Verifiziere, dass die vorgesehene Abschaltmeldung jeden Client erreicht. Führe einen kontrollierten Netzausfalltest bei verfügbarer Betreuung durch, nicht durch Ziehen des Stroms an produktiven Servern. Beobachte, wann Gäste, sekundäre Hosts und zuletzt die primäre Instanz stoppen. Prüfe nach Wiederkehr der Versorgung, ob Dateisysteme, Gäste und NUT-Überwachung erwartungsgemäß starten. Ein fehlgeschlagener Test ist ein Konfigurationsfehler, kein Grund, die Abschaltung einfach abzuschalten. Wiederhole die Prüfung nach Änderungen an Batterie, USV, Netzwerktopologie oder Virtualisierung. Ein datierter Testbericht mit beobachteter Reihenfolge ist für den nächsten Stromausfall hilfreicher als eine lediglich vorhandene Konfigurationsdatei. <a href="#quelle-1">[1]</a> <a href="#quelle-2">[2]</a></p>
+<h2>Offizielle Quellen</h2>
+<ul><li id="quelle-1"><a href="https://networkupstools.org/docs/user-manual.chunked/Configuration_notes.html">[1] Network UPS Tools: Configuration notes</a></li><li id="quelle-2"><a href="https://networkupstools.org/docs/man/upsmon.html">[2] Network UPS Tools: upsmon-Handbuch</a></li></ul>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>

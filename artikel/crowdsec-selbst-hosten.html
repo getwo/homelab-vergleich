@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrowdSec selbst hosten: Erkennung und Abwehr</title>
+<meta name="description" content="CrowdSec im Homelab realistisch einordnen: Security Engine, lokale API, Bouncer, Datenschutz-Abwägung und konkrete Funktionstests.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/crowdsec-selbst-hosten.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+
+<h1>CrowdSec selbst hosten: Erkennung ist nicht Sperrung</h1>
+<p>Ein öffentlich erreichbarer Dienst produziert verdächtige Zugriffe in seinen Logs. CrowdSec kann solche Ereignisse auswerten und daraus Entscheidungen ableiten. Damit daraus eine wirksame Sperre wird, braucht es jedoch noch eine Komponente am richtigen Punkt des Datenverkehrs. Für ein Homelab lohnt daher zuerst ein Architekturplan, nicht die Hoffnung, dass eine Installation automatisch jeden Port absichert.</p>
+<h2>Security Engine und Bouncer trennen</h2>
+<p>Die CrowdSec-Dokumentation beschreibt die Security Engine als Erkennungskomponente: Sie verarbeitet Ereignisse, bewertet Verhaltensmuster anhand von Szenarien und erzeugt Entscheidungen.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Die Durchsetzung übernimmt ein Remediation Component, früher „Bouncer“ genannt. Diese Komponente holt aktive Entscheidungen über die lokale API und setzt sie beispielsweise an einem geeigneten Zugangspunkt um.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Ohne passende Anbindung kann die Erkennung funktionieren, während Angriffe weiterhin durch den Reverse Proxy oder die Firewall gelangen.</p>
+<p>Zeichne deshalb den Pfad einer Anfrage: Internet, Router, Proxy, Dienst. Markiere, welche Maschine die verwertbaren Logs liefert und wo eine Sperre technisch greifen soll. Ein Proxy-Bouncer schützt nicht automatisch einen separat erreichbaren SSH-Dienst. Wenn mehrere Wege existieren, musst du jeden Weg einzeln bewerten oder die Erreichbarkeit zuerst reduzieren.</p>
+<h2>Quellen und Identitäten der Logs prüfen</h2>
+<p>Der Engine nützen nur Ereignisse, die sie korrekt lesen und dem tatsächlichen Angreifer zuordnen kann. Kontrolliere bei einem Proxy, welche Quelladresse im Log erscheint und ob vorgeschaltete Komponenten diese Information verlässlich übergeben. Verwechslungen können echte Nutzer treffen oder die Abwehr wirkungslos machen. Prüfe auch, ob das passende Szenario für deinen Dienst installiert und aktiv ist, statt die bloße Existenz einer Logdatei als Nachweis zu nehmen.</p>
+<p>CrowdSec beschreibt eine gemeinschaftliche Bedrohungsintelligenz, bei der eine Teilnahme beziehungsweise ein Opt-in für eigene Erkennungen eine Rolle spielt.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Kläre vor dem Betrieb, welche externen Dienste oder Listen du nutzen möchtest und welche Daten dabei das eigene Netz verlassen könnten. „Selbst gehostet“ bedeutet nicht automatisch vollständig offline. Dokumentiere die gewählte Betriebsart und die zugehörigen Datenschutzanforderungen.</p>
+<h2>Remediation gezielt statt pauschal</h2>
+<p>Remediation Components kommunizieren laut CrowdSec über die lokale API und benötigen einen dafür vorgesehenen API-Zugang.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Bewahre diesen Zugang wie ein Geheimnis auf und gib der Komponente nur den technisch nötigen Zugriff. Wähle einen Bouncer, der zu deinem Proxy oder deiner Firewall passt, und prüfe, welche Arten von Entscheidungen er durchsetzt. Eine Sperre am falschen Ort oder eine übermäßig breite Regel kann auch Mitnutzer im selben Netz aussperren.</p>
+<p>Plan einen Wiederherstellungsweg für falsch positive Sperren ein, bevor du automatische Abwehr aktivierst. Notiere, wer Entscheidungen einsehen, korrigieren und einen ausgesperrten Administrator wieder hineinlassen kann. Bewahre einen sicheren Wartungszugang, der nicht allein von demselben Proxy abhängt. CrowdSec ergänzt starke Anmeldung und Updates, ersetzt sie aber nicht.</p>
+<h2>Funktionstest und Grenzen</h2>
+<p>Teste mit einem eigens angelegten, unkritischen Dienst: Kommen Ereignisse an, entsteht eine nachvollziehbare Entscheidung, und sieht der Bouncer diese Entscheidung tatsächlich? Prüfe danach aus einem getrennten Testzugang, ob genau die erwartete Ressource blockiert wird und ob eine beendete Entscheidung wieder freigibt. Überwache Engine, API und Bouncer getrennt. Wenn nur die Engine läuft, lautet das Ergebnis „Erkennung vorhanden“, nicht „Dienst geschützt“. Die Dokumentation nennt ausdrücklich einen Health-Check für Erkennung, Verbindung und Remediation als Betriebsprüfung.<a href="#quelle-1" aria-label="Quelle 1">[1]</a></p>
+<section aria-labelledby="quellen"><h2 id="quellen">Offizielle Quellen</h2><ol><li id="quelle-1"><a href="https://docs.crowdsec.net/u/getting_started/intro/">CrowdSec: Security Stack – Einstieg</a></li>
+<li id="quelle-2"><a href="https://docs.crowdsec.net/u/bouncers/intro/">CrowdSec: Remediation Components</a></li></ol></section>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>

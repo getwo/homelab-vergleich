@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSH-Schlüssel im Homelab sicher verwalten</title>
+<meta name="description" content="SSH-Schlüssel im Homelab planen und prüfen: Schlüsselpaar, Passphrase, Freigabe pro Gerät und sicherer Umstieg ohne Aussperrung.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/ssh-schluessel-homelab.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+
+<h1>SSH-Schlüssel im Homelab: Zugriff ohne Aussperrung</h1>
+<p>SSH ist für viele Homeserver der wichtigste Wartungszugang. Ein Schlüsselpaar kann die Anmeldung gegenüber bloßen Passwörtern besser absichern, wenn der private Schlüssel geschützt und der öffentliche Schlüssel gezielt hinterlegt wird. Der heikelste Moment ist nicht das Erzeugen, sondern das Umstellen eines bereits genutzten Servers. Ein Fehler bei Rechten oder Konfiguration kann dich aussperren.</p>
+<h2>Öffentlich und privat sauber trennen</h2>
+<p>Die Ubuntu-Dokumentation beschreibt ein Schlüsselpaar mit öffentlichem und privatem Teil; der öffentliche Teil kommt für den Zielbenutzer auf den Server, der private bleibt beim Client.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Gib den privaten Schlüssel nicht in Chat, Tickets oder einen gemeinsam verwendeten Dateispeicher. Schütze ihn mit einer Passphrase und plane, wie ein verlorenes oder gestohlenes Gerät gesperrt wird. Ein Schlüssel ohne vernünftige Ablage ist kein Sicherheitsgewinn.</p>
+<p>Erzeuge möglichst getrennte Schlüssel für verschiedene Geräte oder Rollen. Dann kannst du einen verlorenen Laptop entziehen, ohne sofort alle anderen Zugänge auszutauschen. Beschrifte die Einträge so, dass die Herkunft später nachvollziehbar ist. Lege zugleich einen Wiederherstellungsweg fest, etwa einen dokumentierten Konsolenzugriff auf den Host. Sichere nicht gedankenlos denselben privaten Schlüssel auf jede Maschine.</p>
+<h2>Einrichten mit offenem Rückweg</h2>
+<p>Ubuntu erklärt die Schlüsselgenerierung und das Hinterlegen des öffentlichen Schlüssels in der Datei „authorized_keys“ des Zielkontos.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Dabei zählen auch die Schreibrechte der SSH-Verzeichnisse und Dateien. Übertrage nur den öffentlichen Teil an den vorgesehenen Benutzer und prüfe die Anmeldung in einem zweiten Terminal. Die bestehende Sitzung bleibt offen, bis der neue Weg aus einer frischen Verbindung erfolgreich funktioniert.</p>
+<p>Teste nicht bloß, dass irgendein Login gelingt: Vergewissere dich, dass der erwartete Schlüssel verwendet wird, du das richtige Konto erreichst und der Zugriff nach einem Neustart oder einer neuen Client-Sitzung noch funktioniert. Wenn mehrere Konten existieren, wiederhole den Test für jedes einzeln. Bei einem Fehlschlag kontrollierst du zuerst Benutzer, Dateirechte und den richtigen öffentlichen Schlüssel, statt sofort den alten Zugang abzuschalten.</p>
+<h2>Passwortanmeldung erst danach bewerten</h2>
+<p>Das Ubuntu-Wiki behandelt öffentliche und private Schlüssel sowie typische Schwierigkeiten bei der Anmeldung; es betont den Sicherheitsvorteil gegenüber Passwortauthentisierung, insbesondere bei öffentlich sichtbaren Rechnern.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Soll die Passwortanmeldung später eingeschränkt werden, verifiziere vorher einen zweiten administrativen Zugangsweg und einen Notfallplan. Prüfe Konfigurationsänderungen mit den vorgesehenen Serverwerkzeugen und teste eine neue Verbindung, bevor du die letzte aktive Sitzung schließt.</p>
+<p>Ein bloß geänderter SSH-Port ersetzt keinen geschützten Schlüssel. Umgekehrt braucht nicht jeder Dienst einen direkt aus dem Internet erreichbaren SSH-Port. Begrenze die Erreichbarkeit auf benötigte Netze oder einen gesicherten Fernzugang. Halte pro Benutzer fest, von welchen Geräten und zu welchen Zwecken er sich anmelden darf.</p>
+<h2>Regelmäßig pflegen statt einmal abhaken</h2>
+<p>Überprüfe die autorisierten Schlüssel nach Gerätewechsel, Ausscheiden eines Mitnutzers und Wiederherstellung aus einem Backup. Entferne unbekannte Einträge und teste den verbliebenen Zugang. Dokumentiere, wie du Passphrasen, Schlüsselverlust und einen Host-Neuaufbau behandelst, ohne geheime private Schlüssel in einer öffentlichen Anleitung abzulegen. Ziel ist nicht möglichst viel Kryptografie auf dem Papier, sondern ein nachweisbar funktionierender und widerrufbarer Wartungszugang.</p>
+<section aria-labelledby="quellen"><h2 id="quellen">Offizielle Quellen</h2><ol><li id="quelle-1"><a href="https://ubuntu.com/server/docs/how-to/security/openssh-server/">Ubuntu Server: OpenSSH-Server</a></li>
+<li id="quelle-2"><a href="https://wiki.ubuntu.com/SSH/OpenSSH/Keys">Ubuntu Wiki: OpenSSH-Schlüssel</a></li></ol></section>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>

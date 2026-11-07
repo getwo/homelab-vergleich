@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECC-RAM im Homelab: Wann lohnt sich der Aufwand?</title>
+<meta name="description" content="ECC-RAM im Homelab einordnen: Fehlerkorrektur, Plattformprüfung und Grenzen. Eine Entscheidungshilfe für NAS und ständig laufende Dienste.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/ecc-ram-homelab.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+
+<h1>ECC-RAM im Homelab: Entscheidung statt Glaubensfrage</h1>
+<p>Ein Homeserver bewahrt Fotos, Datenbanken oder Backups auf. Da klingt ECC-RAM wie eine einfache Versicherung gegen Datenverlust. Doch die Frage ist nicht nur, ob auf dem Speicherriegel „ECC“ steht. Entscheidend sind die gesamte Plattform, die Erkennung von Fehlern und ein Wiederherstellungsplan. Wer die Kosten gegen das Risiko abwägt, sollte außerdem verstehen, welche Fehler ECC überhaupt behandelt – und welche nicht.</p>
+<h2>Was ECC leisten kann und was nicht</h2>
+<p>ECC steht für eine Fehlerkorrektur beim Speicherzugriff. Die Linux-Kernel-Dokumentation unterscheidet korrigierte Fehler von nicht korrigierbaren Fehlern; ein korrigierter Fehler ist nicht dasselbe wie ein garantiert fehlerfreies System. Ein nicht korrigierbarer Fehler kann je nach betroffenem Bereich und Behandlung sogar zum Abbruch oder Neustart führen.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Die EDAC-Schnittstelle unterscheidet ausdrücklich korrigierte und unkorrigierte Ereignisse.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Wenn das System Meldungen liefert, sind sie ein Anlass zur Untersuchung, kein Nachweis, dass die Hardware auf Dauer gesund bleibt.</p>
+<p>ECC prüft nicht automatisch die Integrität einer Datei auf einer Festplatte, schützt nicht vor versehentlichem Löschen und ersetzt keine Sicherung. Auch ein Dateisystem mit Prüfsummen kann einen Fehler im Arbeitsspeicher nicht einfach zu einem Festplattenfehler umdeuten. Das sind verschiedene Schutzschichten: Speicherprüfung, Datenträgerprüfung, Backup und regelmäßige Wiederherstellungstests gehören jeweils an ihren eigenen Platz.</p>
+<h2>Plattform vor Speicherriegel prüfen</h2>
+<p>Beim Neukauf kläre zuerst, ob Prozessor, Mainboard, Firmware und der konkrete Speichertyp zusammenpassen. Eine allgemeine Aussage über eine ganze CPU-Familie genügt nicht. Notiere die vollständigen Modellbezeichnungen und suche beim Hersteller des Boards und Prozessors nach Angaben zum unterstützten ECC-Modus. Prüfe, ob unbuffered oder registered Module verlangt werden; diese Bauformen darf man nicht allein wegen gleicher Generation gleichsetzen. Die Kernel-Dokumentation zeigt zudem, dass Fehlererfassung über Speichercontroller und EDAC-Treiber läuft. Eine fehlende Meldung im Betrieb ist deshalb noch kein Beweis für aktive Fehlerkorrektur.<a href="#quelle-1" aria-label="Quelle 1">[1]</a><a href="#quelle-2" aria-label="Quelle 2">[2]</a></p>
+<p>Bei vorhandener Hardware würde ich zuerst die Firmware-Einstellung, die Dokumentation des konkreten Boards und die tatsächlich erkannten Speichermodule abgleichen. Danach gehören die vom System bereitgestellten Speicherfehleranzeigen in die Überwachung. Ein bloßes „ECC supported“ auf einer Produktseite beantwortet die wichtige Frage nicht, ob genau diese Kombination ECC im installierten System tatsächlich verwendet.</p>
+<h2>Wann die Abwägung zugunsten von ECC ausfällt</h2>
+<p>Bei einem ständig laufenden NAS oder Virtualisierungshost mit mehreren wertvollen Diensten ist ECC besonders plausibel, wenn die Plattform es nachweislich unterstützt und ein Ausfall großen Wiederherstellungsaufwand bedeutet. Für einen gelegentlich gestarteten Testrechner kann dagegen ein robustes Backup wichtiger sein als ein kostspieliger Plattformwechsel. Das ist keine Aussage über gemessene Ausfallraten: Wie oft ein Fehler auf deiner Hardware auftritt, lässt sich aus diesen Dokumentationen nicht individuell ableiten.</p>
+<p>Vergleiche deshalb zwei konkrete Angebote samt kompatiblen Komponenten und Strombedarf, statt einen isolierten RAM-Aufpreis zu betrachten. Wenn du die Unterstützung nicht belegen kannst, kaufe nicht allein aufgrund der Modulbezeichnung. Wenn ECC vorhanden ist, plane trotzdem Wartung, Offline-Kopien und Tests ein. Die Entscheidung lautet nicht „ECC oder Backup“, sondern „welche zusätzliche Schutzschicht ist für diesen Einsatz sinnvoll?“</p>
+<h2>Prüfplan für den Betrieb</h2>
+<p>Halte die Freigaben des Board- und CPU-Herstellers schriftlich fest, dokumentiere Firmware-Version und Module und prüfe nach dem Aufbau, ob das Betriebssystem Speicherfehler erfassen kann. Beobachte insbesondere wiederkehrende korrigierte sowie unkorrigierbare Ereignisse; der Kernel beschreibt beide Klassen ausdrücklich.<a href="#quelle-1" aria-label="Quelle 1">[1]</a><a href="#quelle-2" aria-label="Quelle 2">[2]</a> Bei einem Befund sichere zuerst die Daten und untersuche anschließend Speicher, Steckplatz und Plattform. Ein erfolgreicher Start oder ein kurzer Speichertest allein ist keine dauerhafte Garantie. Wiederhole die Prüfung nach Firmware- oder Hardwareänderungen und teste unabhängig davon die Rücksicherung deiner wichtigsten Daten.</p>
+<section aria-labelledby="quellen"><h2 id="quellen">Offizielle Quellen</h2><ol><li id="quelle-1"><a href="https://docs.kernel.org/admin-guide/RAS/main.html">Linux-Kernel: RAS und Speicherfehler</a></li>
+<li id="quelle-2"><a href="https://docs.kernel.org/driver-api/edac.html">Linux-Kernel: EDAC-Geräte und Fehlertypen</a></li></ol></section>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>

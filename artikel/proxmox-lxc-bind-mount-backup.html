@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proxmox LXC: Bind-Mounts richtig sichern</title>
+<meta name="description" content="Bind-Mounts in Proxmox-LXC-Containern sind praktisch, aber ihre Inhalte gehören nicht automatisch ins Container-Backup. So prüfst du Sicherung und Restore.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/proxmox-lxc-bind-mount-backup.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>Proxmox LXC: Bind-Mounts und Backups trennen</h1>
+<p>Ein Container soll Medien auf dem Host lesen oder einen gemeinsamen Datenordner nutzen. Ein Bind-Mount macht einen bestehenden Hostpfad im LXC-Container sichtbar, ohne die Daten in dessen Root-Dateisystem zu verschieben. Das spart Kopien und lässt Verwaltung und Daten getrennt organisieren. Genau diese Trennung ist beim Backup aber eine Falle: Laut Proxmox werden Inhalte von Bind-Mounts nicht durch das normale Container-Backup mitgesichert. Ein erfolgreiches Sicherungsprotokoll beweist also nicht, dass die eingebundenen Daten enthalten sind. <a href="#quelle-1">[1]</a></p>
+<h2>Was ist im Archiv, was liegt außerhalb?</h2>
+<p>Proxmox unterscheidet Root-Dateisystem, verwaltete zusätzliche Mount-Points und Bind-Mounts. Für verwaltete Volumes kann die Backup-Einstellung eines Mount-Points relevant sein; bei einem Bind-Mount bleibt dessen Hostinhalt außerhalb des Archivs. Die Containerkonfiguration kann den Mount-Eintrag enthalten, aber das ersetzt keine Kopie der Dateien am Quellpfad. Prüfe daher nicht nur, ob der Container gesichert wurde, sondern welche Art von Mount-Point seine wichtigsten Daten trägt. Die Dokumentation zum Container-Toolkit erläutert diese Unterscheidung und die Besonderheiten beim Wiederherstellen. <a href="#quelle-1">[1]</a></p>
+<p>Eine typische Fehlannahme lautet: „Meine Anwendung sieht die Dateien, also landen sie im LXC-Backup.“ Die Sicht im Container entscheidet nicht über die Sicherungsgrenze. Ein Datenbestand auf einem anderen Host-Dateisystem kann eigene Snapshots oder eine separate Dateisicherung benötigen. Für Datenbanken ist zusätzlich ein anwendungskonsistenter Export beziehungsweise eine passende Sicherungsmethode zu planen; ein bloßer Dateikopiervorgang während Schreiblast muss nicht konsistent sein.</p>
+<h2>Nutzen und Grenzen des getrennten Datenpfads</h2>
+<p>Bind-Mounts sind sinnvoll, wenn mehrere Dienste auf denselben Hostbestand zugreifen oder ein großer Datenordner bewusst unabhängig vom Containerlebenszyklus bleiben soll. Der Preis ist ein zusätzlicher Betriebsvertrag: Zielpfad, Eigentümer, Berechtigungen, Host-Mount und Sicherung müssen separat dokumentiert werden. Beim Wechsel auf einen anderen Proxmox-Knoten ist der ursprüngliche Hostpfad dort nicht automatisch vorhanden. Auch ein erfolgreicher Container-Restore kann deshalb einen gestarteten, aber datenlosen Dienst ergeben. Eine leere Verzeichnisstruktur ist kein Nachweis für eine vollständige Wiederherstellung. <a href="#quelle-1">[1]</a></p>
+<p>Die Proxmox-Backup-Dokumentation beschreibt die Sicherungsmodi und die automatische Jobplanung. Ein regelmäßiger Job schützt nur die vom Sicherungsmechanismus erfassten Bereiche. Die Sicherung des Hostpfads braucht folglich einen eigenen Zeitplan, ein eigenes Ziel und eine Aufbewahrungsregel. Wichtig ist, beide Kopien zeitlich und fachlich aufeinander abzustimmen. Wenn eine Anwendung erst ihre Konfiguration und später die eingebundenen Dateien ändert, kann ein Restore aus zwei weit auseinanderliegenden Sicherungszeitpunkten inkonsistent sein. Dokumentiere deshalb, welcher Stand der Hostdaten zum jeweiligen Containerstand gehört und welche Dienste für den Abgleich kurz angehalten werden müssen. <a href="#quelle-2">[2]</a></p>
+<h2>Prüfschritte für einen echten Restore</h2>
+<p>Inventarisiere zuerst jeden Mount-Point mit Quellpfad, Zielpfad im Container, Datentyp und verantwortlichem Sicherungsjob. Kontrolliere anschließend das Proxmox-Backup-Protokoll und das separate Backup des Quellpfads. Stelle dann einen Container in einer isolierten Testumgebung wieder her, ohne den produktiven Hostordner unbemerkt einzubinden. Bereite den gesicherten Hostpfad am Testziel vor und prüfe Rechte, erwartete Dateien sowie die Funktion der Anwendung. Ein Test mit einer bewusst angelegten, harmlosen Beispieldatei macht fehlende Daten sofort sichtbar. Dokumentiere schließlich die Reihenfolge: erst Quellbestand bereitstellen, dann Mount-Zuordnung kontrollieren und den Dienst starten. <a href="#quelle-1">[1]</a></p>
+<p>Der eigentliche Maßstab ist nicht ein grüner Backup-Job, sondern ein wiederherstellbarer Dienst mit seinen Daten. Das gilt auch dann, wenn Proxmox den Container selbst fehlerfrei restauriert. <a href="#quelle-2">[2]</a></p>
+<h2>Offizielle Quellen</h2>
+<ul><li id="quelle-1"><a href="https://pve.proxmox.com/pve-docs/chapter-pct.html">[1] Proxmox VE: Container Toolkit und Mount-Points</a></li><li id="quelle-2"><a href="https://pve.proxmox.com/pve-docs/chapter-vzdump.html">[2] Proxmox VE: Backup and Restore</a></li></ul>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>

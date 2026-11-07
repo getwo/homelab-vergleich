@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>llama.cpp RPC: GPUs über mehrere Hosts nutzen</title>
+<meta name="description" content="llama.cpp RPC verbindet GPUs über Hosts. So unterscheiden sich RPC und lokales Multi-GPU, und diese Risiken und Prüfschritte gelten für das Homelab.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/llama-cpp-rpc-mehrere-gpus.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>llama.cpp RPC: mehrere GPUs auf mehreren Hosts</h1>
+<p>Zwei Grafikkarten im selben Rechner und zwei Rechner mit je einer Grafikkarte sind unterschiedliche Probleme. Für lokale Mehrkarten-Systeme dokumentiert llama.cpp mehrere Split-Modi; <code>layer</code> ist dort die voreingestellte Verteilung auf zusammenhängende Schichten.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Über Rechnergrenzen hinweg gibt es stattdessen das RPC-Backend: Ein Hauptprozess verbindet sich mit <code>ggml-rpc-server</code> auf entfernten Hosts.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Das ist eine experimentelle technische Option, keine pauschale Empfehlung für jedes Heimnetz.</p>
+<h2>Wann RPC überhaupt sinnvoll sein kann</h2>
+<p>Der mögliche Nutzen liegt im gemeinsamen Zugriff auf Geräte, wenn ein Modell nicht bequem auf einem einzelnen Host unterzubringen ist. Die RPC-Dokumentation sagt, dass der Server standardmäßig vorhandene Beschleuniger eines Hosts verfügbar macht; ohne Beschleuniger wird ein CPU-Gerät angeboten. Der Hauptprozess kann lokale und entfernte Geräte verwenden und verteilt Modellgewichte sowie KV-Cache standardmäßig nach verfügbarem Gerätespeicher.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Das ist keine einfache Addition aller VRAM-Angaben zu einer einzigen virtuellen Karte. Verteilung erzeugt Datenverkehr und erhöht die Zahl möglicher Ausfälle.</p>
+<p>Bevor du einen zweiten Host einplanst, prüfe den einfacheren Weg: eine einzelne passende GPU oder mehrere GPUs <em>im selben</em> Host. Bei lokaler Mehrkarten-Nutzung erklärt der Projektleitfaden, dass die Verbindungsbandbreite den Effekt beeinflusst und eine zweite GPU die Leistung sogar verschlechtern kann.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Für verteilte Hosts kommt das Netzwerk hinzu. Ohne eigene Messung ist daher weder ein Geschwindigkeitsgewinn noch eine bestimmte Tokengeschwindigkeit seriös zu versprechen.</p>
+<h2>Sicherheitsgrenze ist keine Nebensache</h2>
+<p>Die Projekt-Dokumentation bezeichnet RPC ausdrücklich als Proof of Concept, fragil und unsicher; sie warnt davor, den RPC-Server in einem offenen Netzwerk oder einer sensiblen Umgebung zu betreiben.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Ein offener RPC-Port im Heimnetz ist deshalb nicht schon durch das Wort „lokal“ abgesichert. Für Geräte mit vertraulichen Modellen oder fremden Nutzern ist ein produktiver Einsatz unter dieser Warnung nicht angemessen. Selbst in einem isolierten Testnetz solltest du Zugriffe einschränken und keine Portfreigabe ins Internet vornehmen.</p>
+<p>Das Backend muss laut Anleitung auf Haupt- und Remote-Host beim Bau aktiviert sein. Der Hauptprozess erhält die Adressen der Remote-Server über <code>--rpc</code>; die Dokumentation zeigt auch mehrere Endpunkte in einer Liste.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Diese Angaben sind Orientierung für einen Laboraufbau, keine blind zu übernehmende Konfiguration. Prüfe Versionsstand, Geräte-Backend und Erreichbarkeit separat, bevor ein echtes Modell geladen wird.</p>
+<h2>Prüfschritte vor jeder Bewertung</h2>
+<p>Inventarisiere zuerst die auf jedem Host tatsächlich erkannten Geräte und den freien Speicher. Vergleiche danach einen Einzelhost-Lauf mit einem isolierten RPC-Test bei identischem Modell, Kontext und Aufgaben. Halte Modell-Ladephase und eigentliche Antwortphase getrennt fest. Laut RPC-Dokumentation kann ein lokaler Cache große Tensoren vorhalten und Netzübertragungen beim wiederholten Laden verringern; das ändert jedoch nichts an der grundsätzlichen RPC-Sicherheitswarnung.<a href="#quelle-2" aria-label="Quelle 2">[2]</a></p>
+<p>Wenn der entfernte Host ausfällt, prüfe, ob die Anwendung einen klaren Fehler meldet und ob sich der Einzelhost-Betrieb wiederherstellen lässt. Miss Netzwerkbelastung und Ausgabekorrektheit selbst, statt Benchmarkzahlen Dritter zu übernehmen. Die Entscheidungsfrage bleibt: Ist die zusätzliche Komplexität für dein konkretes Modell notwendig, oder löst bereits eine lokale Schichtverteilung das Speicherproblem? Ein Test im isolierten Labor kann diese Frage beantworten; eine ungeschützte Dauerinstallation nicht.</p>
+<section aria-label="Quellen"><h2>Quellen</h2><ol>
+<li id="quelle-1"><a href="https://raw.githubusercontent.com/ggml-org/llama.cpp/master/docs/multi-gpu.md" rel="noopener noreferrer">llama.cpp: lokale Multi-GPU-Modi</a></li>
+<li id="quelle-2"><a href="https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/rpc/README.md" rel="noopener noreferrer">llama.cpp: RPC-Backend und Sicherheitswarnung</a></li>
+</ol></section>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body>
+</html>

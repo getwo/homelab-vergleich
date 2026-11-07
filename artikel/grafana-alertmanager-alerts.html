@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grafana und Alertmanager: Alarme richtig routen</title>
+<meta name="description" content="Grafana- und Prometheus-Alarme sauber trennen: integrierter oder externer Alertmanager, Kontaktpunkte, Weiterleitung und überprüfbare Testschritte.">
+<link rel="canonical" href="https://homelab.brillianze.de/artikel/grafana-alertmanager-alerts.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>Grafana und Alertmanager: Wer verschickt welchen Alarm?</h1>
+<p>Ein Grafana-Dashboard zeigt Messwerte an; es ersetzt keine Entscheidung über Regeln, Empfänger und Ausfälle. Grafanas Alerting-Architektur trennt die Auswertung einer Regel von der Zustellung: Firing- und Resolved-Alarme gehen an einen Alertmanager, der Benachrichtigungen behandelt.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Grafana liefert einen integrierten Alertmanager mit. Wer zusätzlich Prometheus und dessen eigenen Alertmanager betreibt, sollte zuerst festlegen, wo Regeln entstehen und wer sie tatsächlich zustellt.</p>
+<h2>Zwei Regelwege, mehrere mögliche Empfänger</h2>
+<p>Prometheus kann eigene Alerting-Regeln auswerten und Alarme an seinen Alertmanager schicken. Grafana-verwaltete Regeln gehen standardmäßig an den integrierten Grafana Alertmanager; ein externer Alertmanager kann ergänzend eingebunden werden.<a href="#quelle-1" aria-label="Quelle 1">[1]</a><a href="#quelle-3" aria-label="Quelle 3">[3]</a> Ein Prometheus-Datenquellen-Eintrag in Grafana ist daher noch kein Beleg, dass Prometheus-Regeln über Grafana benachrichtigen. Zeichne den Pfad für jede kritische Regel auf: Datenquelle, Regelauswertung, Alertmanager, Benachrichtigungsrichtlinie und Kontaktpunkt.</p>
+<p>Für ein kleines Homelab ist ein einziger Benachrichtigungsweg leichter nachvollziehbar. Ein vorhandener Prometheus-Alertmanager kann dagegen für Prometheus-Regeln bestehen bleiben; Grafana kann Grafana-verwaltete Alarme zusätzlich dorthin weiterleiten. Mehrere aktive Alertmanager können auch mehrere Meldungen für denselben Vorfall erzeugen, wenn Regeln und Routen doppelt angelegt sind. Konsolidierung ist sinnvoll, wenn Eigentümer und Zustellung eindeutig bleiben, nicht bloß weil ein weiteres Menü zur Verfügung steht.</p>
+<h2>Externer Alertmanager in Grafana: Grenzen beachten</h2>
+<p>Die offizielle Grafana-Anleitung beschreibt einen externen Alertmanager als eigene Datenquelle. Für Grafana-verwaltete Alarme reicht der Schalter „Receive Grafana Alerts“ dort nicht allein: Die Weiterleitung muss zusätzlich in den Alerting-Einstellungen aktiviert werden.<a href="#quelle-1" aria-label="Quelle 1">[1]</a><a href="#quelle-2" aria-label="Quelle 2">[2]</a> Vergleiche danach im Auswahlfeld „Choose Alertmanager“ die Ressourcen der tatsächlich ausgewählten Instanz. Kontaktpunkte, Richtlinien und Stummschaltungen sind je Alertmanager eigenständig; Änderungen im integrierten Manager wirken nicht automatisch auf den externen.</p>
+<p>Ein wichtiger Grenzfall: Beim Alertmanager vom Typ <em>Prometheus</em> kann die Grafana-Oberfläche Stummschaltungen bearbeiten, Kontaktpunkte und Benachrichtigungsrichtlinien jedoch nur lesen. Grafanas Datenquellen-Dokumentation führt diese Einschränkung auf die Prometheus-Alertmanager-API zurück.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Wenn ein Bearbeiten-Knopf fehlt, ist das nicht zwangsläufig ein Rechteproblem. Konfiguriere die betreffenden Ressourcen am zuständigen System und halte fest, welcher Manager die Quelle der Wahrheit ist.</p>
+<h2>Prüfplan ohne Alarmflut</h2>
+<p>Speichere zunächst die Datenquelle und nutze „Save &amp; test“, wie es die Grafana-Dokumentation empfiehlt.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Das bestätigt die Verbindung, nicht die gesamte Zustellung. Prüfe dann eine kontrollierte Testregel mit einem nicht kritischen Kontaktpunkt und verfolge, ob sie erst auslöst, dann in genau dem erwarteten Alertmanager erscheint und schließlich beim vorgesehenen Empfänger ankommt. Kontrolliere auch den Resolved-Fall und eine gezielte Stummschaltung.</p>
+<p>Bleibt die Benachrichtigung aus, trenne Fehler bei Regelauswertung, Weiterleitung, Routing und Transport. Prüfe beim externen Manager beide Aktivierungsschalter und seine eigene Richtlinie. Kommt der Alarm doppelt, suche nach doppelten Regeln oder zwei empfangenden Managern. Dokumentiere deine Testregel und entferne sie danach wieder. So wird aus einem hübschen Dashboard eine überprüfbare Alarmkette – ohne erfundene Verfügbarkeits- oder Reaktionszeitversprechen.</p>
+<p>Wichtig ist außerdem die Zuständigkeit beim Neustart: Ein erfolgreich getesteter Kontaktpunkt hilft nicht, wenn der Regelauswerter selbst nicht läuft. Prüfe deshalb nach Wartungen ausdrücklich sowohl die aktive Regel als auch die Erreichbarkeit des gewählten Alertmanagers. Eine Testnachricht allein beweist nicht, dass die spätere Alarmregel den richtigen Zustand erkennt.</p>
+<section aria-label="Quellen"><h2>Quellen</h2><ol>
+<li id="quelle-1"><a href="https://grafana.com/docs/grafana/latest/alerting/set-up/configure-alertmanager/" rel="noopener noreferrer">Grafana: Alertmanager einrichten und Weiterleitung</a></li>
+<li id="quelle-2"><a href="https://grafana.com/docs/grafana/latest/datasources/alertmanager/" rel="noopener noreferrer">Grafana: Alertmanager-Datenquelle und Rechte</a></li>
+<li id="quelle-3"><a href="https://prometheus.io/docs/alerting/latest/overview/" rel="noopener noreferrer">Prometheus: Übersicht zur Alarmierung</a></li>
+</ol></section>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body>
+</html>
