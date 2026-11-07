@@ -5,17 +5,17 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Proxmox Backups automatisieren: Zeitplan &amp; Retention</title>
-<meta "proxmox="" &="" automatisieren="" automatisieren:="" backup-zeitpläne="" backups="" content="Ein Backup, das nur dann läuft, wenn du daran denkst, ist kein Backup." description:="" einrichten"="" mit="" name="description" proxmox="" retention"="" vzdump:="" zeitplan=""/>
+<meta content="Jeder Backup-Job in Proxmox hat einen Retention -Bereich, der nach dem Lauf alte Sicherungen automatisch aufräumt. Die wichtigsten Optionen:" name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
 <link href="https://homelab.brillianze.de/artikel/proxmox-backups-automatisieren.html" rel="canonical"/></head>
 <body>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <div class="content">
-<hr/>
-<p>title: "Proxmox Backups automatisieren: Zeitplan &amp; Retention"</p>
-<p>description: "Proxmox Backups automatisieren mit vzdump: Backup-Zeitpläne einrichten, Retention (Aufbewahrung) richtig konfigurieren, Offsite-Kopie nach der 3-2-1-Regel und Wiederherstellung regelmäßig testen."</p>
-<hr/>
+
+
+
+
 <h1>Proxmox Backups automatisieren: Zeitplan &amp; Retention</h1>
 <p>Ein Backup, das nur dann läuft, wenn du daran denkst, ist kein Backup. Proxmox VE bringt mit <code>vzdump</code> ein eingebautes Werkzeug mit, das sich vollständig automatisieren lässt. Dieser Artikel zeigt, wie du sinnvolle Zeitpläne einrichtest, die Aufbewahrung (Retention) konfigurierst und deine Backups mit einer Offsite-Kopie und einem echten Restore-Test absicherst.</p>
 <h2>Backup-Zeitpläne mit vzdump einrichten</h2>

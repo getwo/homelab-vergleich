@@ -5,18 +5,18 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten</title>
-<meta "homelab-sicherheit="" &="" authentik="" brute-force-"="" content="keywords: [Fail2ban einrichten, Authentik einrichten, Homelab Sicherheit, Brute-Force Schutz, SSO 2FA, Authentik Fail2ban, Reverse Proxy Sicherheit]" einrichten"="" fail2ban="" gegen="" homelab-sicherheit:="" meta_description:="" name="description" praktisch="" umsetzen:=""/>
+<meta content="Standardmäßig bringt Fail2ban bereits eine Jail für SSH mit. Für die eigenen Dienste lohnt sich eine angepasste Konfiguration in /etc/fail2ban/jail.local :" name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
 <link href="https://homelab.brillianze.de/artikel/homelab-sicherheit-fail2ban-authentik.html" rel="canonical"/></head>
 <body>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <div class="content">
-<hr/>
-<p>title: "Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten"</p>
-<p>meta_description: "Homelab-Sicherheit praktisch umsetzen: Fail2ban gegen Brute-Force-Angriffe konfigurieren und Authentik als SSO mit 2FA einrichten – inklusive Zusammenspiel und Checkliste."</p>
+
+
+
 <p>keywords: [Fail2ban einrichten, Authentik einrichten, Homelab Sicherheit, Brute-Force Schutz, SSO 2FA, Authentik Fail2ban, Reverse Proxy Sicherheit]</p>
-<hr/>
+
 <h1>Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten</h1>
 <p>Sobald Dienste wie Nextcloud, Jellyfin oder ein Reverse-Proxy aus dem Internet erreichbar sind, stehen sie unter Dauerbeschuss. Automatisierte Bots probieren rund um die Uhr Standard-Passwörter und bekannte Schwachstellen aus. Zwei Werkzeuge machen dein Homelab spürbar sicherer: Fail2ban sperrt auffällige IP-Adressen automatisch, Authentik legt eine zentrale Anmeldung mit Zwei-Faktor-Authentifizierung (2FA) vor jeden Dienst.</p>
 <h2>Warum internet-exponierte Dienste abgesichert werden müssen</h2>
