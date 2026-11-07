@@ -4,17 +4,17 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Lokale RAG-Pipeline: eigene Dokumente durchsuchen, ohne sie in die Cloud zu geben</title>
-<meta content="" name="description"/>
+<title>Lokale RAG-Pipeline</title>
+<meta content="Dieser Artikel zeigt, wie eine solche Pipeline lokal aussieht, welche Bausteine es wirklich gibt, und wo die typischen Qualitätsfallen liegen." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-</head>
+<link href="https://homelab.brillianze.de/artikel/lokale-rag-pipeline.html" rel="canonical"/></head>
 <body>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
 <h1>Lokale RAG-Pipeline: eigene Dokumente durchsuchen, ohne sie in die Cloud zu geben</h1>
 <p>Du hast einen Berg eigener Unterlagen — Handbücher, Verträge, Notizen, ein Wiki-Export — und möchtest Fragen daran stellen können, ohne alles zu einer US-Cloud hochzuladen. Genau dafür gibt es Retrieval-Augmented Generation (RAG). Dieser Artikel zeigt, wie eine solche Pipeline lokal aussieht, welche Bausteine es wirklich gibt, und wo die typischen Qualitätsfallen liegen.</p>
-<p>Eine Abgrenzung vorweg, damit keine Verwechslung entsteht: Der Artikel <a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a> behandelt die Frage, <strong>welche Software ein Sprachmodell als Dienst betreibt</strong> — Ollama, llama.cpp server, vLLM, LM Studio. RAG beginnt erst danach. Ein laufender LLM-Server ist die Voraussetzung, nicht das Thema. Dieser Text beschäftigt sich mit dem Weg <strong>von deinen Dokumenten zur fundierten Antwort mit Quellenangabe</strong>: dem Einbetten, Speichern, Wiederfinden und Belegen.</p>
+<p>Eine Abgrenzung vorweg, damit keine Verwechslung entsteht: Der Artikel <a href="llm-server-software-vergleich.html">LLM-Server-Software im Vergleich</a> behandelt die Frage, <strong>welche Software ein Sprachmodell als Dienst betreibt</strong> — Ollama, llama.cpp server, vLLM, LM Studio. RAG beginnt erst danach. Ein laufender LLM-Server ist die Voraussetzung, nicht das Thema. Dieser Text beschäftigt sich mit dem Weg <strong>von deinen Dokumenten zur fundierten Antwort mit Quellenangabe</strong>: dem Einbetten, Speichern, Wiederfinden und Belegen.</p>
 <h2>Was RAG gegenüber reinem Prompten mit Volltext ändert</h2>
 <p>Reines Prompten mit Volltext heißt: Du kopierst ganze Dokumente in die Eingabe und hoffst, dass das Modell die richtige Stelle findet. Das funktioniert bei einer Seite. Bei einem Handbuch mit 300 Seiten passt der Text gar nicht mehr in den Kontext — und selbst wenn er passt, sinkt die Treffsicherheit, weil das Modell zwischen viel Irrelevantem die eine relevante Passage suchen muss. Außerdem zahlst du bei jedem Aufruf für den gesamten Text, auch wenn du nur eine Zahl brauchst.</p>
 <p>RAG dreht das um. Statt alles zu übergeben, sucht der Suchschritt zuerst die passenden Abschnitte und legt dem Modell nur diese vor. Der Unterschied liegt also nicht im Sprachmodell, sondern in der Vorarbeit: einem durchsuchbaren Index, der aus Textabschnitten und ihren Zahlen-Vertretern (Embeddings) besteht. Das Modell bekommt bei jeder Frage nur die drei bis fünf relevantesten Abschnitte und soll daraus antworten — mit Verweis auf die Quelle. Der Nutzen in drei Punkten: der Kontext bleibt klein und bezahlbar, die Antwort stützt sich auf belegbare Stellen statt auf Modellgedächtnis, und du kannst nachvollziehen, woher eine Aussage stammt. RAG macht ein Modell nicht klüger — es gibt ihm nur die richtigen Seiten auf den Tisch.</p>
@@ -81,7 +81,7 @@
 <p><strong>Schritt 5 — Optional beantworten lassen.</strong> Willst du eine formulierte Antwort, gib die gefundenen Abschnitte und die Frage an ein lokales Modell (Ollama) und verlange die Quellenangabe.</p>
 <h2>Anleitung 2: Frage-Antwort über Handbuch oder Vertragsdokumente</h2>
 <p>Ziel: Fragen wie „Welche Kündigungsfrist steht im Vertrag von 2024?" oder „Was sagt das Handbuch zur Wartung?" — mit Belegstelle.</p>
-<p><strong>Voraussetzungen:</strong> Ein laufender LLM-Server (siehe <a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a>), ein Embedding-Modell, eine Vektor-Datenbank (hier Qdrant oder Chroma).</p>
+<p><strong>Voraussetzungen:</strong> Ein laufender LLM-Server (siehe <a href="llm-server-software-vergleich.html">LLM-Server-Software im Vergleich</a>), ein Embedding-Modell, eine Vektor-Datenbank (hier Qdrant oder Chroma).</p>
 <p><strong>Schritt 1 — Dokumente aufbereiten.</strong> Vertrags-PDFs haben meist eine Textschicht; Handbücher teils nicht. Prüfe stichprobenweise, ob Text herauskommt, und rüste für Scans OCR nach.</p>
 <p><strong>Schritt 2 — Abschnittsgröße festlegen.</strong> Vertragsklauseln sind kurz; Handbuchabschnitte länger. Setze die Stückgröße so, dass eine vollständige Klausel in ein Stück passt, und gib etwas Überlappung mit, damit ein Satz über die Grenze nicht zerrissen wird.</p>
 <p><strong>Schritt 3 — Einbetten und ablegen.</strong> Metadaten tragen hier Dokumentname, Datum und Abschnittsnummer — sie erscheinen später in der Quellenangabe.</p>
@@ -107,7 +107,7 @@
 <p><strong>Beispiel 3: Die zu grobe Trennung.</strong> Ein Handbuch wird komplett seitenweise eingebettet. Fragen wie „Welcher Drehmomentwert gilt für Schraube X?" liefern zwar die richtige Seite, aber das Modell wählt daraus den falschen Wert. <em>Lehre:</em> kleine, in sich geschlossene Abschnitte — eine Tabelle oder ein Absatz, nicht eine Seite.</p>
 <p><strong>Beispiel 4: Zwei Mandanten, ein Index.</strong> Zwei Firmen teilen sich eine Instanz, alle Dokumente liegen mit einem Mandantenfeld zusammen. Die Oberfläche zeigt nur die eigenen Dateien — aber die Suche filtert nicht, und in einer Antwort taucht eine Vertragsklausel der anderen Firma auf. Ursache: Berechtigung nur in der Anzeige. <em>Lehre:</em> Der Filter gehört in die Abfrage.</p>
 <p><strong>Beispiel 5: Die doppelte Quelle.</strong> Derselbe Ordner liegt einmal im Original und einmal als Kopie im Index. Jede Antwort zitiert denselben Inhalt zweimal und wirkt widersprüchlich. <em>Lehre:</em> eine Quelle der Wahrheit, Dubletten vor dem Einbetten aussortieren.</p>
-<p><strong>Beispiel 6: Kein Backup des Index.</strong> Der Vektor-Index ist nach einem Ausfall weg, und niemand weiß mehr, welche Abschnittsgröße und welches Modell benutzt wurde. <em>Lehre:</em> Index und seine Konfiguration gehören ins Backup — siehe <a href="{slug: datenbank-backups}">Datenbank-Backups</a>.</p>
+<p><strong>Beispiel 6: Kein Backup des Index.</strong> Der Vektor-Index ist nach einem Ausfall weg, und niemand weiß mehr, welche Abschnittsgröße und welches Modell benutzt wurde. <em>Lehre:</em> Index und seine Konfiguration gehören ins Backup — siehe <a href="datenbank-backups.html">Datenbank-Backups</a>.</p>
 <h2>FAQ</h2>
 <p><strong>Brauche ich dafür eine GPU?</strong></p>
 <p>Für das Embedding selbst meist nicht zwingend. Kleine Modelle wie <code>all-MiniLM-L6-v2</code> laufen auf der CPU, das Erstindexieren dauert dann länger, ist aber machbar. Eine GPU beschleunigt das Einbetten großer Bestände deutlich. Erst das Sprachmodell, das die Antwort formuliert, profitiert stark von GPU — und das ist derselbe Server, den du ohnehin für Textaufgaben brauchst. Kurz: RAG allein läuft ohne GPU; willst du flüssige Antworten, hilft sie.</p>
@@ -121,13 +121,13 @@
 <p>Für einen Einzelplatz oder ein kleines Team reicht Open WebUI oder AnythingLLM. Eigenbau mit Chroma, Qdrant oder LlamaIndex lohnt sich, wenn du bestimmtes Chunking, eigene Filter, getrennte Mandanten oder eine eigene Anwendung brauchst, die keine fertige Oberfläche bietet.</p>
 <h2>Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
 <ul>
-<li><a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a> — die Voraussetzung: welche Software das Sprachmodell als Dienst betreibt (klare Abgrenzung: dort der Server, hier die Dokumenten-Pipeline)</li>
-<li><a href="{slug: paperless-ngx-einrichten}">Paperless-ngx einrichten</a> — Quellsystem für gescannte Belege; dessen OCR-Vorarbeit zahlt direkt auf den RAG-Index ein</li>
-<li><a href="{slug: lokale-ki-vs-cloud}">Lokale KI vs. Cloud</a> — die Grundsatzentscheidung, warum Dokumente überhaupt lokal bleiben sollen</li>
-<li><a href="{slug: gpu-lokale-ki-2026}">GPU für lokale KI</a> — wann sich eine GPU für Einbetten und Antworten lohnt</li>
-<li><a href="{slug: caddy-reverse-proxy-https}">Caddy Reverse Proxy mit HTTPS</a> — wenn die RAG-Oberfläche im Netz verfügbar sein soll, mit TLS und Authentifizierung davor</li>
-<li><a href="{slug: vlan-netzsegmentierung}">VLAN-Netzsegmentierung</a> — für netzwerkseitige Trennung bei Mehrbenutzer-Setups</li>
-<li><a href="{slug: datenbank-backups}">Datenbank-Backups</a> — sichert den Vektor-Index und seine Konfiguration</li>
+<li><a href="llm-server-software-vergleich.html">LLM-Server-Software im Vergleich</a> — die Voraussetzung: welche Software das Sprachmodell als Dienst betreibt (klare Abgrenzung: dort der Server, hier die Dokumenten-Pipeline)</li>
+<li><a href="paperless-ngx-einrichten.html">Paperless-ngx einrichten</a> — Quellsystem für gescannte Belege; dessen OCR-Vorarbeit zahlt direkt auf den RAG-Index ein</li>
+<li><a href="lokale-ki-vs-cloud.html">Lokale KI vs. Cloud</a> — die Grundsatzentscheidung, warum Dokumente überhaupt lokal bleiben sollen</li>
+<li><a href="gpu-lokale-ki-2026.html">GPU für lokale KI</a> — wann sich eine GPU für Einbetten und Antworten lohnt</li>
+<li><a href="caddy-reverse-proxy-https.html">Caddy Reverse Proxy mit HTTPS</a> — wenn die RAG-Oberfläche im Netz verfügbar sein soll, mit TLS und Authentifizierung davor</li>
+<li><a href="vlan-netzsegmentierung.html">VLAN-Netzsegmentierung</a> — für netzwerkseitige Trennung bei Mehrbenutzer-Setups</li>
+<li><a href="datenbank-backups.html">Datenbank-Backups</a> — sichert den Vektor-Index und seine Konfiguration</li>
 </ul>
 <h2>Bildvorschläge</h2>
 <p><strong>Bild 1</strong></p>

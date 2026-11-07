@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://homelab.brillianze.de/artikel/adguard-home-vs-pihole.html</loc>
@@ -435,7 +435,6 @@
   <url><loc>https://homelab.brillianze.de/artikel/zeiterfassung-projektverwaltung-selbst-gehostet.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/kalender-kontakte-notizen-selbst-hosten.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/mesh-wlan-heimnetz-vergleich.html</loc><priority>0.8</priority></url>
-  <url><loc>https://homelab.brillianze.de/artikel/paperless-ngx-dokumentenarchiv.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/restic-borg-kopia-backup-vergleich.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/smart-home-selbst-gehostet.html</loc><priority>0.8</priority></url>
   <url><loc>https://homelab.brillianze.de/artikel/tls-zertifikate-acme-eigene-ca.html</loc><priority>0.8</priority></url>

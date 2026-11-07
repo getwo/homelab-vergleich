@@ -4,10 +4,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Mealie einrichten: Selbstgehostete Rezeptverwaltung mit Docker Compose</title>
-<meta content="Mealie selbst hosten: Schritt-für-Schritt-Anleitung mit Docker Compose. Rezeptverwaltung, Meal-Planer und Einkaufsliste – privat, ohne Cloud-Abo und vollständig unter deiner Kontrolle." name="description"/>
+<title>Mealie einrichten</title>
+<meta content="Mealie selbst hosten: Schritt-für-Schritt-Anleitung mit Docker Compose." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-</head>
+<link href="https://homelab.brillianze.de/artikel/mealie-einrichten-rezeptverwaltung-docker.html" rel="canonical"/></head>
 <body>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
@@ -23,7 +23,7 @@
 <li><strong>Offline-fähig:</strong> Sobald Docker läuft, funktioniert Mealie lokal – ohne Internetverbindung.</li>
 <li><strong>Erweiterbar:</strong> Eine offene API und Webhooks lassen sich an eigene Workflows anbinden (zum Beispiel Kalender-Synchronisation oder Per-URL-Import).</li>
 </ul>
-<p>Mealie repräsentiert den Trend hin zu <strong>Self-Hosted Diensten</strong>, bei denen der Nutzer die volle Kontrolle behält. Weitere Projekte in dieser Kategorie findest du in unserem Überblick <a href="self-hosted-dienste-2026.md">Die 15 besten Self-Hosted Dienste für dein Homelab 2026</a>.</p>
+<p>Mealie repräsentiert den Trend hin zu <strong>Self-Hosted Diensten</strong>, bei denen der Nutzer die volle Kontrolle behält. Weitere Projekte in dieser Kategorie findest du in unserem Überblick <a href="self-hosted-dienste-2026.html">Die 15 besten Self-Hosted Dienste für dein Homelab 2026</a>.</p>
 <h2>Funktionen im Überblick: Rezepte, Meal-Planer, Einkaufsliste</h2>
 <p>Mealie hat drei Kernbereiche, die aufeinander aufbauen:</p>
 <p><strong>Rezepte speichern und organisieren.</strong> Mealie unterstützt mehrere Wege, Rezepte hinzuzufügen: Manuelles Erstellen über den Editor, automatischen Import von URLs (Rezeptbilder, Zutaten und Anleitung werden dabei extrahiert) sowie JSON-Import für Stapel. Rezepte lassen sich mit Kategorien, Tags und Bildern versehen – so findest du später "quick weeknight pasta" oder "meal-prep bowls" in Sekunden.</p>
@@ -34,7 +34,7 @@
 <h2>Voraussetzungen</h2>
 <ul>
 <li>Ein Server oder NAS, auf dem Docker Compose verfügbar ist. Empfehlungen für die Hardware findest du in unseren Guides <a href="nas-2026.html">NAS-2026</a>, <a href="minipc-homelab.html">Minipc-Homelab</a> und <a href="proxmox-einsteiger-guide.html">Proxmox-Einsteiger-Guide</a>.</li>
-<li>Grundkenntnisse von Docker Compose (Begleitartikel: <a href="docker-einsteiger.md">Docker-Einsteiger</a>).</li>
+<li>Grundkenntnisse von Docker Compose (Begleitartikel: <a href="docker-einsteiger.html">Docker-Einsteiger</a>).</li>
 <li>Optional: Ein Reverse Proxy vor Mealie, wenn der Dienst aus dem Internet erreichbar sein soll. Der Aufbau erklärt unser <a href="reverse-proxy.html">Reverse-Proxy-Artikel</a>.</li>
 </ul>
 <h2>Verzeichnisstruktur</h2>
@@ -97,7 +97,7 @@ docker compose up -d
 <p>Rezepte lassen sich nach Tags (z. B. "vegetarisch", "meal-prep", "under 30 min") und Kategorien (z. B. "Hauptgericht", "Dessert", "Snack") organisieren. Kategorien strukturieren die Browse-Ansicht, Tags ermöglichen facettenartige Filter. Rezepte ohne eigenes Bild kannst du später durch Upload oder URL ergänzen.</p>
 <h2>Backup und Updates</h2>
 <p>Mealie speichert seine Daten in einem Docker-Volumen. Ein Backup des <code>data/</code>-Ordners reicht für die meisten Installationen. Der Ordner enthält die SQLite-Datenbank, hochgeladene Bilder und Konfigurationsdateien.</p>
-<p><strong>Backup:</strong> Kopiere regelmäßig den <code>data/</code>-Ordner auf dein Backup-Ziel (lokale NAS, externen Stick, objektstorage-Backup). Für automatisierte Backups auf Proxmox-Ebene siehe <a href="proxmox-backups-automatisieren.md">Proxmox-Backups automatisieren</a>.</p>
+<p><strong>Backup:</strong> Kopiere regelmäßig den <code>data/</code>-Ordner auf dein Backup-Ziel (lokale NAS, externen Stick, objektstorage-Backup). Für automatisierte Backups auf Proxmox-Ebene siehe <a href="proxmox-backups-automatisieren.html">Proxmox-Backups automatisieren</a>.</p>
 <p><strong>Updates:</strong> Pull das neueste Image und bilde den Container neu:</p>
 <pre><code>
 docker compose pull
@@ -117,12 +117,12 @@ docker compose up -d
 <p>Prinzipiell ja, da Mealie in Python läuft und der Container nicht GPU-beschleunigt. Für reine Textverarbeitung mit wenigen Nutzern ist ein Pi ausreichend; Import-Performance (Bildverarbeitung, OCR) profitiert von etwas mehr CPU-Power. Empfehlungen für Low-Power-Hardware findest du im <a href="raspberry-pi-homelab.html">Raspberry Pi Homelab</a>.</p>
 <h2>Interne Links</h2>
 <ul>
-<li><a href="self-hosted-dienste-2026.md">Die 15 besten Self-Hosted Dienste für dein Homelab 2026</a> – Mealie im Kontext anderer Dienste</li>
-<li><a href="docker-einsteiger.md">Docker-Einsteiger</a> – Grundlagen zu Docker Compose</li>
+<li><a href="self-hosted-dienste-2026.html">Die 15 besten Self-Hosted Dienste für dein Homelab 2026</a> – Mealie im Kontext anderer Dienste</li>
+<li><a href="docker-einsteiger.html">Docker-Einsteiger</a> – Grundlagen zu Docker Compose</li>
 <li><a href="nas-2026.html">NAS-2026</a> – Hardware-Empfehlungen für selbst gehostete Dienste</li>
 <li><a href="proxmox-einsteiger-guide.html">Proxmox-Einsteiger-Guide</a> – Betriebssystem für den Dienst-Hoster</li>
 <li><a href="reverse-proxy.html">Reverse-Proxy</a> – Dienste sicher aus dem Internet erreichbar machen</li>
-<li><a href="stromkosten-homelab.md">Stromkosten im Homelab</a> – Betriebskosten einkalkulieren</li>
+<li><a href="stromkosten-homelab.html">Stromkosten im Homelab</a> – Betriebskosten einkalkulieren</li>
 </ul>
 <hr/>
 <p><strong>Affiliate-Hinweis (noch nicht live):</strong> In einer späteren Version dieses Artikels werden Affiliate-Links zu Synology NAS (DS223/DS423) als Host und Hetzner-VPS für externes Hosting eingefügt. Die Links werden erst nach Konfiguration mit echten Publisher-IDs aktiviert und durch eine Offenlegung nach §5 DDG gekennzeichnet.</p>

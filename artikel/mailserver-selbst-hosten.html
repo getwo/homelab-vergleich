@@ -4,10 +4,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Eigenen Mailserver betreiben: Warum es schwierig ist und wann es sich lohnt</title>
+<title>Eigenen Mailserver betreiben</title>
 <meta content="Mailserver selbst hosten: SPF, DKIM, DMARC, PTR, IP-Reputation – Vergleich Mailcow vs. Postfix/Dovecot vs. Relay, Umzug aus Cloud und häufige Fehler." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-</head>
+<link href="https://homelab.brillianze.de/artikel/mailserver-selbst-hosten.html" rel="canonical"/></head>
 <body>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
@@ -209,11 +209,11 @@ _dmarc.example.com.  IN  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@example.com"
 <hr/>
 <h2>Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
 <ul>
-<li><a href="{slug: reverse-proxy-vergleich}">Reverse Proxy Vergleich</a> – Mailserver und Reverse Proxy sind oft verwandt, besonders wenn die Web-Oberfläche hinter einem Proxy erreichbar sein soll</li>
-<li><a href="{slug: monitoring-ohne-cloud}">Monitoring ohne Cloud</a> – Mailserver gehört überwacht: Uptime von SMTP/IMAP-Ports, Ressourcen auf dem Host, Logauswertung der Mail-Komponenten</li>
-<li><a href="{slug: docker-vs-vm}">Docker vs. VM</a> – für die Entscheidung, in welcher Umgebung Mailcow oder Postfix/Dovecot laufen soll</li>
-<li><a href="{slug: dns-grundlagen-records}">DNS-Grundlagen und Records</a> – SPF, DKIM, DMARC, MX, PTR sind DNS-Einträge; ein grundlegendes DNS-Verständnis erleichtert die Konfiguration</li>
-<li><a href="{slug: backup-strategie-selfhoster}">Backup-Strategie für Selfhoster</a> – Backups für Mailserver sind besonders wichtig, weil Mails nicht einfach neuherstellbar sind</li>
+<li><a href="reverse-proxy-vergleich.html">Reverse Proxy Vergleich</a> – Mailserver und Reverse Proxy sind oft verwandt, besonders wenn die Web-Oberfläche hinter einem Proxy erreichbar sein soll</li>
+<li><a href="monitoring-ohne-cloud.html">Monitoring ohne Cloud</a> – Mailserver gehört überwacht: Uptime von SMTP/IMAP-Ports, Ressourcen auf dem Host, Logauswertung der Mail-Komponenten</li>
+<li><a href="docker-vs-vm.html">Docker vs. VM</a> – für die Entscheidung, in welcher Umgebung Mailcow oder Postfix/Dovecot laufen soll</li>
+<li><a href="email-authentifizierung-dkim-spf-dmarc.html">DKIM, SPF und DMARC: E-Mail-Authentifizierung richtig einrichten</a> – SPF, DKIM, DMARC, MX, PTR sind DNS-Einträge; ein grundlegendes DNS-Verständnis erleichtert die Konfiguration</li>
+<li><a href="backup-strategie-selfhoster.html">Backup-Strategie für Selfhoster</a> – Backups für Mailserver sind besonders wichtig, weil Mails nicht einfach neuherstellbar sind</li>
 </ul>
 <hr/>
 <h2>Bildvorschläge</h2>

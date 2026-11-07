@@ -5,9 +5,9 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Caddy als Reverse Proxy: HTTPS für alle eigenen Dienste</title>
-<meta content="" name="description"/>
+<meta content="Pi-hole auf Port 80, Nextcloud auf 8080, Grafana auf 3000, Vaultwarden auf 8000 – die Liste wächst mit jedem neuen Projekt." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-</head>
+<link href="https://homelab.brillianze.de/artikel/caddy-reverse-proxy-https.html" rel="canonical"/></head>
 <body>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
@@ -132,7 +132,7 @@ nextcloud.beispiel.de {
 </code></pre>
 <p>Wichtig bei Nextcloud: Die Header <code>X-Forwarded-Proto</code> und <code>X-Forwarded-For</code> müssen gesetzt sein, sonst erkennt Nextcloud den Verbindungs-Typ nicht korrekt und einige Funktionen verhalten sich anders als erwartet. Das <code>header_up</code>-Block innerhalb von <code>reverse_proxy</code> übergibt diese Werte vom Proxy an das Nextcloud-Backend.</p>
 <h2>Beispiel 3: Grafana hinter Caddy</h2>
-<p>Grafana läuft auf Port 3000 und wird häufig für Homelab-Monitoring eingesetzt – ein Thema, das in <a href="grafana-dashboards.md">Homelab-Monitoring: Schöne Grafana-Dashboards bauen</a> genauer behandelt wird.</p>
+<p>Grafana läuft auf Port 3000 und wird häufig für Homelab-Monitoring eingesetzt – ein Thema, das in <a href="grafana-dashboards.html">Homelab-Monitoring: Schöne Grafana-Dashboards bauen</a> genauer behandelt wird.</p>
 <pre><code>
 grafana.beispiel.de {
     reverse_proxy 192.168.3.25:3000 {
@@ -174,9 +174,9 @@ vaultwarden.beispiel.de {
     }
 }
 </code></pre>
-<p>Für Vaultwarden ist HTTPS nicht nur Komfort – es ist zwingend. Ohne TLS würden Master-Passwort und verschlüsselte Vault-Daten im Klartext über das Netzwerk wandern. Die Dokumentation in <a href="vaultwarden-passwortmanager.md">Vaultwarden: Passwort-Manager selbst hosten</a> behandelt den Dienst selbst, Caddy übernimmt hier nur die TLS-Terminierung und das Routing.</p>
+<p>Für Vaultwarden ist HTTPS nicht nur Komfort – es ist zwingend. Ohne TLS würden Master-Passwort und verschlüsselte Vault-Daten im Klartext über das Netzwerk wandern. Die Dokumentation in <a href="vaultwarden-passwortmanager.html">Vaultwarden: Passwort-Manager selbst hosten</a> behandelt den Dienst selbst, Caddy übernimmt hier nur die TLS-Terminierung und das Routing.</p>
 <h2>Beispiel 5: Homelab-Dashboard hinter Caddy</h2>
-<p>Ein zentrales Dashboard, das alle Dienste auf einen Blick sammelt, ist für viele Homelaber die erste Anlaufstelle. Unabhängig davon, ob Homarr, Homepage oder Heimdall gewählt wird – wie in <a href="homelab-dashboard.md">Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich</a> beschrieben – läuft das Dashboard häufig auf einem eigenen Port und wird dann per Caddy auf eine Domain gehoben.</p>
+<p>Ein zentrales Dashboard, das alle Dienste auf einen Blick sammelt, ist für viele Homelaber die erste Anlaufstelle. Unabhängig davon, ob Homarr, Homepage oder Heimdall gewählt wird – wie in <a href="homelab-dashboard.html">Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich</a> beschrieben – läuft das Dashboard häufig auf einem eigenen Port und wird dann per Caddy auf eine Domain gehoben.</p>
 <pre><code>
 dashboard.beispiel.de {
     reverse_proxy 192.168.3.25:7575 {
@@ -219,11 +219,11 @@ beispiel.de {
 <p>Ein weiterer Punkt: Wildcard-Zertifikate decken alle Subdomains ab, aber nicht alle Subdomains sollen auch existieren. Wem ein Wildcard-Zertifikat ausgestellt ist, macht damit implizit alle Subdomains unter der Domäne technisch erreichbar – solange die DNS-Auflösung stimmt. Das ist kein Sicherheitsloch im Zertifikat, aber ein Bewusstseins-Thema für Netzwerkdesign.</p>
 <h2>Reverse Proxy statt VPN</h2>
 <p>Eine der häufigsten Verwechslungen: Ein Reverse Proxy macht Dienste erreichbar, er schützt sie aber nicht automatisch. Wenn Caddy Nextcloud nach außen exponiert und kein Authentifizierungsschicht davor steht, ist Nextcloud von überall ohne VPN erreichbar. Für manche Dienste ist das gewollt – für andere ein unnötiges Risiko.</p>
-<p>Die Entscheidung sollte bewusst sein: <strong>Welche Dienste müssen wirklich öffentlich erreichbar sein?</strong> Die meisten Homelab-Dienste brauchen das nicht. Pi-hole zum Beispiel braucht oft nur lokalen Zugriff; ein VPN wie <a href="pihole-wireguard.md">Pi-hole + WireGuard: Werbefrei und sicher von unterwegs</a> reicht aus, um auch unterwegs den Werbeblocker zu nutzen, ohne Pi-hole öffentlich zu machen.</p>
+<p>Die Entscheidung sollte bewusst sein: <strong>Welche Dienste müssen wirklich öffentlich erreichbar sein?</strong> Die meisten Homelab-Dienste brauchen das nicht. Pi-hole zum Beispiel braucht oft nur lokalen Zugriff; ein VPN wie <a href="pihole-wireguard.html">Pi-hole + WireGuard: Werbefrei und sicher von unterwegs</a> reicht aus, um auch unterwegs den Werbeblocker zu nutzen, ohne Pi-hole öffentlich zu machen.</p>
 <p>Ein Reverse Proxy ist kein Ersatz für ein VPN. Er macht einen Dienst über eine öffentliche Adresse erreichbar; ein VPN macht das gesamte Netzwerk erreichbar, ohne einzelne Dienste zu exponieren.</p>
 <h2>Authentifizierungsschicht vor dem Proxy</h2>
 <p>Wenn Dienste öffentlich erreichbar gemacht werden, sollte überlegt werden, ob eine Authentifizierungsschicht davor sinnvoll ist. Tools wie Authentik oder Authelia können als Reverse-Proxy-Gatekeeper fungieren: Der Proxy leitet die Anfrage zuerst an die Auth-Lösung weiter, und erst wenn der Nutzer authentifiziert ist, geht die Anfrage an das Backend.</p>
-<p>Das ist besonders relevant für Admin-Oberflächen, Monitoring-Tools und Passwort-Manager. In <a href="homelab-sicherheit-fail2ban-authentik.md">Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten</a> wird beschrieben, wie Authentik als SSO mit optionalem Zwei-Faktor-Authentifizierungsschritt vor Dienste gestellt werden kann.</p>
+<p>Das ist besonders relevant für Admin-Oberflächen, Monitoring-Tools und Passwort-Manager. In <a href="homelab-sicherheit-fail2ban-authentik.html">Homelab-Sicherheit: Fail2ban &amp; Authentik einrichten</a> wird beschrieben, wie Authentik als SSO mit optionalem Zwei-Faktor-Authentifizierungsschritt vor Dienste gestellt werden kann.</p>
 <p>Caddy selbst bringt keine eingebaute Vorauthentifizierung mit. Es kann mit externen Auth-Tools kombiniert werden, indem die <code>forward_auth</code>-Direktive eingesetzt wird:</p>
 <pre><code>
 dashboard.beispiel.de {
@@ -255,7 +255,7 @@ dashboard.beispiel.de {
 </ul>
 <h2>HTTPS ist nötig, aber nicht ausreichend</h2>
 <p>HTTPS verschlüsselt die Verbindung zwischen Client und Proxy. Das schützt vor Mitlesen im Übertragungsweg. Es schützt aber nicht davor, dass ein kompromittiertes Backend-Konto oder ein Schwachstellens in Nextcloud zu einem Datenleck führt. Die Absicherung eines öffentlichen Diensts besteht aus mehreren Ebenen: HTTPS, starke Passwörter, 2FA, Authentifizierungsschicht vor dem Proxy, Fail2ban, und regelmäßige Updates.</p>
-<p>Die grundlegenden Maßnahmen sind in <a href="homelab-sicherheit-guide.md">Homelab absichern: Der komplette Sicherheits-Guide 2026</a> zusammengefasst. Caddy ist ein Baustein in diesem Gesamtkonzept, nicht die gesamte Lösung.</p>
+<p>Die grundlegenden Maßnahmen sind in <a href="homelab-sicherheit-guide.html">Homelab absichern: Der komplette Sicherheits-Guide 2026</a> zusammengefasst. Caddy ist ein Baustein in diesem Gesamtkonzept, nicht die gesamte Lösung.</p>
 <h2>Caddy-Dienst aufsetzen: Der praktische Ablauf</h2>
 <p>Der Vollständigkeit halber ein kompakter Ablauf, wie Caddy auf einer Linux-Maschine (Debian/Ubuntu) als Dienst eingerichtet wird:</p>
 <p>1. <strong>Caddy installieren.</strong> Das offizielle Installationsskript von Caddys Website bringt die aktuelle Version und legt einen systemd-Dienst an.</p>

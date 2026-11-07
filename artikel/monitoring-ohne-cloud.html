@@ -4,10 +4,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Monitoring ohne Cloud: Selbst hosten, selbst wissen – was läuft auf dem Server?</title>
+<title>Monitoring ohne Cloud: Was läuft auf dem Server?</title>
 <meta content="Monitoring ohne Cloud: Uptime Kuma, Prometheus, Node Exporter, Loki lokal. Vergleichstabelle, zwei Anleitungen, Alarm-Regeln, Aufbewahrung, häufige Fehler." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-</head>
+<link href="https://homelab.brillianze.de/artikel/monitoring-ohne-cloud.html" rel="canonical"/></head>
 <body>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
@@ -246,11 +246,11 @@ docker run -d \
 <p>Ja. Loki und Vector sind für die Logs-Ebene. Wenn du nur Metriken (Ebene 2) und Verfügbarkeitschecks (Ebene 1) brauchst, kannst du beide weglassen. Das ist ein legitimer Betrieb – viele Setups laufen nur mit Uptime Kuma und Prometheus.</p>
 <h2>Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
 <ul>
-<li><a href="{slug: proxmox-kleine-unternehmen}">Proxmox VE für kleine Unternehmen</a> – wenn du Proxmox als Hypervisor nutzt und Node Exporter in VMs oder Containern betreiben willst</li>
-<li><a href="{slug: docker-vs-vm}">Docker vs. VM</a> – für die Entscheidung, ob Container-Metriksammler (cAdvisor) oder Node Exporter als Hauptquelle für Container-Metriken</li>
-<li><a href="{slug: reverse-proxy-vergleich}">Reverse Proxy Vergleich</a> – wenn dein Monitoring über einen Reverse Proxy erreichbar sein soll, ohne den Monitoring-Port direkt freizugeben</li>
-<li><a href="{slug: backup-strategie-selfhoster}">Backup-Strategie für Selfhoster</a> – Backups und Monitoring sind zusammengehörige Themen; dieses Dokument ergänzt die Backup-Dokumentation</li>
-<li><a href="{slug: datenbank-backups}">Datenbank-Backups</a> – für Firmenumgebungen, in denen Datenbank-Status und -Backups im Monitoring sichtbar sein sollen</li>
+<li><a href="proxmox-kleine-unternehmen.html">Proxmox VE für kleine Unternehmen</a> – wenn du Proxmox als Hypervisor nutzt und Node Exporter in VMs oder Containern betreiben willst</li>
+<li><a href="docker-vs-vm.html">Docker vs. VM</a> – für die Entscheidung, ob Container-Metriksammler (cAdvisor) oder Node Exporter als Hauptquelle für Container-Metriken</li>
+<li><a href="reverse-proxy-vergleich.html">Reverse Proxy Vergleich</a> – wenn dein Monitoring über einen Reverse Proxy erreichbar sein soll, ohne den Monitoring-Port direkt freizugeben</li>
+<li><a href="backup-strategie-selfhoster.html">Backup-Strategie für Selfhoster</a> – Backups und Monitoring sind zusammengehörige Themen; dieses Dokument ergänzt die Backup-Dokumentation</li>
+<li><a href="datenbank-backups.html">Datenbank-Backups</a> – für Firmenumgebungen, in denen Datenbank-Status und -Backups im Monitoring sichtbar sein sollen</li>
 </ul>
 <h2>Bildvorschläge</h2>
 <p><strong>Bild 1</strong></p>
