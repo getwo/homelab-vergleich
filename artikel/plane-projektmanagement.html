@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Plane: Projekte mit Cycles und Modulen ordnen</title>
+<meta content="Plane trennt Zeitfenster für Arbeit von thematischen Modulen. Erfahre, wie du Work Items planst, die Grenzen erkennst und einen kleinen Teamtest aufbaust." name="description"/>
+<link href="https://homelab.brillianze.de/artikel/plane-projektmanagement.html" rel="canonical"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
+</head>
+<body>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>Plane: Projektarbeit nach Zeit und Thema ordnen</h1>
+<p>Ein Projekt hat zwei verschiedene Ordnungsfragen: Wann soll eine Aufgabe bearbeitet werden, und zu welchem Ergebnis gehört sie? Plane löst das mit „Cycles“ für Zeiträume und „Modules“ für zusammengehörige Arbeit an einem Thema. Die offizielle Dokumentation nennt als Beispiel für Cycles einen Sprint und beschreibt Module etwa für ein Feature, eine Veröffentlichung oder eine Kampagne. Wer diese Unterscheidung verstanden hat, vermeidet einen häufigen Planungsfehler: Ein Termin ist nicht automatisch ein sinnvolles Themenpaket. <a href="#quelle-1">[1]</a><a href="#quelle-2">[2]</a></p>
+<h2>Work Items als gemeinsamer Bezugspunkt</h2>
+<p>Plane bezeichnet die einzelnen nachverfolgten Aufgaben als Work Items. Sie können laut Dokumentation Aufgaben, Fehler, Funktionswünsche oder Tickets darstellen und gehören jeweils zu einem Projekt. Ein Cycle oder Modul sortiert diese Arbeit, statt eine zweite, unabhängige Kopie davon anzulegen. Für ein kleines Team kann ein Work Item „Test für Anmeldung ergänzen“ heißen, während ein anderes den eigentlichen Fehler beschreibt. Beide können im selben Zeitfenster landen; ein Modul „Anmeldung“ hält ihren fachlichen Zusammenhang sichtbar. Diese Trennung hilft insbesondere, wenn ein Thema mehrere Zeitabschnitte überdauert. <a href="#quelle-3">[3]</a></p>
+<p>Formuliere Work Items mit einem beobachtbaren Ergebnis und halte Zuständigkeiten aktuell. Das Werkzeug kann den Status anzeigen, aber nicht selbst entscheiden, ob ein Fehler fachlich behoben wurde. Eine grobe Aufgabenbeschreibung und ein technisch gesetztes „Done“ ergeben noch keine Abnahme. Bei Arbeiten mit mehreren beteiligten Teams sollte außerdem klar sein, ob ein Item die Arbeit selbst, eine Freigabe oder nur eine Erinnerung beschreibt. Andernfalls lesen verschiedene Beteiligte denselben Fortschrittswert unterschiedlich.</p>
+<h2>Cycles und Module gezielt aktivieren</h2>
+<p>Laut offizieller Dokumentation sind Cycles in einem neuen Plane-Projekt zunächst deaktiviert; das gilt ebenfalls für Module. Projektverantwortliche können die jeweiligen Funktionen in den Projekteinstellungen einschalten. Cycles ordnen Items einem Zeitraum zu, während Module ein gemeinsames Ziel im Projekt abbilden. Module können eine verantwortliche Person, Beteiligte, Termine und einen Fortschritt tragen. Diese Möglichkeiten sind kein Grund, beide Strukturen von Beginn an verpflichtend zu machen. Wenn ein Team nur einen laufenden Aufgabenstrom hat, reichen zunächst Work Items und verständliche Zustände. <a href="#quelle-1">[1]</a><a href="#quelle-2">[2]</a></p>
+<p>Die Grenze liegt im Pflegeaufwand. Jedes zusätzliche Planungsobjekt braucht eine Person, die veraltete Daten korrigiert. Ein Cycle, der nie abgeschlossen besprochen wird, erzeugt nur ein weiteres Datum; ein Modul ohne klare Zielbeschreibung wird zum Sammelordner. Für die Selbsthosting-Frage sind zudem Funktionsumfang, Aktualisierung und Sicherungsweg der tatsächlich gewählten Edition zu prüfen. Die Existenz eines Projektmodells allein belegt noch nicht, dass eine bestimmte Deployment-Variante alle gewünschten Betriebsfunktionen enthält.</p>
+<h2>Ein Test, der den Unterschied zeigt</h2>
+<p>Lege ein Testprojekt mit vier Items an: zwei für ein Feature, eines für einen Fehler und eines für die Dokumentation. Aktiviere einen Cycle für die nächste Arbeitsphase und ein Modul für das Feature. Verschiebe eines der Feature-Items in die nächste Arbeitsphase; prüfe, ob die fachliche Modulzuordnung trotzdem sinnvoll bleibt. Bitte eine zweite Person zu erklären, was der Cycle über den Zeitpunkt und das Modul über das Ergebnis aussagt. Dokumentiere ausdrücklich, wer überfällige Items nach einem Cycle-Ende neu plant; eine Ansicht allein trifft diese Entscheidung nicht.</p>
+<p>Überprüfe außerdem, welche Items nach dem Zyklus offen geblieben sind und wer die weitere Planung übernimmt. Erst danach lohnt sich die Betriebsprüfung einer selbst gehosteten Instanz: Sicherung, isolierte Wiederherstellung und Kontrolle eines bekannten Items samt Zuordnung. Für die Infrastruktur helfen der <a href="../artikel/homelab-sicherheit-guide.html">Homelab-Sicherheitsguide</a> und die <a href="../artikel/backup-strategie-selfhoster.html">Backup-Strategie</a>. Plane schafft Ordnung, wenn Zeit und Themen bewusst getrennt gepflegt werden; ohne diesen Prozess entsteht nur ein komplexeres Board.</p>
+<h2>Offizielle Quellen</h2>
+<ul><li id="quelle-1"><a href="https://docs.plane.so/core-concepts/cycles.md">[1] Plane: Cycles</a></li><li id="quelle-2"><a href="https://docs.plane.so/core-concepts/modules.md">[2] Plane: Modules</a></li><li id="quelle-3"><a href="https://docs.plane.so/work-items/overview.md">[3] Plane: Work Items</a></li></ul>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Proxmox Memory Ballooning richtig planen</title>
+<meta content="Minimale und maximale VM-RAM-Zuweisung in Proxmox abwägen, Speicherengpässe erkennen und Ballooning mit Gast- und Hostdaten prüfen." name="description"/>
+<link href="https://homelab.brillianze.de/artikel/proxmox-memory-ballooning-ram-planen.html" rel="canonical"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
+</head>
+<body>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>Memory Ballooning: RAM in Proxmox sauber planen</h1>
+<p>Eine VM mit acht Gigabyte konfiguriertem Speicher beansprucht nicht zu jedem Zeitpunkt genau diesen Wert auf dem Host. Proxmox kann mit Memory Ballooning den Gast zwischen Mindest- und Höchstwert steuern. Das schafft Spielraum für mehrere VMs, ist aber kein zusätzliches physisches RAM und kein zuverlässiger Schutz vor Überlast. Entscheidend ist, wie viel jeder Dienst im schlechtesten zulässigen Betriebszustand benötigt. <a href="#quelle-1">[1]</a></p>
+<h2>Minimum, Maximum und tatsächlicher Bedarf</h2>
+<p>Proxmox trennt den maximalen VM-Speicher vom kleineren Mindestwert. Liegt die Hostauslastung unter dem konfigurierten Ziel, kann der Gast bis zum Maximum mehr Speicher erhalten; bei Knappheit fordert der Balloon-Treiber Seiten zurück. Bei festem Wert, also gleichem Minimum und Maximum, bleibt das Gerät normalerweise für Nutzungsinformationen vorhanden. Die Referenz führt <code>memory</code> und <code>balloon</code> als eigene Optionen; <code>balloon: 0</code> ist eine bewusste Deaktivierung, nicht die Beschreibung eines kleinen Minimums. <a href="#quelle-1">[1]</a> <a href="#quelle-2">[2]</a></p>
+<p>Plane nicht allein nach addierten Maximalwerten. Erfasse für jeden Gast seine normale Last, Arbeitsspitzen, Auslagerung und einen fachlich vertretbaren Mindestwert. Parallel braucht der Proxmox-Host selbst Reserve für Kernel, Dateisystem-Cache, Sicherungen und eventuelle weitere Dienste. Ein Minimum, das nur den Start des Betriebssystems erlaubt, kann unter Datenbanklast zu massivem Swapping führen. Das Ballooning verschiebt dann die Speicherknappheit in den Gast, statt sie zu beseitigen. Auch der Host braucht eine echte Reserve: Ausgelagerter Gast-RAM ist keine Garantie gegen Host-Speicherdruck oder OOM bei parallelen Lastspitzen.</p>
+<p>Für latenzempfindliche Datenbanken oder Anwendungen mit fest reservierten Speicherpools kann eine starre Zuteilung sinnvoller sein. Für variable, unkritische Dienste bietet ein durchdachter Bereich Flexibilität. Auch hier zählt eine anwendungsbezogene Entscheidung: Ein Gast mit häufigem OOM-Ereignis ist kein Beleg für besonders effiziente Überbuchung. Die allgemeine Wahl zwischen <a href="../artikel/proxmox-einstieg.html">Proxmox-Gasttypen</a> beantwortet diese RAM-Frage nicht automatisch.</p>
+<h2>Wenn das Rückholen von RAM den Dienst stört</h2>
+<p>Typisches Fehlerbild: Mehrere VMs starten gleichzeitig, der Host nähert sich dem Speicherlimit und Proxmox verkleinert die bereitgestellte Gastmenge. Im Gast steigen Swap-I/O und Antwortzeiten; im Extremfall beendet dessen OOM-Killer Prozesse. Die Proxmox-Dokumentation nennt Gast-Swapping und OOM ausdrücklich als mögliche letzte Folgen. Die Hostanzeige kann währenddessen noch einen scheinbar geregelten Zustand melden. Für die Diagnose müssen daher Hostdruck und Gastereignisse zeitlich zusammen betrachtet werden. <a href="#quelle-1">[1]</a></p>
+<p>Unterscheide außerdem ballonierten Speicher von Cache und tatsächlich aktiv genutzten Seiten. Ein einmaliger Dashboardwert nach einem ruhigen Start reicht nicht. Wenn ein Backup oder eine periodische Auswertung kurzzeitig viel RAM braucht, muss der Mindestwert diesen Zustand berücksichtigen oder die Last zeitlich entzerrt werden. Für einen dauerhaft knapp kalkulierten Datenbankgast ist ein fixer Wert häufig transparenter als eine aggressive dynamische Obergrenze. Ein größerer Gast-Maximalwert allein macht den Host nicht belastbarer.</p>
+<h2>Prüfung unter realistischer Parallelbelastung</h2>
+<p>Setze für eine unkritische Test-VM einen begründeten Mindest- und Maximalwert und prüfe, ob der Gast den Balloon-Treiber erkennt. Beobachte dann über mehrere typische Lastphasen den Hostspeicher, die tatsächlich zugeteilte Gastmenge, Gast-Swap und Anwendungsantworten. Starte zusätzlich die anderen vorgesehenen VMs und einen geplanten Sicherungslauf, ohne Produktionsdienste absichtlich an die Grenze zu treiben. Notiere Zeitpunkte, an denen der Host Druck meldet und der Gast auslagert; daraus lässt sich eine belastbare Mindestreserve ableiten.</p>
+<p>Wenn der Dienst unter der Last stockt, erhöhe nicht blind alle Maximalwerte. Senke die parallele Belegung, verlagere Last oder erhöhe physisches RAM; teste dann denselben Lastfall erneut. Bewahre vorherige VM-Einstellungen für einen Rückweg auf. Das benachbarte Thema <a href="../artikel/ecc-ram-homelab.html">ECC-RAM im Homelab</a> betrifft Datenintegrität der Hardware, nicht die Kapazitätsplanung. Ein grüner Ballooning-Test besteht erst, wenn der Gast bei absichtlich begrenzter, aber realistischer Ressource fachlich korrekt und ohne ungewolltes Swapping arbeitet.</p>
+<h2>Offizielle Quellen</h2>
+<ul><li id="quelle-1"><a href="https://pve.proxmox.com/pve-docs/chapter-qm.html">[1] Proxmox VE: QEMU/KVM – Automatic Memory Allocation</a></li><li id="quelle-2"><a href="https://pve.proxmox.com/pve-docs/qm.1.html">[2] Proxmox VE: qm-Referenz – Memory und Balloon</a></li></ul>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>

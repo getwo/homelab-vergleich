@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Proxmox Storage Content Types gezielt setzen</title>
+<meta content="Welche Content Types ein Proxmox-Storage wirklich unterstützt, warum Poolnamen keinen Speicher schaffen und wie VM-Images, Rootdirs und Backups geprüft werden." name="description"/>
+<link href="https://homelab.brillianze.de/artikel/proxmox-storage-content-types-pools.html" rel="canonical"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
+</head>
+<body>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
+<main class="wrap"><article class="content">
+<h1>Proxmox Storage Content Types gezielt setzen</h1>
+<p>Ein Storage mit dem Namen „backup“ ist noch kein brauchbares Backup-Ziel. Proxmox unterscheidet physische Speichertechnologien, Storage-IDs und erlaubte Content Types. Ein File-Level-Storage kann unterschiedliche Dateien halten; Block-Level-Storage dient typischerweise großen Raw-Volumes und nicht beliebigen ISO-Dateien oder Archiven. Der Content Type begrenzt, welche Art von Objekt Proxmox dort ablegen darf. Er verleiht einem Medium aber weder Kapazität noch Redundanz. Für die übergeordnete <a href="../artikel/backup-strategie-selfhoster.html">Backup-Strategie</a> muss das Ziel zusätzlich unabhängig und rückspielbar sein. <a href="#quelle-1">[1]</a></p>
+<h2>Die Objekttypen sind keine Sicherheitsklassen</h2>
+<p>Die Storage-Dokumentation nennt beispielsweise <em>images</em> für VM-Disks und <em>rootdir</em> für Container-Dateisysteme; außerdem existieren Typen für ISOs, Templates und Backups. Nicht jedes Storage-Plugin unterstützt jeden Typ. Wer ISO-Dateien auf einem Block-Pool erwartet, muss zunächst dessen Fähigkeiten prüfen, statt den Haken in der Oberfläche als Garantie anzusehen. Umgekehrt kann ein Directory-Storage mehrere Typen halten, aber eine breite Freigabe macht die Belegung unübersichtlich und erschwert Kapazitätsalarme. <a href="#quelle-1">[1]</a></p>
+<p>Die pvesm-Referenz führt <em>content</em> als Liste erlaubter Typen und <em>nodes</em> als Einschränkung der nutzenden Clusterknoten. Diese Einstellungen sind Auswahlfilter und Verwendungsrahmen innerhalb von Proxmox, keine Berechtigungsgrenze gegen unbefugte Benutzer und keine reale Eigenschaft der Hardware. Eine lokale Platte wird durch dieselbe Storage-ID auf mehreren Hosts nicht geteilt. Wer die Option „shared“ missversteht, kann nach einer Migration eine Disk erwarten, die am Zielknoten gar nicht existiert. Storage-ID, physischer Pfad und Knotenverfügbarkeit gehören deshalb immer zusammen ins Inventar. <a href="#quelle-2">[2]</a></p>
+<h2>Pools, Plugins und getrennte Verantwortungen</h2>
+<p>Ein ZFS-Pool ist eine Speichertechnologie; eine Proxmox-Storage-Definition ist die Schnittstelle der Verwaltung zu diesem Pool. Der Name des Pools allein bestimmt nicht, ob die Definition VM-Images oder Container-Rootdirs akzeptiert. Bei einem Dateiverzeichnis ist außerdem zu prüfen, ob der Pfad tatsächlich auf dem beabsichtigten Dateisystem liegt. Ein ausgehängtes Backup-Laufwerk kann sonst scheinbar existierende Verzeichnisse auf dem Host-Dateisystem hinterlassen. Die Sicherung läuft dann in die falsche Fehlerdomäne, obwohl ihr Job auf „erfolgreich“ steht. <a href="#quelle-1">[1]</a></p>
+<p>Trenne Gastdisks, ISO-Sammlung und Sicherungsarchive nach Kapazitäts- und Wiederherstellungsanforderung, nicht bloß nach hübschen Bezeichnern. Ein Backup auf demselben physischen Laufwerk wie die VM schützt nicht vor dessen Ausfall. Die <a href="../artikel/proxmox-backup-server.html">Proxmox-Backup-Server-Architektur</a> bietet einen eigenen Zieltyp, verlangt aber ebenfalls Speicherpflege und Restoreprüfung. Ein Content-Häkchen beweist weder korrekte Aufbewahrung noch lesbare Archivdaten. Die Zuordnung von Objekttypen soll Fehlbedienung verhindern, keine Backup-Strategie ersetzen. <a href="#quelle-1">[1]</a></p>
+<h2>Prüfstrategie: Objekt und Ziel gegenprüfen</h2>
+<p>Erfasse für jede Storage-ID Plugin-Typ, realen Pfad oder Pool, zulässige Content Types, eingeschränkte Knoten und zugrunde liegendes Gerät. Lege im Labor je einen harmlosen Gastdatenträger und ein Testarchiv nur auf dafür geeigneten Zielen an. Prüfe anschließend nicht nur die Anzeige, sondern den tatsächlichen Ablageort und den freien Platz auf dem richtigen Dateisystem. Ein absichtlich nicht unterstützter Objekttyp muss sichtbar abgewiesen werden. <a href="#quelle-2">[2]</a></p>
+<p>Für das Backup-Ziel simuliere testweise ein nicht eingehängtes Laufwerk, ohne produktive Sicherungen zu gefährden. Der Sicherungsprozess darf nicht unbemerkt in einem leeren Mountpunkt auf der Systemplatte schreiben. Stelle ein Testarchiv auf einem unabhängigen Ziel wieder her und kontrolliere Dateiinhalte und Gaststart. Erst wenn solche Fehlerpfade nachweisbar erfasst werden, ist die Content-Konfiguration mehr als eine kosmetische Sortierung von Dateien in der Oberfläche. <a href="#quelle-1">[1]</a></p>
+<p>Berücksichtige beim Kapazitätsplan auch Snapshots und temporäre Aufgaben. Ein Pool kann für neue VM-Images freigegeben sein, während sein Restplatz für Wiederherstellung oder laufende Sicherungen nicht ausreicht. Prüfe deshalb den freien Platz an den tatsächlichen Zielgeräten vor und nach einer Testaufgabe und dokumentiere klare Alarmgrenzen.</p>
+<h2>Offizielle Quellen</h2>
+<ul><li id="quelle-1"><a href="https://pve.proxmox.com/pve-docs/chapter-pvesm.html">[1] Proxmox VE: Storage-Plugins und Content Types</a></li><li id="quelle-2"><a href="https://pve.proxmox.com/pve-docs/pvesm.1.html">[2] Proxmox VE: pvesm-Referenz</a></li></ul>
+</article></main>
+<footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
+</body></html>
