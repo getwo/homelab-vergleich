@@ -1,24 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Docker-Container vs. VM: Wann welcher Virtualisierungstyp das Richtige ist</title>
-<meta name="description" content="Docker-Container oder VM? Eine praxisnahe Entscheidungshilfe für Homelab-Betreiber: Vergleichstabelle, klare Regeln, Sonderfälle und FAQ.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Docker-Container oder VM? Eine praxisnahe Entscheidungshilfe für Homelab-Betreiber: Vergleichstabelle, klare Regeln, Sonderfälle und FAQ." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Docker-Container vs. VM: Wann welcher Virtualisierungstyp das Richtige ist</h1>
-<p>Die häufigste Frage in Homelab-Forums und bei BsN-Beratungsgesprächen klingt so: <em>„Soll ich das in Docker oder in einer VM machen?&quot;</em> Die Frage beruht auf einem grundlegenden Irrtum: Container und VMs seien austauschbare Begriffe für dasselbe Prinzip. Sie sind es nicht.</p>
+<p>Die häufigste Frage in Homelab-Forums und bei BsN-Beratungsgesprächen klingt so: <em>„Soll ich das in Docker oder in einer VM machen?"</em> Die Frage beruht auf einem grundlegenden Irrtum: Container und VMs seien austauschbare Begriffe für dasselbe Prinzip. Sie sind es nicht.</p>
 <p>Ein <strong>Container</strong> teilt sich den Kernel des Host-Systems und virtualisiert nur die Userspace-Umgebung – Bibliotheken, Dateisystem, Prozessisolation. Eine <strong>Virtuelle Maschine</strong> virtualisiert die gesamte Hardware, inklusive eigenem Kernel und eigenem Betriebssystem. Das ist der wichtigste Unterschied, und er bestimmt fast alle nachfolgenden Praktikabilitätsfragen.</p>
 <h2>Vergleichstabelle</h2>
 <p>| Kriterium | Docker-Container | Virtuelle Maschine |</p>
@@ -76,11 +71,9 @@
 <p>Das Ausmaß hängt vom Container-Typ und von den Kernel-Fähigkeiten ab. Ein root-fähiger Docker-Container mit <code>--privileged</code> hat effektiv root auf dem Host – bei einem Kernel-Exploit ist der ganze Host betroffen. Ein unprivilegierter Container ohne Devices und ohne <code>--privileged</code> begrenzt die Schadensfläche, aber ein Kernel-Exploit im Container kann theoretisch den Host kompromittieren, weil beide denselben Kernel nutzen. Eine VM mit eigener Kernel-Isolierung begrenzt den Schaden auf die VM.</p>
 <p><strong>F4: Welches Backup soll ich wählen – Volume oder VM-Snapshot?</strong></p>
 <p>Container-Backup = Volumes kopieren (<code>docker volume inspect</code> zeigt den Pfad; dann rsync oder Snapshot des Host-Dateisystems) plus Compose-Konfigurationsdatei als Code sichern. VM-Backup = ganze VM-Snapshot/Backup (<code>qm backup &lt;VMID&gt; &lt;backup-storage&gt;</code>). Wenn du beides nutzt, sind die VM-Backups oft einfacher zu verwenden und wiederherzustellen (einheitlicher Mechanismus); Container-Backups sind im Detail genauer (nur die Daten, nicht das gesamte OS-Image). Praxis: beide parallel, je nach Wichtigkeit.</p>
-<hr>
+<hr/>
 <p><em>Hinweis: Konrad Konfigurationsdetails (PCI-Adressen, USB-IDs, prompte Pfade) sind jeweils systemabhängig; Beispiele zeigen Syntax. Dokumentation für Treiber und Geräte: <code>lspci -nn</code>, <code>lsusb</code>, <code>docker volume inspect</code>, <code>pct config</code> auf dem Proxmox-Host.</em></p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

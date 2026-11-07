@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Navidrome: Musik-Streaming selbst hosten – die Spotify-Alternative fürs Homelab — Homelab Vergleich</title>
-<meta name="description" content="Navidrome: Musik-Streaming selbst hosten – die Spotify-Alternative fürs Homelab  Du bezahlst jeden Monat für Musik, die dir nicht gehört, und hörst We">
-<link rel="stylesheet" href="../style.css">
+<meta content="Navidrome: Musik-Streaming selbst hosten – die Spotify-Alternative fürs Homelab  Du bezahlst jeden Monat für Musik, die dir nicht gehört, und hörst We" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Navidrome: Musik-Streaming selbst hosten – die Spotify-Alternative fürs Homelab</h1>
 <p>Du bezahlst jeden Monat für Musik, die dir nicht gehört, und hörst Werbung zwischen den Songs – dabei liegt die Lösung oft schon im eigenen Homelab. Navidrome ist ein quelloffener Musikserver, der deine eigene Musiksammlung auf alle Geräte streamt: kostenlos, ohne Tracking und mit voller Kontrolle über deine Daten. In diesem Artikel erfährst du, was Navidrome kann, wie du es per Docker installierst und warum es für viele die bessere Spotify-Alternative ist.</p>
 <h2>Was ist Navidrome?</h2>
@@ -31,9 +32,9 @@ services:
   navidrome:
     image: deluan/navidrome:latest
     ports:
-      - &quot;4533:4533&quot;
+      - "4533:4533"
     environment:
-      ND_SCANSCHEDULED: &quot;1h&quot;
+      ND_SCANSCHEDULED: "1h"
       ND_LOGLEVEL: info
     volumes:
       - ./data:/data
@@ -68,7 +69,7 @@ docker compose up -d
 <p>Der wichtigste Unterschied ist philosophisch: Spotify vermietet dir Zugang zu einem Katalog, der dir nie gehört. Navidrome spielt genau die Musik ab, die du besitzt – dauerhaft, offline-fähig und ohne dass dein Hörverhalten zur Ware wird. Dafür musst du die Musik selbst besitzen und den Server einmal einrichten und warten.</p>
 <h2>Fazit</h2>
 <p>Navidrome ist die überzeugendste Spotify-Alternative für alle, die ihre Musiksammlung selbst in der Hand behalten wollen. Der Server ist leichtgewichtig, die Docker-Installation dauert Minuten, und dank Subsonic-API findest du für jedes Gerät eine passende App. Wer bereits ein Homelab betreibt, holt sich damit ein Stück digitale Souveränität zurück – ganz ohne Abo und ganz ohne Tracking.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

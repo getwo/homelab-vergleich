@@ -1,21 +1,22 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Homelab absichern: Der komplette Sicherheits-Guide 2026 — Homelab Vergleich</title>
-<meta name="description" content="--- title: "Homelab absichern: Der komplette Sicherheits-Guide 2026" meta_description: "Homelab absichern leicht gemacht: Firewall, SSH-Schlüssel, VPN">
-<link rel="stylesheet" href="../style.css">
+<meta "homelab="" 2026"="" absichern="" absichern:="" content="--- title: " der="" firewall,="" gemacht:="" homelab="" komplette="" leicht="" meta_description:="" name="description" sicherheits-guide="" ssh-schlüssel,="" vpn"=""/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
-<hr>
-<p>title: &quot;Homelab absichern: Der komplette Sicherheits-Guide 2026&quot;</p>
-<p>meta_description: &quot;Homelab absichern leicht gemacht: Firewall, SSH-Schlüssel, VPN mit WireGuard, Fail2ban, Reverse-Proxy mit HTTPS und typische Einsteiger-Fehler – der komplette Sicherheits-Guide für dein Heim-Rechenzentrum.&quot;</p>
+<div class="content">
+<hr/>
+<p>title: "Homelab absichern: Der komplette Sicherheits-Guide 2026"</p>
+<p>meta_description: "Homelab absichern leicht gemacht: Firewall, SSH-Schlüssel, VPN mit WireGuard, Fail2ban, Reverse-Proxy mit HTTPS und typische Einsteiger-Fehler – der komplette Sicherheits-Guide für dein Heim-Rechenzentrum."</p>
 <p>keywords: [Homelab absichern, Homelab Sicherheit, SSH Schlüssel, WireGuard, Fail2ban, Reverse Proxy HTTPS, Firewall Homelab]</p>
-<hr>
+<hr/>
 <h1>Homelab absichern: Der komplette Sicherheits-Guide 2026</h1>
 <p>Ein eigenes Homelab ist die beste Spielwiese, um Server, Virtualisierung und lokale KI zu lernen. Doch sobald ein Dienst aus dem Heimnetz erreichbar ist, wird dein Rechenzentrum im Wohnzimmer auch für andere interessant. Dieser Guide zeigt Schritt für Schritt, wie du dein Homelab absicherst – vom ersten Firewall-Regelwerk bis zum automatisierten Update.</p>
 <h2>Warum dein Homelab ein Ziel ist</h2>
@@ -55,7 +56,7 @@ sudo systemctl enable --now fail2ban
 <p>Standardmäßig richtet Fail2ban eine Jail für SSH ein. Nach einer konfigurierbaren Anzahl fehlgeschlagener Versuche wird die Quelle für eine bestimmte Zeit gesperrt. Das bremst automatisierte Angriffe zuverlässig aus.</p>
 <h2>Reverse-Proxy mit HTTPS</h2>
 <p>Sollen Webdienste doch öffentlich erreichbar sein, gehören sie hinter einen Reverse-Proxy. Nginx Proxy Manager, Traefik oder Caddy nehmen Anfragen entgegen, leiten sie an den richtigen Dienst weiter und bündeln die Verschlüsselung an einer Stelle. Damit verschlüsselst du den gesamten Datenverkehr mit HTTPS und versteckst die tatsächliche Infrastruktur dahinter.</p>
-<p>Für gültige Zertifikate sorgt Let&#x27;s Encrypt, das die meisten Proxys automatisch anbinden und verlängern. Besonders bei der lokalen KI spielt HTTPS eine doppelte Rolle: Viele Browser-APIs funktionieren nur über eine sichere Verbindung – und sensible Daten bleiben verschlüsselt.</p>
+<p>Für gültige Zertifikate sorgt Let's Encrypt, das die meisten Proxys automatisch anbinden und verlängern. Besonders bei der lokalen KI spielt HTTPS eine doppelte Rolle: Viele Browser-APIs funktionieren nur über eine sichere Verbindung – und sensible Daten bleiben verschlüsselt.</p>
 <h2>Updates automatisieren</h2>
 <p>Die meisten erfolgreichen Angriffe nutzen bekannte, längst gepatchte Lücken. Automatische Updates schließen diese Lücke, ohne dass du daran denken musst. Unter Debian und Ubuntu übernimmt das unbeaufsichtigte Sicherheitsupdates:</p>
 <pre><code>
@@ -74,7 +75,7 @@ sudo dpkg-reconfigure unattended-upgrades
 </ul>
 <h2>Fazit</h2>
 <p>Ein Homelab abzusichern ist keine Raketenwissenschaft, sondern die Summe einfacher, konsequenter Maßnahmen: Firewall aktivieren, SSH auf Schlüssel umstellen, keine unnötigen Ports öffnen, Zugriff per WireGuard, Angriffe mit Fail2ban bremsen und Updates automatisieren. Wer diese Grundlagen umsetzt, kann sein Heim-Rechenzentrum guten Gewissens betreiben – und sich wieder dem widmen, worum es eigentlich geht: dem Experimentieren mit Servern, Virtualisierung und lokaler KI.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

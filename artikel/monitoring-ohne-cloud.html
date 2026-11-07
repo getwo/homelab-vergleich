@@ -1,31 +1,26 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Monitoring ohne Cloud: Selbst hosten, selbst wissen – was läuft auf dem Server?</title>
-<meta name="description" content="Monitoring ohne Cloud: Uptime Kuma, Prometheus, Node Exporter, Loki lokal. Vergleichstabelle, zwei Anleitungen, Alarm-Regeln, Aufbewahrung, häufige Fehler.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Monitoring ohne Cloud: Uptime Kuma, Prometheus, Node Exporter, Loki lokal. Vergleichstabelle, zwei Anleitungen, Alarm-Regeln, Aufbewahrung, häufige Fehler." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Monitoring ohne Cloud: Was läuft auf dem Server?</h1>
 <p>Du betreibst einen oder mehrere Server, macht das seit Monaten ganz gut, und dann – plötzlich – ist ein Dienst weg. Nicht weil jemand etwas kaputt gemacht hat, sondern weil ein Container abstürzte, die Platte voll läuft, oder die CPU seit Stunden auf 100 Prozent läuft, ohne dass du es mitgekriegt hast. Monitoring ist genau die Antwort auf diese Lücke: es sagt dir, was passiert ist, bevor der Nächste es dir erzählt.</p>
-<p>Der eine wesentliche Grund für Monitoring ist nicht, dass es schön aussieht. Es ist, dass ein Server ohne Monitoring im Ernstfall blind ist. Du merkst eine Ausfallstunde oft erst, wenn jemand anderes fragt. Das ist der Moment, in dem Monitoring von „Nice-to-have&quot; zu „wird sonst teuer&quot; wird.</p>
+<p>Der eine wesentliche Grund für Monitoring ist nicht, dass es schön aussieht. Es ist, dass ein Server ohne Monitoring im Ernstfall blind ist. Du merkst eine Ausfallstunde oft erst, wenn jemand anderes fragt. Das ist der Moment, in dem Monitoring von „Nice-to-have" zu „wird sonst teuer" wird.</p>
 <p>Dieser Artikel geht davon aus, dass du einen Linux-Host hast (Debian, Ubuntu, ähnlich), der Docker oder ähnliches nutzt, und dass du etwas wissen willst, ohne eine Cloud-Abonnementschnittstelle einzubauen. Es gibt hier keine versprochenen Magic Numbers – nur Komponenten, die wirklich existieren, und Konfigurationen, die funktionieren.</p>
 <h2>Die drei Ebenen, die man nicht vermischen darf</h2>
 <p>Monitoring besteht aus drei Ebenen, die man sauber trennen sollte. Wenn man sie vermischt, endet man schnell mit einer Lösung, die alles halbzweiundhalb macht und nichts ordentlich.</p>
 <p><strong>Ebene 1 – Verfügbarkeit von außen.</strong> Das ist die einfachste Frage: Ist der Dienst erreichbar? Antwort kommt von außen, nicht von innen. Wenn dein Webserver läuft, aber sein Port nicht mehr auf der IP hört, sagt dir ein Check von außen Bescheid. Das ist die Ebene, auf der Uptime Kuma angesiedelt ist.</p>
 <p><strong>Ebene 2 – Ressourcen und Metriken im Host.</strong> Das ist die Ebene, auf der du wissen willst, wie viel CPU, RAM, Plattenplatz, I/O und Netzwerk gerade genutzt wird. Das ist Host-intern. Prometheus mit Node Exporter ist hier die gängige Wahl – Node Exporter ist der Komponente, die systemd-ähnliche Metriken aus dem Host holt und auf einem HTTP-Port ausliefert, den Prometheus abfragt.</p>
-<p><strong>Ebene 3 – Logs zentral sammeln und durchsuchen.</strong> Metriken sagen dir „CPU ist auf 100 Prozent&quot;. Logs sagen dir „warum&quot;. Wenn ein Container abstürzt, zeigt die Metrik den abstürzenden Container, aber der Log sagt dir den Stacktrace. Loki ist hier die Komponente, die Logs sammelt und speichert, und Grafana kann sie anzeigen. Vector ist optional als Sammler davor – er holt Logs von verschiedenen Quellen ein und reicht sie an Loki weiter. Loki allein reicht auch, wenn die Log-Quellen einfach sind.</p>
+<p><strong>Ebene 3 – Logs zentral sammeln und durchsuchen.</strong> Metriken sagen dir „CPU ist auf 100 Prozent". Logs sagen dir „warum". Wenn ein Container abstürzt, zeigt die Metrik den abstürzenden Container, aber der Log sagt dir den Stacktrace. Loki ist hier die Komponente, die Logs sammelt und speichert, und Grafana kann sie anzeigen. Vector ist optional als Sammler davor – er holt Logs von verschiedenen Quellen ein und reicht sie an Loki weiter. Loki allein reicht auch, wenn die Log-Quellen einfach sind.</p>
 <p>Die drei Ebenen sind komplementär. Verfügbarkeitschecks allein sagen dir nicht, warum etwas ausgefallen ist. Metriken allein sagen dir nicht, was im Log passiert ist. Logs allein sagen dir nicht, dass etwas gerade nicht erreichbar ist. Alles drei zusammen ist der sinnvolle Minimum-Betrieb.</p>
 <h2>Vergleichstabelle: Uptime Kuma, Prometheus-Stack, vollständige Lösung</h2>
 <p>Die folgende Tabelle vergleicht die drei Ebenen einzeln und gemeinsam nach Kriterien, die für Homelab- und kleine-Firmen-Betrachtungen relevant sind.</p>
@@ -71,7 +66,7 @@ docker run -d \
 <p><strong>Schritt 2: Erste Monitore anlegen</strong></p>
 <p>Nach dem Login im Webinterface: <em>Monitore → Neuer Monitor</em>. Wichtige Typen:</p>
 <ul>
-<li><strong>HTTP(s) Monitor:</strong> Für Webdienste. Du gibst URL, Anforderungsmethode, optional Erwartungs-Statuscode und Zeitgrenzen. Für HTTPS-Dienste mit selbstsigniertem Zertifikat kannst du „Ignore SSL Errors&quot; setzen, aber das ist nur für Test-Umgebungen sinnvoll – in Produktion solltest du das Zertifikat ordentlich holen.</li>
+<li><strong>HTTP(s) Monitor:</strong> Für Webdienste. Du gibst URL, Anforderungsmethode, optional Erwartungs-Statuscode und Zeitgrenzen. Für HTTPS-Dienste mit selbstsigniertem Zertifikat kannst du „Ignore SSL Errors" setzen, aber das ist nur für Test-Umgebungen sinnvoll – in Produktion solltest du das Zertifikat ordentlich holen.</li>
 <li><strong>TCP Monitor:</strong> Für Dienste, die nicht HTTP sind – SMTP, IMAP, DNS, Datenbank-Ports. Du prüfst, ob der Port auf der IP erreichbar ist und antwortet.</li>
 <li><strong>Ping Monitor:</strong> Für Host-Level-Checks auf der IP. Achtung: ICMP kann in einigen Umgebungen blockiert sein oder hinter Firewalls nicht passieren.</li>
 </ul>
@@ -103,9 +98,9 @@ docker run -d \
   --name node-exporter \
   --restart always \
   --net host \
-  -v &quot;/proc:/host/proc:ro&quot; \
-  -v &quot;/sys:/host/sys:ro&quot; \
-  -v &quot;/:/rootfs:ro&quot; \
+  -v "/proc:/host/proc:ro" \
+  -v "/sys:/host/sys:ro" \
+  -v "/:/rootfs:ro" \
   prom/node-exporter:latest \
   --path.procfs=/host/proc --path.sysfs=/host/sys --path.rootfs=/rootfs
 </code></pre>
@@ -119,9 +114,9 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: &quot;node&quot;
+  - job_name: "node"
     static_configs:
-      - targets: [&quot;localhost:9100&quot;]
+      - targets: ["localhost:9100"]
 </code></pre>
 <p>Wenn du mehrere Hosts überwachst, trägst du jeden Host als Target unter <code>static_configs</code> ein, oder nutzt eine dynamische Entdeckung (z.B. Datei-basierte oder Kubernetes-Service-Discovery, je nach Umgebung).</p>
 <p><strong>Prometheus als Docker-Container:</strong></p>
@@ -143,18 +138,18 @@ docker run -d \
 <p>Ein weitergeleiteter Alertmanager enthält mindestens einen Empfänger und eine Route. Beispiel für E-Mail-Routing:</p>
 <pre><code>
 route:
-  receiver: &quot;email-default&quot;
-  group_by: [&quot;alertname&quot;]
+  receiver: "email-default"
+  group_by: ["alertname"]
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 4h
 
 receivers:
-  - name: &quot;email-default&quot;
+  - name: "email-default"
     email_configs:
-      - to: &quot;monitoring@brillianze.de&quot;
-        from: &quot;prometheus-alert@brillianze.de&quot;
-        smarthost: &quot;smtp.brillianze.de:587&quot;
+      - to: "monitoring@brillianze.de"
+        from: "prometheus-alert@brillianze.de"
+        smarthost: "smtp.brillianze.de:587"
         require_tls: true
 </code></pre>
 <p>Du startest Alertmanager als eigenen Container oder Prozess und verknüpfst ihn mit Prometheus über die <code>--alertmanager.url</code>-Konfiguration oder über die Prometheus-Konfigurationssektion <code>alerting</code>:</p>
@@ -162,7 +157,7 @@ receivers:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: [&quot;alertmanager:9093&quot;]
+        - targets: ["alertmanager:9093"]
 </code></pre>
 <p><strong>Schritt 4: Regeln für CPU, RAM, Plattenplatz und Container-Abstürze</strong></p>
 <p>Prometheus-Regeln sind Alerting-Regeln, die in Prometheus selbst konfiguriert werden – entweder als separate Regel-Dateien, die in <code>prometheus.yml</code> unter <code>rule_files</code> eingebunden werden, oder als in der Konfigurationsdatei unter <code>alerting.rule</code> zugewiesen. Regeln verwenden PromQL-Ausdrücke.</p>
@@ -172,13 +167,13 @@ groups:
   - name: host-metrics
     rules:
       - alert: HostHighCPU
-        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=&quot;idle&quot;}[5m])) * 100) &gt; 90
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) &gt; 90
         for: 10m
         labels:
           severity: warning
         annotations:
-          summary: &quot;Hohe CPU-Auslastung auf {{ $labels.instance }}&quot;
-          description: &quot;CPU-Auslastung über 90% für 10 Minuten auf {{ $labels.instance }}&quot;
+          summary: "Hohe CPU-Auslastung auf {{ $labels.instance }}"
+          description: "CPU-Auslastung über 90% für 10 Minuten auf {{ $labels.instance }}"
 
       - alert: HostLowMemory
         expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 &gt; 90
@@ -186,17 +181,17 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: &quot;Wenig verfügbarer RAM auf {{ $labels.instance }}&quot;
-          description: &quot;Verfügbarer RAM unter 10% auf {{ $labels.instance }}&quot;
+          summary: "Wenig verfügbarer RAM auf {{ $labels.instance }}"
+          description: "Verfügbarer RAM unter 10% auf {{ $labels.instance }}"
 
       - alert: HostDiskFull
-        expr: (1 - (node_filesystem_avail_bytes{mountpoint=&quot;/&quot;} / node_filesystem_size_bytes{mountpoint=&quot;/&quot;})) * 100 &gt; 85
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 &gt; 85
         for: 15m
         labels:
           severity: warning
         annotations:
-          summary: &quot;Platte nahezu voll auf {{ $labels.instance }}&quot;
-          description: &quot;Verfügbarer Platz unter 15% auf {{ $labels.instance }}&quot;
+          summary: "Platte nahezu voll auf {{ $labels.instance }}"
+          description: "Verfügbarer Platz unter 15% auf {{ $labels.instance }}"
 
       - alert: ContainerRestarting
         expr: increase(container_last_seen[10m]) == 0
@@ -204,8 +199,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: &quot;Container scheint nicht mehr sichtbar auf {{ $labels.instance }}&quot;
-          description: &quot;Container-Eintrag in cgroup nicht mehr aktiv nach 10 Minuten auf {{ $labels.instance }}&quot;
+          summary: "Container scheint nicht mehr sichtbar auf {{ $labels.instance }}"
+          description: "Container-Eintrag in cgroup nicht mehr aktiv nach 10 Minuten auf {{ $labels.instance }}"
 </code></pre>
 <p><strong>Erläuterung zu den Regeln:</strong></p>
 <ul>
@@ -267,7 +262,7 @@ docker run -d \
 <p><strong>Bild 2</strong></p>
 <ul>
 <li>Typ: Schematische Darstellung der drei Monitoring-Ebenen als layered Diagramm</li>
-<li>Inhalt: Drei übereinanderliegende Schichten: untere Ebene „Verfügbarkeit (Uptime Kuma, externe Checks)&quot;, mittlere Ebene „Ressourcen und Metriken (Prometheus + Node Exporter)&quot;, obere Ebene „Logs (Loki, optional Vector vorgeschaltet)&quot;; Pfeile zeigen, dass jede Ebene separat konfiguriert ist, aber Grafana als gemeinsame Auswertungsebene oben</li>
+<li>Inhalt: Drei übereinanderliegende Schichten: untere Ebene „Verfügbarkeit (Uptime Kuma, externe Checks)", mittlere Ebene „Ressourcen und Metriken (Prometheus + Node Exporter)", obere Ebene „Logs (Loki, optional Vector vorgeschaltet)"; Pfeile zeigen, dass jede Ebene separat konfiguriert ist, aber Grafana als gemeinsame Auswertungsebene oben</li>
 <li>Alt-Text: Diagramm der drei Monitoring-Ebenen – Verfügbarkeit, Metriken und Logs – mit Grafana als gemeinsamer Auswertungsoberfläche</li>
 </ul>
 <p><strong>Bild 3</strong></p>
@@ -282,9 +277,7 @@ docker run -d \
 <li>Inhalt: Hosts mit Node Exporter (Port 9100), die zu Prometheus (Port 9090) melden; Prometheus sendet Alerts an Alertmanager (Port 9093); Alertmanager leitet an E-Mail und Telegram weiter; Grafana (Port 3000) liest von Prometheus und zeigt Dashboards; optional Loki daneben für Logs</li>
 <li>Alt-Text: Architektur des Prometheus-Monitoring-Systems – Node Exporter auf Hosts, Prometheus als Sammler, Alertmanager für Alarmierung, Grafana für Dashboards</li>
 </ul>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FreshRSS einrichten: Selbstgehosteter RSS-Reader ohne Werbung und Tracking</title>
-<meta name="description" content="FreshRSS selbst hosten: Private RSS-Reader-Installation mit Docker, Feed-Import, Filter, Mobile-Apps und Backup. Kein Tracking, keine Werbung.">
-<link rel="stylesheet" href="../style.css">
+<meta content="FreshRSS selbst hosten: Private RSS-Reader-Installation mit Docker, Feed-Import, Filter, Mobile-Apps und Backup. Kein Tracking, keine Werbung." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>FreshRSS einrichten: Selbstgehosteter RSS-Reader ohne Werbung und Tracking</h1>
 <p>Wer Nachrichten, Blogs und Podcasts verfolgt, stößt auf ein Problem: Die gängigen Reader sammeln Lesegewohnheiten, zeigen Werbung ein oder verknüpfen Feeds mit persönlichen Daten. Die Alternative ist ein selbst gehosteter RSS-Reader — <strong>FreshRSS</strong> ist eine der praktischsten Lösungen, die das problemlos auf dem eigenen Homelab-Server laufen lässt.</p>
 <p>Dieser Artikel zeigt Schritt für Schritt, wie man FreshRSS mit Docker Compose installiert, Feeds migriert, mobil nutzt und sicher betreibt — ohne auf eine Cloud angewiesen zu sein.</p>
@@ -40,7 +35,7 @@
 <p>Voraussetzungen: Docker Compose, ein Ordner für FreshRSS-Daten (Verzeichnis extern für Persistenz — wichtiges Konzept auch bei <a href="{{ site.baseurl }}/artikel/docker-compose-best-practices.html">docker-compose-best-practices</a>).</p>
 <p>Ein typisches <code>docker-compose.yml</code> für FreshRSS:</p>
 <pre><code>
-version: &quot;3.8&quot;
+version: "3.8"
 
 services:
   freshrss:
@@ -51,10 +46,10 @@ services:
       - ./freshrss/data:/var/www/FreshRSS/data
       - ./freshrss/extensions:/var/www/FreshRSS/extensions
     environment:
-      - CRON_MIN=&quot;*/30&quot;
+      - CRON_MIN="*/30"
       - TZ=Europe/Berlin
     ports:
-      - &quot;127.0.0.1:8080:80&quot;
+      - "127.0.0.1:8080:80"
 </code></pre>
 <p>Wichtige Punkte:</p>
 <ul>
@@ -69,14 +64,14 @@ services:
 <h2>Feeds importieren und verwalten</h2>
 <p>Der größte Arbeitsschritt nach der Installation ist die Menge der Feeds. FreshRSS übernimmt bestehende Abonnements über einen <strong>OPML-Import</strong> — das Standardformat, das alle gängigen Reader exportieren können.</p>
 <h2>OPML-Import und Kategorien</h2>
-<p>In der Weboberfläche findet sich unter &quot;Abonnement&quot; → &quot;Importieren&quot; ein Feld für die OPML-Datei. Nach dem Upload prüft FreshRSS die URLs, sortiert Fehler in eine eigene Liste und startet den ersten Crawl.</p>
-<p>Empfehlung: <strong>Kategorien vorab anlegen</strong> — z.B. &quot;Nachrichten&quot;, &quot;Technik&quot;, &quot;Sumpf/Seminar&quot;, &quot;Podcasts&quot;. Kategorien helfen beim Scrollen (und beim Filtern) und strukturieren das Verzeichnis. Auch die Kategorien-Einstellung ist einer der wenigen Punkte, die man beim ersten Mal intuitiv falsch machen kann — danach ist es bloß Wartung.</p>
+<p>In der Weboberfläche findet sich unter "Abonnement" → "Importieren" ein Feld für die OPML-Datei. Nach dem Upload prüft FreshRSS die URLs, sortiert Fehler in eine eigene Liste und startet den ersten Crawl.</p>
+<p>Empfehlung: <strong>Kategorien vorab anlegen</strong> — z.B. "Nachrichten", "Technik", "Sumpf/Seminar", "Podcasts". Kategorien helfen beim Scrollen (und beim Filtern) und strukturieren das Verzeichnis. Auch die Kategorien-Einstellung ist einer der wenigen Punkte, die man beim ersten Mal intuitiv falsch machen kann — danach ist es bloß Wartung.</p>
 <h2>Filter und Volltext-Extraktion</h2>
 <p>Viele Webseiten liefern nur Teaser-Feeds — also kürzere Auszüge statt des kompletten Artikels. Für Viele Leser ist das Grund genug, einen Feed gar nicht zu abonnieren. FreshRSS kann mit einem internen Volltext-Plugin diese Feeds ergänzen: Es schickt eine Anfrage auf die zugrundeliegende Webseite und extrahiert den Artikel aus dem HTML.</p>
 <p>Das Plugin ist nicht für alle Seiten gleich gut (manche Webmaster bauen JS-Inhalte oder paywalls, die ebenfalls blockieren), aber für eine breite Zahl von Blogs und Nachrichtenseiten funktioniert es gut genug. In der Plugin-Verwaltung findet sich die Einstellung, welcher Volltext-Provider genutzt wird.</p>
-<p>Weiterhin können Filter definiert werden, die z.B. bestimmte Keywords automatisch als &quot;Gelesen&quot; markieren oder Feeds in bestimmten Kategorien auf privat setzen.</p>
+<p>Weiterhin können Filter definiert werden, die z.B. bestimmte Keywords automatisch als "Gelesen" markieren oder Feeds in bestimmten Kategorien auf privat setzen.</p>
 <h2>Mobile Apps anbinden (WebDAV / API)</h2>
-<p>Die Desktop-Oberfläche von FreshRSS läuft gut im Browser, aber man liest Nachrichten oft auf dem Handy oder unterwegs. FreshRSS ist nicht mit einer &quot;offiziellen App&quot; ausgeliefert, aber es gibt genügend Wege, Inhalte zu mobilen Clients zu bringen.</p>
+<p>Die Desktop-Oberfläche von FreshRSS läuft gut im Browser, aber man liest Nachrichten oft auf dem Handy oder unterwegs. FreshRSS ist nicht mit einer "offiziellen App" ausgeliefert, aber es gibt genügend Wege, Inhalte zu mobilen Clients zu bringen.</p>
 <p>Der praktischste Weg: <strong>WebDAV- oder API-Zugriff</strong>. Die Weboberfläche kann als einfach zu bedienender Reader dienen, während ein Sync-Tool Feeds in eine andere Anwendung kopiert.</p>
 <p>Exemplarisch genutzte Kombinationen:</p>
 <ul>
@@ -91,14 +86,12 @@ services:
 <p>2. <strong>Daten-Backup:</strong> Der <code>data</code>-Ordner (Feed-Daten, Einstellungen, ggf. Extensions) muss extern gesichert werden. Für Homelab-Server mit Proxmox als Virtualisierungsschicht kann Proxmox-Backup-Server das Image-Snapshot-Verfahren nutzen (<a href="{{ site.baseurl }}/artikel/proxmox-backup-server.html">proxmox-backup-server</a>); alternativ eine einfach getsicherte Kopie des Ordners.</p>
 <p>Backs-up-Strategie allgemein: <a href="{{ site.baseurl }}/artikel/backup-3-2-1.html">backup-3-2-1</a>.</p>
 <h2>Schluss: Warum FreshRSS ins Homelab gehört</h2>
-<p>Ein selbstgehosteter RSS-Reader klingt auf den ersten Blick wie ein kleiner Dienst — und ist es auch; aber genau die Eigenschaft &quot;klein und selbst kontrollierbar&quot; macht ihn wertvoll. Er eliminiert eine Abhängigkeit zu Tracking-basierten Plattformen, er funktioniert offline, wenn der Feed einmal nicht erreichbar ist (gecached), und er belegt kaum Ressourcen auf einem Homelab-Server.</p>
+<p>Ein selbstgehosteter RSS-Reader klingt auf den ersten Blick wie ein kleiner Dienst — und ist es auch; aber genau die Eigenschaft "klein und selbst kontrollierbar" macht ihn wertvoll. Er eliminiert eine Abhängigkeit zu Tracking-basierten Plattformen, er funktioniert offline, wenn der Feed einmal nicht erreichbar ist (gecached), und er belegt kaum Ressourcen auf einem Homelab-Server.</p>
 <p>Für Einsteiger, die mit Docker und einem Reverse-Proxy bereits vertraut sind (siehe <a href="{{ site.baseurl }}/artikel/homelab-einrichten-guide.html">homelab-einrichten-guide</a>), ist FreshRSS ein Gartenweg — installieren, OPML importieren, lesen.</p>
-<hr>
+<hr/>
 <p><em>Kategorie: Homelab-Dienste · Self-Hosting · Docker</em></p>
 <p>&gt; <strong>Hinweis:</strong> Alle Angaben zu Ressourcenverbrauch und Konfiguration sind Richtwerte. Je nach Feed-Menge und Update-Intervall kann die CPU- und Speichernutzung variieren.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

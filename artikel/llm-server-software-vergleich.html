@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>LLM-Server-Software im Vergleich: Ollama, llama.cpp, vLLM und LM Studio für GPU-Selbsthoster</title>
-<meta name="description" content="LLM-Server-Software verglichen: Ollama, llama.cpp, vLLM, LM Studio. GGUF-Q-Stufen, VRAM-Bedarf, API-Zugriff, Open WebUI, häufige Fehler.">
-<link rel="stylesheet" href="../style.css">
+<meta content="LLM-Server-Software verglichen: Ollama, llama.cpp, vLLM, LM Studio. GGUF-Q-Stufen, VRAM-Bedarf, API-Zugriff, Open WebUI, häufige Fehler." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>LLM-Server-Software im Vergleich: Ollama, llama.cpp, vLLM und LM Studio für GPU-Selbsthoster</h1>
 <p>Du hast ein GPU-Server oder einen PCs mit einer brauchbaren Grafikkarte, und du möchtest ein offenes Sprachmodell nicht nur herunterladen, sondern tatsächlich ansprechen — als API, als Web-Oberfläche, als Dienst, den mehrere Personen oder Anwendungen parallel nutzen können. Dann brauchst du nicht nur ein Modell, sondern Software, die das Modell rundum betreibt: Läd es, beantwortet Anfragen, puffert Warteschlangen, spricht eine Schnittstelle an, und verbraucht nicht die ganze GPU, während niemand fragt.</p>
 <p>Das ist der Unterschied zwischen <strong>Modell-Download</strong> und <strong>LLM-Server</strong>: Ein Modell als GGUF- oder Safetensors-Datei ist nur das Gewicht. Ein LLM-Server ist das HALROUND-Programm, das das Gewicht lädt, Token generiert, Anfragen serialisiert oder parallelisiert, eine Schnittstelle (HTTP, gRPC, stdio) anbietet, und oft auch eine Eingabe- und Ausgaberegelung mitbringt. Ohne Server läufst du mit einem Modell in die Luft, das du nur über Python-Scripte oder CLI-Tools von Hand jagt — das funktioniert für ein einmaliges Experiment, nicht für einen Dauer-Server.</p>
@@ -43,7 +38,7 @@
 <p>| <strong>GGUF-Unterstützung</strong> | Native GGUF (Ollama-Modellformate basieren auf GGUF; <code>ollama pull</code> lädt GGUF-basierte Modelle) | Native GGUF (GGML/gguf als Kernformat; <code>./server</code> dient GGUF-Dateien direkt) | Keine native GGUF-Unterstützung (fokussiert auf PyTorch/Safetensors-Checkpoint-Formate; GGUF-Konvertierung möglich, aber nicht der Standardweg); für GGUF-Nutzer sonst Ollama oder llama.cpp | Native GGUF (LM Studio lädt GGUF-Modelle, Verwaltung im UI) |</p>
 <p>| <strong>Kompatibilität mit llama.cpp-basierten Servern</strong> | Ollama ist nicht auf llama.cpp aufgebaut (eigenes Backend), aber GGUF-format-kompatibel; Modellformate teilweise austauschbar (mit Konvertierung, nicht 1:1) | <code>llama.cpp</code> server <em>ist</em> der llama.cpp-basierte Server | Kein direktes llama.cpp-basiertes System; eigene Tensor-Parallelismus- und Scheduling-Implementierung | LM Studio nutzt llama.cpp-basiertes Backend intern (Desktop-App, nicht direkt als Server für externe Anfragen konzipiert, aber basiert auf llama.cpp-Code) |</p>
 <p>| <strong>Parallele Anfragen / Warteschlange</strong> | Einfache Serialisierung (eine Anfrage nach der anderen im Standard; <code>ollama serve</code> hat keine ausgeprägte Warteschlangen-Konfiguration; parallele Anfragen möglich, aber GPU-Ressourcen teilen sich die Anfragen — kein explizites Queue-Management) | HTTP-API mit paralleler Anfrage-Akzeptanz; kein integriertes Queue-Management (Client-Seite oder externe Warteschlange nötig für Kontrolle); <code>batch</code> für Batch-Verarbeitung vorhanden | Explizites Scheduling, parallele Anfragen mit PagedAttention-Memory-Management; Multi-Gateway-unterstützung; Skalierung auf mehrere Anfragen gleichzeitig mit GPU-Parallelismus | Kein paralleler Server-Modus (Desktop-App; Einzelanfrage-Oberfläche) |</p>
-<p>| <strong>Einbindung in Open WebUI</strong> | Direkte Kompatibilität: Open WebUI kann als &quot;Ollama&quot;-Anbieter konfiguriert werden (Host + Port, meist 11434); Open WebUI spricht die Ollama-API | Open WebUI kann einen Custom-API-Endpunkt konfigurieren, aber native llama.cpp-Integration weniger direkt als Ollama; erfordert ggf. Adapter oder Proxy | Keine native Open WebUI-Integration (Open WebUI erwartet eine OpenAI-kompatible oder Ollama-API; vLLM kann OpenAI-kompatible API ausliefern mit Konfiguration, aber nicht 1:1 eingebunden wie Ollama) | Kein Server-Modus; LM Studio als API-Server umbaubar über eigene Konfiguration (LM Studio hat einen lokalen API-Modus, aber weniger standardisiert als Ollama für Open WebUI) |</p>
+<p>| <strong>Einbindung in Open WebUI</strong> | Direkte Kompatibilität: Open WebUI kann als "Ollama"-Anbieter konfiguriert werden (Host + Port, meist 11434); Open WebUI spricht die Ollama-API | Open WebUI kann einen Custom-API-Endpunkt konfigurieren, aber native llama.cpp-Integration weniger direkt als Ollama; erfordert ggf. Adapter oder Proxy | Keine native Open WebUI-Integration (Open WebUI erwartet eine OpenAI-kompatible oder Ollama-API; vLLM kann OpenAI-kompatible API ausliefern mit Konfiguration, aber nicht 1:1 eingebunden wie Ollama) | Kein Server-Modus; LM Studio als API-Server umbaubar über eigene Konfiguration (LM Studio hat einen lokalen API-Modus, aber weniger standardisiert als Ollama für Open WebUI) |</p>
 <p>| <strong>Ressourcenverbrauch im Leerlauf</strong> | Ollama-Daemon läuft als Hintergrundprozess; verbraucht RAM für geladene Modelle (Modelle bleiben geladen, wenn sie im Speicher sind, sonst Laufzeit-Laden); GPU-Ressourcen abhängig von geladenem Modell; ohne Anfrage relativ ruhig | Server-Prozess läuft; ähnliches Laden von Modellen in RAM/VRAM; ohne Anfrage idle, aber Prozess vorhanden | vLLM-Prozess läuft, hält GPU-Speicher für den Modell-Checkpoint und Scheduling-Strukturen; ohne Anfrage idle, aber GPU-Speicher gebunden | LM Studio als Desktop-App verbraucht RAM/VRAM bei geladenem Modell; ohne Anfrage idle als App, aber nicht als Daemon |</p>
 <p><strong>Kurz gesagt:</strong> Wenn du eine einfache, gut dokumentierte Einsteigerlösung suchst, die eine API anbietet, die Open WebUI direkt versteht, und die auf Linux und Windows läuft — ist das Ollama. Wenn du YYUF-Modelle direkt, plattformnah, ohne Zwischenschicht von Ollama willst und bereit bist, selbst die HTTP-API-Konfiguration zu machen — ist llama.cpp der Weg. Wenn du größere Deployment-Produktion mit GPU-Parallelismus und Scheduling brauchst — ist vLLM der Kandidat. Wenn du eine Desktop-Oberfläche zum Ausprobieren und Chatten willst — ist LM Studio die Wahl.</p>
 <h2>Ollama</h2>
@@ -118,11 +113,11 @@
 <p>GGUF (GPT-Generated Unified Format) ist ein Modellformat, das von llama.cpp stammt und Weight-Quantisierung in verschiedenen Q-Stufen (Quantisierungsqualität) unterstützt. <strong>Q-Stufe bestimmt, wie viele Bit pro Gewicht verwendet werden</strong> — weniger Bit = weniger VRAM/Bedarf und oft kleinere Dateigröße, aber potenziell geringere Qualität. Die Wahl der Q-Stufe ist eine Kompromisspraktik: VRAM-Budget gegen Qualität.</p>
 <p><strong>Wichtige Q-Stufen (gängig bei GGUF-Modellen):</strong></p>
 <ul>
-<li><strong>Q4_K_M:</strong> 4-bit, mit &quot;mittel&quot;-Qualitäts-Kompensation. Oft der Standard-Kompromiss für 7B- und 13B-Modelle, wenn VRAM knapp ist. VRAM-Bedarf grob im Bereich mehrerer GB (je nach Modellgröße).</li>
+<li><strong>Q4_K_M:</strong> 4-bit, mit "mittel"-Qualitäts-Kompensation. Oft der Standard-Kompromiss für 7B- und 13B-Modelle, wenn VRAM knapp ist. VRAM-Bedarf grob im Bereich mehrerer GB (je nach Modellgröße).</li>
 <li><strong>Q5_K_M / Q5_K_S:</strong> 5-bit; Q5_K_S ist etwas schärfer als Q5_K_M. Sinnvoll für Modelle, bei denen etwas mehr Qualität gewünscht ist und VRAM es zulässt.</li>
 <li><strong>Q6_K:</strong> 6-bit; noch höhere Qualität, größere VRAM-Ansprüche.</li>
 <li><strong>Q8_0:</strong> 8-bit; nähert sich der Originalqualität an (weniger Quantisierungsverlust), aber deutlich mehr VRAM. Für größere Modelle oft unerschwinglich auf Single-GPU.</li>
-<li><strong>IQ4_XS:</strong> Neuere Quantisierungs-Variante (im GGUF-kontext &quot;IQ&quot;-Präfix); kleinere Dateigröße bei annehmbarer Qualität für bestimmte Modelle; geeignet wenn VRAM sehr knapp ist und kleinere Modelle genutzt werden.</li>
+<li><strong>IQ4_XS:</strong> Neuere Quantisierungs-Variante (im GGUF-kontext "IQ"-Präfix); kleinere Dateigröße bei annehmbarer Qualität für bestimmte Modelle; geeignet wenn VRAM sehr knapp ist und kleinere Modelle genutzt werden.</li>
 </ul>
 <p><strong>Keine Benchmarks erfinden:</strong> Die hier genannten VRAM-Werte sind grobe Orientierungshilfen nach Modellgröße und Q-Stufe, keine gemessenen Benchmarks. Die tatsächliche VRAM-Nutzung hängt von Kontext-Länge, GPU-Runtime, und 세부-Parametern ab. Eine grobe Orientierung:</p>
 <ul>
@@ -163,7 +158,7 @@ ollama run &lt;modellname&gt;
 <p><strong>Schritt 4: API-Zugriff prüfen</strong></p>
 <p>Ollama spricht standardmäßig auf <code>http://localhost:11434</code>. Eine einfache Test-Anfrage (z.B. mit curl):</p>
 <pre><code>
-curl http://localhost:11434/api/generate -d &#x27;{&quot;model&quot;: &quot;&lt;modellname&gt;&quot;, &quot;prompt&quot;: &quot;Hallo, kurze Antwort bitte.&quot;, &quot;stream&quot;: false}&#x27;
+curl http://localhost:11434/api/generate -d '{"model": "&lt;modellname&gt;", "prompt": "Hallo, kurze Antwort bitte.", "stream": false}'
 </code></pre>
 <p>Die Antwort ist JSON mit dem generierten Text. Für streaming-Anfragen setzt man <code>stream: true</code> und verarbeitet die Chunk-Antworten.</p>
 <p><strong>Schritt 5: Open WebUI einbinden (optional)</strong></p>
@@ -240,33 +235,33 @@ docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway \
 <ul>
 <li><strong>Bildtyp:</strong> Screenshot-Komposition (zwei Browser-Fenster nebeneinander)</li>
 <li><strong>Inhalt:</strong> Links: Terminal mit <code>ollama list</code> und <code>curl</code>-API-Test; rechts: Open WebUI-Chat-Oberfläche mit demselben Modell als Backend. Visualisiert die Verbindung zwischen CLI/API und Weboberfläche.</li>
-<li><strong>Alt-Text:</strong> &quot;Ollama-API im Terminal (curl-Test auf Port 11434) und Open WebUI-Chat daneben — dieselbe API, zwei Zugänge.&quot;</li>
+<li><strong>Alt-Text:</strong> "Ollama-API im Terminal (curl-Test auf Port 11434) und Open WebUI-Chat daneben — dieselbe API, zwei Zugänge."</li>
 </ul>
 <p><strong>Bild 2</strong></p>
 <ul>
 <li><strong>Bildtyp:</strong> Vergleichstabelle als Infografik</li>
 <li><strong>Inhalt:</strong> Die Vergleichstabelle aus dem Artikel als visuelle Matrix: Ollama, llama.cpp server, vLLM, LM Studio als Spalten; Kriterien (GPU-Betrieb, GGUF, Warteschlange, Open WebUI, Leerlauf-Verbrauch) als Zeilen; farbige Markierung der Stärken (z.B. grüne Checkzeichen für Ollama bei Open WebUI, grüne Checkzeichen für llama.cpp bei GGUF).</li>
-<li><strong>Alt-Text:</strong> &quot;Vergleichstabelle: Ollama, llama.cpp server, vLLM und LM Studio nach GPU-Betrieb, GGUF-Unterstützung, Warteschlangen-Management, Open WebUI-Einbindung und Leerlauf-Verbrauch.&quot;</li>
+<li><strong>Alt-Text:</strong> "Vergleichstabelle: Ollama, llama.cpp server, vLLM und LM Studio nach GPU-Betrieb, GGUF-Unterstützung, Warteschlangen-Management, Open WebUI-Einbindung und Leerlauf-Verbrauch."</li>
 </ul>
 <p><strong>Bild 3</strong></p>
 <ul>
 <li><strong>Bildtyp:</strong> VRAM-Skala (visuelle Vergleichsleiste)</li>
 <li><strong>Inhalt:</strong> Eine horizontale Balkenskala, die VRAM-Bedarfe für verschiedene Modellgrößen (7B, 13B, 30B) und Q-Stufen (IQ4_XS, Q4_K_M, Q5_K_M, Q8_0) zeigt — eine visuelle Orientierungshilfe, kein Benchmark. Pfeile oder Farbcodierung: grün (passend für 8 GB VRAM), gelb (knapp), rot (nicht ohne Multi-GPU).</li>
-<li><strong>Alt-Text:</strong> &quot;Grobe VRAM-Orientierung: 7B-, 13B- und 30B-Modelle in verschiedenen Q-Stufen auf einer VRAM-Skala — kein Benchmark, nur Richtwerte.&quot;</li>
+<li><strong>Alt-Text:</strong> "Grobe VRAM-Orientierung: 7B-, 13B- und 30B-Modelle in verschiedenen Q-Stufen auf einer VRAM-Skala — kein Benchmark, nur Richtwerte."</li>
 </ul>
 <p><strong>Bild 4</strong></p>
 <ul>
 <li><strong>Bildtyp:</strong> Docker-Compose- oder Docker-Run-Befehl als Code-Snapshot</li>
 <li><strong>Inhalt:</strong> Ein Screenshot des Docker-Run-Befehls für Open WebUI mit <code>OLLAMA_BASE_URL</code>-Config und GPU-Passthrough-Flag (<code>--gpus all</code>) — visuell hervorgehoben, welche Schritte GPU-Passthrough und API-Konfiguration sind. Praktischer Referenz-Snapshot für den Mehrbenutzer-Server-Weg.</li>
-<li><strong>Alt-Text:</strong> &quot;Open WebUI via Docker mit Ollama-Backend: GPU-Passthrough-Flag und OLLAMA_BASE_URL als Konfigurationsschritte.&quot;</li>
+<li><strong>Alt-Text:</strong> "Open WebUI via Docker mit Ollama-Backend: GPU-Passthrough-Flag und OLLAMA_BASE_URL als Konfigurationsschritte."</li>
 </ul>
 <p><strong>Bild 5</strong></p>
 <ul>
 <li><strong>Bildtyp:</strong> Netzwerkdiagramm (semigraphisch)</li>
 <li><strong>Inhalt:</strong> Ein einfaches Diagramm: Nutzer/Geräte (PC, Handy) → Reverse Proxy mit Authentifizierung → LLM-Server (Ollama/llama.cpp server) auf localhost oder internem Netzwerk → GPU. Zeigt den Schutz-Layer (Reverse Proxy, Firewall) zwischen öffentlichem Zugang und dem ungeschützten Server-Port.</li>
-<li><strong>Alt-Text:</strong> &quot;Netzwerkdiagramm: Reverse Proxy mit Authentifizierung und Firewall vor dem LLM-Server-Port — Schutz vor direktem Internetzugriff auf Port 11434 oder 8080.&quot;</li>
+<li><strong>Alt-Text:</strong> "Netzwerkdiagramm: Reverse Proxy mit Authentifizierung und Firewall vor dem LLM-Server-Port — Schutz vor direktem Internetzugriff auf Port 11434 oder 8080."</li>
 </ul>
-<hr>
+<hr/>
 <p><em>Interne Verlinkungsvorschläge auf vorhandene BsN-Artikel (homelab.brillianze.de/artikel/&lt;slug&gt;/):</em></p>
 <ul>
 <li><a href="https://homelab.brillianze.de/artikel/reverse-proxy-vergleich/">reverse-proxy-vergleich</a> — für Schutz-Schichten vor dem LLM-Server-Port (Authentifizierung, TLS)</li>
@@ -275,9 +270,7 @@ docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway \
 <li><a href="https://homelab.brillianze.de/artikel/homelab-anfaenger/">homelab-anfaenger</a> — für Einsteiger, die einen LLM-Server in ein größeres Homelab einbetten</li>
 <li><a href="https://homelab.brillianze.de/artikel/fernzugriff-heimserver-tailscale-wireguard/">fernzugriff-heimserver-tailscale-wireguard</a> — für sicheren Remote-Zugriff auf den LLM-Server ohne Port-Freigabe ins Internet</li>
 </ul>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

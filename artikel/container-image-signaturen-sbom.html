@@ -1,27 +1,27 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>Container-Images prüfen: Signaturen und SBOM</title>
-<meta name="description" content="Container-Images im Homelab besser einordnen: Signaturprüfung, Herausgeberidentität, SBOM und die Grenzen dieser Nachweise vor dem Update.">
-<link rel="canonical" href="https://homelab.brillianze.de/artikel/container-image-signaturen-sbom.html">
-<link rel="stylesheet" href="../style.css">
+<meta content="Container-Images im Homelab besser einordnen: Signaturprüfung, Herausgeberidentität, SBOM und die Grenzen dieser Nachweise vor dem Update." name="description"/>
+<link href="https://homelab.brillianze.de/artikel/container-image-signaturen-sbom.html" rel="canonical"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><div class="brand-identity"><a class="brand" href="../index.html"><img src="../assets/brillianze-logo-v2-horizontal.png" alt="brillianze – zur Startseite" width="150" height="50"><span>Homelab Vergleich</span></a><img class="bsn-mark" src="../assets/bsn-ochsenkopf-c.png" alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" width="144" height="64"></div><nav aria-label="Hauptnavigation"><a href="../index.html#themen">Themen</a><a href="../vergleich.html">Hardware-Vergleich</a><a href="../dienstleistungen.html">Dienstleistungen</a></nav></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap"><article class="content">
-
 <h1>Container-Image-Signaturen und SBOMs verstehen</h1>
 <p>Ein neuer Container ist schnell heruntergeladen. Ob das Image tatsächlich vom erwarteten Herausgeber kommt und welche Software darin steckt, sind zwei andere Fragen. Eine Signatur und eine Software Bill of Materials, kurz SBOM, beantworten unterschiedliche Teile davon. Beide können eine Freigabeentscheidung verbessern, ersetzen aber weder Wartung noch eine Prüfung der konkreten Anwendung.</p>
 <h2>Was eine Signatur belegt</h2>
-<p>Sigstores Cosign-Dokumentation beschreibt die Verifikation einer Image-Signatur mit einem öffentlichen Schlüssel oder – bei identitätsbasierter Signierung – anhand der Zertifikatsidentität und des OIDC-Ausstellers.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Eine gültige Signatur ist erst dann nützlich, wenn du den erwarteten Herausgeber vorher unabhängig festgelegt hast. „Signiert“ allein bedeutet nicht „von meinem bevorzugten Projekt“. Halte fest, welche Identität oder welcher Schlüssel zu dem Projekt gehört und woher diese Information stammt.</p>
+<p>Sigstores Cosign-Dokumentation beschreibt die Verifikation einer Image-Signatur mit einem öffentlichen Schlüssel oder – bei identitätsbasierter Signierung – anhand der Zertifikatsidentität und des OIDC-Ausstellers.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> Eine gültige Signatur ist erst dann nützlich, wenn du den erwarteten Herausgeber vorher unabhängig festgelegt hast. „Signiert“ allein bedeutet nicht „von meinem bevorzugten Projekt“. Halte fest, welche Identität oder welcher Schlüssel zu dem Projekt gehört und woher diese Information stammt.</p>
 <p>Ein signiertes Image kann trotzdem eine Sicherheitslücke oder unerwünschte Konfiguration enthalten. Die Prüfung beantwortet eine Herkunftsfrage, keine allgemeine Sicherheitszusage. Für wiederholbare Einsätze gehört außerdem die konkrete Image-Version oder der Digest zur Dokumentation. So vergleichst du später denselben Gegenstand statt eines inzwischen verschobenen beweglichen Tags.</p>
 <h2>Was eine SBOM hinzufügt</h2>
-<p>Eine SBOM ist ein Inventar von Softwarebestandteilen. Die Sigstore-Dokumentation behandelt SBOMs ausdrücklich als Artefakte, die sich signieren und verifizieren lassen.<a href="#quelle-2" aria-label="Quelle 2">[2]</a> Damit kannst du zunächst prüfen, ob eine vorgelegte Liste authentisch zu der erwarteten Quelle gehört. Ob die Liste vollständig ist, wann sie erstellt wurde und ob sie zum tatsächlich eingesetzten Image passt, muss separat geklärt werden. Eine fehlende Komponente in einer SBOM beweist nicht, dass sie im Container nicht existiert.</p>
+<p>Eine SBOM ist ein Inventar von Softwarebestandteilen. Die Sigstore-Dokumentation behandelt SBOMs ausdrücklich als Artefakte, die sich signieren und verifizieren lassen.<a aria-label="Quelle 2" href="#quelle-2">[2]</a> Damit kannst du zunächst prüfen, ob eine vorgelegte Liste authentisch zu der erwarteten Quelle gehört. Ob die Liste vollständig ist, wann sie erstellt wurde und ob sie zum tatsächlich eingesetzten Image passt, muss separat geklärt werden. Eine fehlende Komponente in einer SBOM beweist nicht, dass sie im Container nicht existiert.</p>
 <p>SBOMs helfen besonders beim späteren Abgleich, wenn eine Bibliothek zum Sicherheitsproblem wird. Halte die SBOM zusammen mit dem zugehörigen Image-Bezeichner fest und werte bei einer Meldung aus, ob die betroffene Komponente überhaupt aufgeführt ist. Danach braucht es noch die Prüfung, ob die verwundbare Funktion erreichbar ist und welche Version tatsächlich läuft. Eine bloße Trefferliste ist kein fertiges Risikourteil.</p>
 <h2>Prüfablauf vor dem Deployment</h2>
-<p>Beginne auf der offiziellen Projektseite und ermittle Registry, vorgesehenen Image-Namen und Veröffentlichungsweg. Prüfe dann, ob das Projekt Signaturen bereitstellt, welche Identität oder Schlüssel es nennt und ob eine SBOM veröffentlicht wird. Verifiziere die Signatur gegen genau diese Erwartung; Cosign zeigt für Schlüssel- und identitätsbasierte Fälle unterschiedliche Verfahren.<a href="#quelle-1" aria-label="Quelle 1">[1]</a> Ordne eine SBOM anhand von Version beziehungsweise Digest dem geprüften Image zu und dokumentiere eventuelle Lücken.</p>
+<p>Beginne auf der offiziellen Projektseite und ermittle Registry, vorgesehenen Image-Namen und Veröffentlichungsweg. Prüfe dann, ob das Projekt Signaturen bereitstellt, welche Identität oder Schlüssel es nennt und ob eine SBOM veröffentlicht wird. Verifiziere die Signatur gegen genau diese Erwartung; Cosign zeigt für Schlüssel- und identitätsbasierte Fälle unterschiedliche Verfahren.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> Ordne eine SBOM anhand von Version beziehungsweise Digest dem geprüften Image zu und dokumentiere eventuelle Lücken.</p>
 <p>Wenn ein Projekt keine dieser Nachweise anbietet, erfinde keinen Vertrauensbeweis. Halte die Unsicherheit fest und entscheide anhand der Wichtigkeit des Dienstes, ob du ein alternatives Image oder einen enger begrenzten Testbetrieb bevorzugst. Für einen produktiven Passwortdienst ist eine strengere Auswahl sinnvoll als für ein wegwerfbares Experiment.</p>
 <h2>Grenzen in den Betrieb übernehmen</h2>
 <p>Bewahre Prüfergebnis, Quelllink, erwartete Identität und Image-Digest beim Stack auf. Wiederhole die Verifikation bei jedem Imagewechsel; die Prüfung eines alten Digests gilt nicht für ein neues Image. Kontrolliere außerdem Laufzeitrechte, Netzwerkzugriff, Updateweg und Wiederherstellung der Daten. Signatur und SBOM sind Bausteine einer Lieferkettenprüfung, nicht ihre Abkürzung: Herkunft, Bestandteile und tatsächliches Verhalten bleiben drei getrennte Fragen.</p>

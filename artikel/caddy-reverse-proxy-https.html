@@ -1,27 +1,22 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Caddy als Reverse Proxy: HTTPS für alle eigenen Dienste</title>
-<meta name="description" content="">
-<link rel="stylesheet" href="../style.css">
+<meta content="" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Caddy als Reverse Proxy: HTTPS für alle eigenen Dienste</h1>
 <p>Jeder, der mehrere Webdienste in seinem Homelab betreibt, stolpert über dasselbe Problem: Jeder Dienst hat seine eigene Adresse, oft mit einem selbst signierten Zertifikat, und der Browser warnt jeden Besucher. Pi-hole auf Port 80, Nextcloud auf 8080, Grafana auf 3000, Vaultwarden auf 8000 – die Liste wächst mit jedem neuen Projekt. Irgendwann ist die Übersicht weg, und der Wunsch nach einer einzigen, sicheren Startseite mit gültigem HTTPS für alle Dienste wird laut.</p>
 <p>Genau hier kommt ein Reverse Proxy ins Spiel. Und genau hier entscheidet sich die Frage, welche Software diese Aufgabe übernimmt. Für viele Homelaber ist heute <strong>Caddy</strong> die naheliegendste Antwort. Dieser Artikel erklärt, warum das so ist, welche Voraussetzungen gehen müssen, wie konkrete Caddyfiles aussehen und was man beachten muss, bevor Dienste wirklich nach außen gehen.</p>
 <h2>Warum Caddy statt Nginx?</h2>
-<p>Nginx ist seit Jahren der Standard für Reverse Proxys, und er erledigt seine Aufgabe zuverlässig. Doch Nginx bringt <strong>kein automatisches HTTPS</strong> mit. Wer einen Nginx-Reverse Proxy mit Let&#x27;s Encrypt-Zertifikaten versorgt, muss ein eigenes Zertifikats-Wrapper-Tool wie Certbot oder acme.sh neben dem Nginx-Host betreiben, Erneuerungen konfigurieren, Hook-Skripte schreiben und prüfen, ob das Zertifikat tatsächlich erneuert wurde, bevor es abläuft.</p>
+<p>Nginx ist seit Jahren der Standard für Reverse Proxys, und er erledigt seine Aufgabe zuverlässig. Doch Nginx bringt <strong>kein automatisches HTTPS</strong> mit. Wer einen Nginx-Reverse Proxy mit Let's Encrypt-Zertifikaten versorgt, muss ein eigenes Zertifikats-Wrapper-Tool wie Certbot oder acme.sh neben dem Nginx-Host betreiben, Erneuerungen konfigurieren, Hook-Skripte schreiben und prüfen, ob das Zertifikat tatsächlich erneuert wurde, bevor es abläuft.</p>
 <p>Caddy hat diese Integration von Grund auf eingebaut. Das offizielle Caddy-Binary enthält bereits alle Komponenten, die für automatische TLS-Zertifikate nötig sind. Sobald eine Domain in einem Caddyfile auftaucht, prüft Caddy beim Start, ob ein gültiges Zertifikat vorhanden ist oder ob eine ACME-Challenge (HTTP oder DNS) möglich ist. Wenn ja, lädt Caddy das Zertifikat herunter und erneuert es im Hintergrund, ohne dass ein weiterer Daemon oder ein Cron-Job eingerichtet werden muss.</p>
 <p>Das macht den Unterschied im Alltag konkret:</p>
 <ul>
@@ -46,21 +41,21 @@ domain.tld {
 <li><strong><code>log</code></strong> – Zugriffsprotokollierung aktivieren</li>
 <li><strong><code>header</code></strong> – Header hinzufügen oder entfernen, z. B. Security-Header</li>
 </ul>
-<p>Die HTTP-Challenge von Let&#x27;s Encrypt (die Standard-Methode für einzelne Domains) funktioniert, indem der Caddy-Prozess selbst kurzzeitig über Port 80 antwortet, um den Challenge-Nachweis zu erbringen. Das setzt voraus, dass Port 80 von außen erreichbar ist. Für Wildcard-Zertifikate ist stattdessen die DNS-Challenge nötig, die zusätzlich ein Caddy-Modul für den jeweiligen DNS-Provider erfordert.</p>
+<p>Die HTTP-Challenge von Let's Encrypt (die Standard-Methode für einzelne Domains) funktioniert, indem der Caddy-Prozess selbst kurzzeitig über Port 80 antwortet, um den Challenge-Nachweis zu erbringen. Das setzt voraus, dass Port 80 von außen erreichbar ist. Für Wildcard-Zertifikate ist stattdessen die DNS-Challenge nötig, die zusätzlich ein Caddy-Modul für den jeweiligen DNS-Provider erfordert.</p>
 <h2>Voraussetzungen: DNS und Port-80/443</h2>
 <p>Bevor Caddy das erste Mal mit einer Domain startet, müssen zwei Dinge gegeben sein: die DNS-Auflösung und die Port-Erreichbarkeit.</p>
 <h2>DNS-Voraussetzungen</h2>
-<p>Jeder Domainname, für den Caddy ein öffentliches Let&#x27;s Encrypt-Zertifikat anfordern soll, muss von außen auf die öffentliche IP des Servers zeigen. Die praktische Bedeutung: Wenn <code>cloud.beispiel.de</code> auf Caddy zeigt, dann muss der <code>A</code>- oder <code>AAAA</code>-Record für diese Subdomain im DNS Correctly auf die öffentliche IP verweisen.</p>
+<p>Jeder Domainname, für den Caddy ein öffentliches Let's Encrypt-Zertifikat anfordern soll, muss von außen auf die öffentliche IP des Servers zeigen. Die praktische Bedeutung: Wenn <code>cloud.beispiel.de</code> auf Caddy zeigt, dann muss der <code>A</code>- oder <code>AAAA</code>-Record für diese Subdomain im DNS Correctly auf die öffentliche IP verweisen.</p>
 <p>Für ein einzelnes Homelab mit mehreren Subdomains gibt es zwei gängige Muster:</p>
 <ul>
 <li><strong>Eintrag pro Subdomain.</strong> Jede Subdomain bekommt einen eigenen <code>A</code>-Record. Das ist einfach nachzuhalten und funktioniert mit der HTTP-Challenge ohne weitere Hilfsmittel.</li>
-<li><strong>Wildcard-Eintrag (<code><em>.beispiel.de</code>).</strong> Ein einzelner <code>A</code>-Record für <code></em>.beispiel.de</code> deckt alle Subdomains ab. Das spart DNS-Einträge, erfordert aber die DNS-Challenge für Wildcard-Zertifikate – und damit ein passendes Caddy-Modul für den DNS-Provider.</li>
+<li><strong>Wildcard-Eintrag (<code><em>.beispiel.de</em></code>).</strong> Ein einzelner <code>A</code>-Record für <code>.beispiel.de</code> deckt alle Subdomains ab. Das spart DNS-Einträge, erfordert aber die DNS-Challenge für Wildcard-Zertifikate – und damit ein passendes Caddy-Modul für den DNS-Provider.</li>
 </ul>
 <p>Wildcard-Zertifikate sind praktisch, aber sie haben eine Relevanz-Trap: Sie funktionieren nur, wenn der DNS-Provider automatisch ein TXT-Record für die ACME-DNS-Challenge setzen kann. Nicht jeder Provider hat ein offiziell unterstütztes Caddy-Plugin; bei kleineren oder älteren Providern kann die Einrichtung mehr Aufwand kosten, als die Wildcard einspart.</p>
 <h2>Port-80- und Port-443-Voraussetzungen</h2>
 <p>Caddy muss Port 80 und Port 443 gebunden haben, damit HTTP-Challenge und TLS-Terminierung funktionieren. In der Firewall muss beides nach außen freigegeben sein. Zusätzlich muss nichts anderes diese Ports schon blockieren oder nutzen – ein anderer Webserver, der noch auf Port 80 lauscht, muss vorher geschaltet werden.</p>
 <p>In der Praxis bedeutet das: Bevor Caddy gestartet wird, prüft man mit <code>ss -tlnp</code> oder <code>netstat -tlnp</code>, ob Port 80 und 443 frei sind. Wenn ein anderer Dienst dort noch läuft, bekommt Caddy beim Start einen Fehler und startet nicht.</p>
-<p>Im Router oder der Firewall des Isenggeräts muss außerdem eine Portweiterleitung (Port Forwarding) für 80/TCP und 443/TCP auf die interne IP des Caddy-Hosts zeigen. Ohne diese Weiterleitung kann Let&#x27;s Encrypt die HTTP-Challenge nicht erreichen, und Caddy kann kein Zertifikat anfordern. Das ist einer der häufigsten Gründe, warum Caddy zwar lokal läuft, aber kein Zertifikat Holt.</p>
+<p>Im Router oder der Firewall des Isenggeräts muss außerdem eine Portweiterleitung (Port Forwarding) für 80/TCP und 443/TCP auf die interne IP des Caddy-Hosts zeigen. Ohne diese Weiterleitung kann Let's Encrypt die HTTP-Challenge nicht erreichen, und Caddy kann kein Zertifikat anfordern. Das ist einer der häufigsten Gründe, warum Caddy zwar lokal läuft, aber kein Zertifikat Holt.</p>
 <h2>Was, wenn kein Port 80 nach außen geht?</h2>
 <p>Wenn aus sicherheitstechnischen Gründen kein Port 80 nach außen freigegeben werden soll, gibt es zwei Alternativen:</p>
 <ul>
@@ -68,16 +63,16 @@ domain.tld {
 <li><strong>Eigene Zertifizierungsstelle (CA).</strong> Für rein interne Dienste, die niemals nach außen gehen, ist ein eigenes Root-Zertifikat praktischer als ein public-CA-Zertifikat. Browser vertrauen eigenen CAs nur, wenn das Root-Zertifikat auf jedem Clientsystem importiert wurde. Für das Homelab mit wenigen Clients ist das machbar; für uneingeschränkte Nutzung über viele Geräte hinweg unübersichtlich.</li>
 </ul>
 <h2>Zertifikate: Interne Namen und öffentliche Namen</h2>
-<p>Nicht jeder Dienst in einem Homelab soll öffentlich erreichbar sein, und nicht jede Domäne braucht ein Let&#x27;s Encrypt-Zertifikat. Caddy unterstützt beide Welten.</p>
-<h2>Öffentliche Domain-Zertifikate mit Let&#x27;s Encrypt</h2>
-<p>Sobald eine Domain von außen erreichbar ist, erstellt Caddy automatisch ein Let&#x27;s Encrypt-Zertifikat über die HTTP- oder DNS-Challenge. Die Konfiguration dafür ist implizit: Werte einfach die Domain ins Caddyfile, und Caddy kümmert sich um den Rest. Ein explizites <code>tls</code>-Statement ist nur nötig, wenn eine Abweichung vom Standard gewünscht ist, etwa ein anderes Zertifikatsverzeichnis oder ein bestimmter Zertifizierer.</p>
+<p>Nicht jeder Dienst in einem Homelab soll öffentlich erreichbar sein, und nicht jede Domäne braucht ein Let's Encrypt-Zertifikat. Caddy unterstützt beide Welten.</p>
+<h2>Öffentliche Domain-Zertifikate mit Let's Encrypt</h2>
+<p>Sobald eine Domain von außen erreichbar ist, erstellt Caddy automatisch ein Let's Encrypt-Zertifikat über die HTTP- oder DNS-Challenge. Die Konfiguration dafür ist implizit: Werte einfach die Domain ins Caddyfile, und Caddy kümmert sich um den Rest. Ein explizites <code>tls</code>-Statement ist nur nötig, wenn eine Abweichung vom Standard gewünscht ist, etwa ein anderes Zertifikatsverzeichnis oder ein bestimmter Zertifizierer.</p>
 <h2>Interne Dienste mit einem eigenen Zertifikat</h2>
 <p>Für Dienste, die nur im lokalen Netzwerk erreichbar sein sollen, aber trotzdem verschlüsselt sein müssen (z. B. zwischen Proxy und Backend), gibt es das Konzept eines <strong>internen Caddy-Zertifikats</strong>. Das praktische Muster: Ein Root-Zertifikat erstellen, dieses auf alle Clients importieren, und dann Caddy anweisen, für bestimmte Domänen dieses eigenständige Zertifikat zu verwenden.</p>
 <p>Ein Beispiel für ein solches Setup:</p>
 <pre><code>
 pi.bsn.internal {
     tls {
-        ca_field common_name &quot;BsN Internal CA&quot;
+        ca_field common_name "BsN Internal CA"
         # Verweist auf ein internes Zertifikat – genaue Syntax je nach Caddy-Version
     }
     reverse_proxy 192.168.3.11:80
@@ -85,13 +80,13 @@ pi.bsn.internal {
 
 dashboard.bsn.internal {
     tls {
-        ca_field common_name &quot;BsN Internal CA&quot;
+        ca_field common_name "BsN Internal CA"
     }
     reverse_proxy 192.168.3.25:8890
 }
 </code></pre>
 <p>Die exakte Syntax für interne Zertifikate kann je nach Caddy-Version leicht variieren. Für Caddy 2 mit dem <code>tls.builtin</code>-Backend ist eine Methode, das Vertrauen über den <code>tls</code>-Block zu konfigurieren, wenn kein public-CA-Zertifikat verfügbar ist. Ein kleiner, aber wichtiger Vorteil: Auch interne Dienste werden dann per HTTPS angesprochen, ohne dass Browser-Warnungen auftreten, solange das Root-Zertifikat der eigenen CA vertraut ist.</p>
-<p>Für das praktische Homelab ist die häufigste Empfehlung: <strong>Öffentliche Dienste über Caddy + Let&#x27;s Encrypt, interne Dienste mit eigener CA oder klartext hinter Caddy.</strong> Letztlich entscheidet die Zugriffsabsicht: Dienste, die von unterwegs genutzt werden, sollten HTTPS von einer vertrauenswürdigen CA haben. Dienste, die nur an einem spezifischen Arbeitsplatz im lokalen Netz erreichbar sind, können oft auch mit einem eigenen Zertifikat Sicherheit haben.</p>
+<p>Für das praktische Homelab ist die häufigste Empfehlung: <strong>Öffentliche Dienste über Caddy + Let's Encrypt, interne Dienste mit eigener CA oder klartext hinter Caddy.</strong> Letztlich entscheidet die Zugriffsabsicht: Dienste, die von unterwegs genutzt werden, sollten HTTPS von einer vertrauenswürdigen CA haben. Dienste, die nur an einem spezifischen Arbeitsplatz im lokalen Netz erreichbar sind, können oft auch mit einem eigenen Zertifikat Sicherheit haben.</p>
 <h2>Konkrete Caddyfile-Beispiele</h2>
 <p>Die folgenden Beispiele zeigen, wie ein Caddyfile für typische Homelab-Dienste aussehen kann. Sie sind bewusst einfach gehalten, weil Caddy mit wenig Zeilen viel erreicht. Jedes Beispiel setzt voraus, dass die jeweiligen Subdomains bereits in der DNS-Konfiguration korrekt aufgelöst werden.</p>
 <h2>Beispiel 1: Pi-hole hinter Caddy</h2>
@@ -102,8 +97,8 @@ pihole.beispiel.de {
     encode zstd gzip
 
     header {
-        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
-        X-Content-Type-Options &quot;nosniff&quot;
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
     }
 }
 </code></pre>
@@ -123,10 +118,10 @@ nextcloud.beispiel.de {
     encode zstd gzip
 
     header {
-        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
-        X-Content-Type-Options &quot;nosniff&quot;
-        X-Frame-Options &quot;SAMEORIGIN&quot;
-        Referrer-Policy &quot;strict-origin-when-cross-origin&quot;
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
     }
 
     log {
@@ -147,7 +142,7 @@ grafana.beispiel.de {
     encode zstd gzip
 
     header {
-        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
     }
 
     log {
@@ -170,8 +165,8 @@ vaultwarden.beispiel.de {
     encode zstd gzip
 
     header {
-        Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot;
-        X-Content-Type-Options &quot;nosniff&quot;
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
     }
 
     log {
@@ -191,7 +186,7 @@ dashboard.beispiel.de {
     encode zstd gzip
 
     header {
-        Strict-Transport-Security &quot;max-age=31536000&quot;
+        Strict-Transport-Security "max-age=31536000"
     }
 
     log {
@@ -216,8 +211,8 @@ beispiel.de {
 <p>Achtung bei pfadbasierten Setup: Nicht jeder Backend-Dienst verträgt es sauber, wenn die Anfrage mit einem Pfad-Präfix kommt, den er nicht erwartet. Nextcloud beispielsweise erwartet normalerweise den Basis-Pfad <code>/</code>, nicht <code>/nextcloud/</code>. Pfadbasiertes Routing ist also nicht für jeden Dienst geeignet – für Dashboards und Monitoring-Tools hingegen oft ein sauberer Weg.</p>
 <h2>Stolperfallen: Was Caddy nicht automatisch repariert</h2>
 <p>Caddy reduziert die Konfigurationsaufgabe drastisch, aber es ist kein Allheilmittel. Einige Probleme bleiben dadurch, dass die Voraussetzungen liegen.</p>
-<h2>Zertifikatsrate-Limits von Let&#x27;s Encrypt</h2>
-<p>Let&#x27;s Encrypt begrenzt die Anzahl der Zertifikate, die pro Domain und pro Stunde ausgestellt werden können. Wenn Caddy in einer Testphase viele Domains oder Wildcard-Anfragen wiederholt schlägt, kann es sein, dass Let&#x27;s Encrypt temporär keine neuen Zertifikate mehr ausstellt. Das Ergebnis: Caddy startet, kann aber kein gültiges Zertifikat anfordern, und zeigt im Log eine Fehlermeldung.</p>
+<h2>Zertifikatsrate-Limits von Let's Encrypt</h2>
+<p>Let's Encrypt begrenzt die Anzahl der Zertifikate, die pro Domain und pro Stunde ausgestellt werden können. Wenn Caddy in einer Testphase viele Domains oder Wildcard-Anfragen wiederholt schlägt, kann es sein, dass Let's Encrypt temporär keine neuen Zertifikate mehr ausstellt. Das Ergebnis: Caddy startet, kann aber kein gültiges Zertifikat anfordern, und zeigt im Log eine Fehlermeldung.</p>
 <p>Die Rate-Limits betreffen nicht laufende Erneuerungen – sie betreffen nur neue Zertifikat-Anfragen. Wer während der Einrichtung wild viele Domains hinzufügt und wieder entfernt, riskiert eine temporäre Blockade. Die praktische Abhilfe: Vor dem produktiven Einsatz alle Domains in Ruhe konfigurieren und nicht im Trial-and-Error-Verfahren.</p>
 <h2>Wildcard-Zertifikate und DNS-Provider</h2>
 <p>Wildcard-Zertifikate (<code>*.beispiel.de</code>) sind praktisch, aber sie erfordern die DNS-Challenge. Für die DNS-Challenge muss Caddy einen Mechanismus haben, der bei dem jeweiligen DNS-Provider die nötigen TXT-Records setzt. Dafür gibt es zahlreiche Plugins, aber nicht jeder Provider ist offiziell unterstützt. Ist kein passendes Plugin verfügbar, muss auf die HTTP-Challenge mit einzelnen Domains ausweichen oder ein manueller Workflow genutzt werden.</p>
@@ -273,13 +268,13 @@ dashboard.beispiel.de {
 <p>Caddy vereinfacht die HTTPS-Absicherung eines Homelab-Proxys auf bruchteilhaftes Aufwand im Vergleich zu Nginx-basierten Setups. Die automatische ACME-Integration, die klare Caddyfile-Syntax und die eingebaute Erneuerung von Zertifikaten machen Caddy zu einer sehr wiedererkennbaren Wahl für Homelaber, die nicht jeden Tag am Zertifikats-Lifecycle arbeiten wollen.</p>
 <p>Gleichzeitig ist Caddy kein Zauberstab. Ein Reverse Proxy macht Dienste erreichbar, aber er entscheidet nicht darüber, welche Dienste es überhaupt geben soll. Die Entscheidung, welche Dienste öffentlich gemacht werden, welche durch eine Auth-Schicht geschützt werden und welche nur im lokalen Netzwerk bleiben, ist eine bewusste Architektur-Entscheidung. Caddy unterstützt diese Entscheidung, indem er HTTPS ohne viel Aufwand bereitstellt.</p>
 <p>Für das nächste Homelab-Projekt lohnt sich ein Blick auf die bestehende Infrastruktur: Welche Dienste laufen schon, welche Subdomains sind sinnvoll, welche DNS-Einträge fehlen, welche Ports sind frei? Mit diesen Voraussetzungen ist Caddy innerhalb einer Stunde produktiv einsatzbereit.</p>
-<hr>
+<hr/>
 <h2>FAQ: Häufige Fragen zu Caddy als Reverse Proxy</h2>
 <p><strong>Warum sollte ich Caddy statt Nginx Proxy Manager wählen?</strong></p>
 <p>Nginx Proxy Manager bietet eine grafische Oberfläche, die ohne CLI-Kenntnisse auskommt. Caddy bietet keine UI, dafür die einfachste Konfiguration für HTTPS überhaupt – ein Caddyfile mit wenigen Zeilen deckt mehrere Dienste ab, und Zertifikats-Erneuerung läuft ohne extra Tool. Wenn du Konfigurationsdateien schreiben kannst und das geringste Setup suchst, ist Caddy die effizientere Wahl. Wenn du eine Klick-Oberfläche bevorzugst, ist NPM besser.</p>
 <p><strong>Funktioniert Caddy ohne öffentliche IP?</strong></p>
-<p>Nicht mit Let&#x27;s Encrypt über HTTP-Challenge. Wenn kein Port 80 von außen erreichbar ist, muss entweder die DNS-Challenge mit einem passenden DNS-Provider-Plugin genutzt werden oder ein eigenes Zertifikat (eigene CA) für interne Dienste. Für rein lokale Dienste mit eigener CA ist das ein valides Muster.</p>
-<p><strong>Was passiert, wenn das Let&#x27;s Encrypt-Zertifikat abläuft?</strong></p>
+<p>Nicht mit Let's Encrypt über HTTP-Challenge. Wenn kein Port 80 von außen erreichbar ist, muss entweder die DNS-Challenge mit einem passenden DNS-Provider-Plugin genutzt werden oder ein eigenes Zertifikat (eigene CA) für interne Dienste. Für rein lokale Dienste mit eigener CA ist das ein valides Muster.</p>
+<p><strong>Was passiert, wenn das Let's Encrypt-Zertifikat abläuft?</strong></p>
 <p>Caddy erneuert Zertifikate automatisch im Hintergrund, solange die Domäne weiterhin korrekt aufgelöst wird und die Challenge-Methode funktioniert. Trotzdem lohnt es sich, einmalig zu prüfen, ob die Erneuerung auch ohne manuelles Eingreifen gelingt – zum Beispiel indem man nach dem ersten Erneuern schaut, ob das alte Zertifikat tatsächlich ersetzt wurde. Ein abgelaufenes Zertifikat zeigt der Browser als Warnung an, der Dienst bleibt aber technisch erreichbar.</p>
 <p><strong>Kann ich mehrere Reverse Proxys nebeneinander betreiben?</strong></p>
 <p>Ja, aber sie dürfen nicht gleichzeitig auf denselben Port hören. Zwei Proxys auf Port 443 würden sich gegenseitig blockieren. Parallel-Betrieb macht nur Sinn, wenn sie unterschiedliche Ports nutzen oder wenn sie klar getrennte Subdomains bearbeiten – was in kleinen Homelabs selten ein gutes Design ist.</p>
@@ -289,9 +284,7 @@ dashboard.beispiel.de {
 <p>Nein. Caddy läuft problemlos als systemd-Dienst auf einer VM oder LXC-Instanz, ohne Container. Docker ist eine mögliche Laufzeitumgebung, aber nicht die einzige oder empfohlene.</p>
 <p><strong>Wie vergleicht sich Caddy mit Traefik für Homelab?</strong></p>
 <p>Beide bieten automatisches HTTPS. Caddy ist direkter – ein Caddyfile und fertig. Traefik ist stärker im dynamischen Container-Discovery-Bereich: Bei Docker-basierten Setups erkennt Traefik neue Container automatisch über Labels. Wenn alle Dienste in Containern laufen und ständig hinzukommen oder wegfallen, ist Traefik oft die praktischere Wahl. Für statische Dienste auf einer VM oder LXC favorisiert man Caddy.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

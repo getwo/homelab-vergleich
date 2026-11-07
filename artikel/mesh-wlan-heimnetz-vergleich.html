@@ -1,24 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Mesh-WLAN im Heimnetz: UniFi, TP-Link Omada und OpenWrt im Vergleich</title>
-<meta name="description" content="Mesh-WLAN für Homelab und kleine Firmen ohne Cloud-Zwang: UniFi, TP-Link Omada und OpenWrt mit 802.11s im sachlichen Vergleich — Kaufkriterien, Stücklisten, VLAN-Anbindung, Stolperfallen, Sicherheit und Migrationspfad.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Mesh-WLAN für Homelab und kleine Firmen ohne Cloud-Zwang: UniFi, TP-Link Omada und OpenWrt mit 802.11s im sachlichen Vergleich — Kaufkriterien, Stücklisten, VLAN-Anbindung, Stolperfallen, Sicherheit und Migrationspfad." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Mesh-WLAN im Heimnetz: UniFi, TP-Link Omada und OpenWrt im Vergleich</h1>
-<p>„Mesh&quot; klingt nach einer fertigen Lösung: mehrere Knoten, ein Name, überall Empfang. Der Begriff beschreibt zunächst nur, dass mehrere Funkknoten untereinander ein Netz bilden und Clients zwischen ihnen wandern. Ob das sinnvoll ist, hängt an Gerätezahl, Fläche und der Frage, ob man sich an eine Hersteller-Cloud binden will. Dieser Artikel vergleicht drei Wege für Homelabs und Firmen mit 10 bis 30 Mitarbeitern.</p>
+<p>„Mesh" klingt nach einer fertigen Lösung: mehrere Knoten, ein Name, überall Empfang. Der Begriff beschreibt zunächst nur, dass mehrere Funkknoten untereinander ein Netz bilden und Clients zwischen ihnen wandern. Ob das sinnvoll ist, hängt an Gerätezahl, Fläche und der Frage, ob man sich an eine Hersteller-Cloud binden will. Dieser Artikel vergleicht drei Wege für Homelabs und Firmen mit 10 bis 30 Mitarbeitern.</p>
 <h2>Braucht das Homelab überhaupt Mesh — oder reichen ein guter Access Point plus VLAN-Plan?</h2>
 <p>Die ehrliche Antwort lautet meist: <strong>ein guter Access Point reicht oft, Mesh braucht man erst bei Fläche oder Dichte.</strong> Ein einzelner Wi-Fi-6-AP deckt in einem offenen Grundriss realistisch 80 bis 120 Quadratmeter brauchbar ab. Erst bei über 150 Quadratmetern pro Etage, Betondecken oder mehreren Etagen wird ein zweiter Funkknoten nötig.</p>
 <p>Entscheidend ist die Gerätedichte, nicht die Personenzahl:</p>
@@ -27,7 +22,7 @@
 <li><strong>Pro Nutzer:</strong> 2 bis 3 Geräte im Schnitt — Arbeitslaptop, Handy, häufig ein Tablet.</li>
 <li><strong>Störungen durch Client-Dichte:</strong> Ab etwa 30 bis 40 aktiven Geräten pro Funkzelle steigen Latenz und Retry-Rate spürbar. Ursache ist der Overhead: Jedes Gerät belegt Sendezeit für Beacons und Hintergrundpakete. Hinzu kommen fremde Netze in dicht bebauten Gebieten.</li>
 </ul>
-<p>Konsequenz: <strong>Zwei bis drei Funkknoten an einem gemeinsamen Verteiler lösen das Dichte-Problem besser als ein einzelner „Super-AP&quot;.</strong> Mesh ist kein Ersatz für Segmentierung, sondern eine Frage der Funkabdeckung — Details im Artikel zur VLAN-Netzsegmentierung.</p>
+<p>Konsequenz: <strong>Zwei bis drei Funkknoten an einem gemeinsamen Verteiler lösen das Dichte-Problem besser als ein einzelner „Super-AP".</strong> Mesh ist kein Ersatz für Segmentierung, sondern eine Frage der Funkabdeckung — Details im Artikel zur VLAN-Netzsegmentierung.</p>
 <h2>Drei Ansätze im Überblick</h2>
 <p>| Merkmal | UniFi (AP + UniFi OS/Cloud-Gateway) | TP-Link Omada (AP + Controller) | OpenWrt (802.11s) |</p>
 <p>|---|---|---|---|</p>
@@ -110,13 +105,11 @@
 <h2>Woran scheitern gemischte Hersteller im selben Netz?</h2>
 <p>An fehlender Interoperabilität für schnelles Roaming und gemeinsame Steuerung. Zwei Hersteller ergeben zwei Systeme mit gleichem SSID-Namen — Folge sind klebrige Clients und häufige Wechsel.</p>
 <h2>Interne Verlinkungen</h2>
-<p>1. <strong>Slug:</strong> <code>vlan-netzsegmentierung</code> — <strong>Ankertext:</strong> „Wie ein VLAN-Plan Management, IoT und Gast sauber trennt&quot;</p>
-<p>2. <strong>Slug:</strong> <code>caddy-reverse-proxy-https</code> — <strong>Ankertext:</strong> „Reverse Proxy und HTTPS für die internen Oberflächen der Netzwerkverwaltung&quot;</p>
-<p>3. <strong>Slug:</strong> <code>monitoring-ohne-cloud</code> — <strong>Ankertext:</strong> „Netzwerk und Controller ohne Cloud überwachen&quot;</p>
-<p>4. <strong>Slug:</strong> <code>fernzugriff-heimserver-tailscale-wireguard</code> — <strong>Ankertext:</strong> „Fernzugriff auf das Netzwerkmanagement ohne offene Ports&quot;</p>
-
+<p>1. <strong>Slug:</strong> <code>vlan-netzsegmentierung</code> — <strong>Ankertext:</strong> „Wie ein VLAN-Plan Management, IoT und Gast sauber trennt"</p>
+<p>2. <strong>Slug:</strong> <code>caddy-reverse-proxy-https</code> — <strong>Ankertext:</strong> „Reverse Proxy und HTTPS für die internen Oberflächen der Netzwerkverwaltung"</p>
+<p>3. <strong>Slug:</strong> <code>monitoring-ohne-cloud</code> — <strong>Ankertext:</strong> „Netzwerk und Controller ohne Cloud überwachen"</p>
+<p>4. <strong>Slug:</strong> <code>fernzugriff-heimserver-tailscale-wireguard</code> — <strong>Ankertext:</strong> „Fernzugriff auf das Netzwerkmanagement ohne offene Ports"</p>
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

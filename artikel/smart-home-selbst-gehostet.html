@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Smart Home selbst hosten: Home Assistant, ioBroker und Node-RED im Vergleich</title>
-<meta name="description" content="Home Assistant, ioBroker und Node-RED im Vergleich: was lohnt sich für selbst gehostetes Smart Home, welche Protokolle wird unterstützt und wie sieht ein Docker-Grundsetup aus.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Home Assistant, ioBroker und Node-RED im Vergleich: was lohnt sich für selbst gehostetes Smart Home, welche Protokolle wird unterstützt und wie sieht ein Docker-Grundsetup aus." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Smart Home selbst hosten: Home Assistant, ioBroker und Node-RED im Vergleich</h1>
 <p>Wer Sensoren, Schalter und die Heizung im eigenen Netz steuert, hat heute mehr Möglichkeiten als je zuvor — und gleichzeitig mehr Fragen vor der Anschaffung. Die drei am weitesten verbreiteten Open-Source-Plattformen Home Assistant, ioBroker und Node-RED verfolgen teilweise unterschiedliche Ziele. Der richtige Einsatzort hängt davon ab, ob der Schwerpunkt auf komfortabler Geräteverwaltung, flexibler Skriptlogik oder reiner Automatisierungsverarbeitung liegt.</p>
 <h2>Was gewinnt man, wenn die Smart-Home-Zentrale im eigenen Rack läuft — und was nicht</h2>
@@ -35,14 +30,14 @@
                               v
 [Steckdose / Heizkörperthermostat / Rollladenaktor] --Schalten--&gt; Aktion im LAN
 </code></pre>
-<p>Konkret: Ein Bewegungssensor sendet per Zigbee eine Motion-Event-Meldung. Die Zentrale empfängt sie, prüft die ausgewertete Regel (zum Beispiel &quot;wenn Motion und es ist nach 22 Uhr, dann Licht an&quot;) und gibt über einen Aktor einen Schaltbefehl heraus. Der ganze Kreislauf läuft im eigenen Subnetz, solange kein Cloud-Hub als Zwischenhändler eingeschaltet ist.</p>
+<p>Konkret: Ein Bewegungssensor sendet per Zigbee eine Motion-Event-Meldung. Die Zentrale empfängt sie, prüft die ausgewertete Regel (zum Beispiel "wenn Motion und es ist nach 22 Uhr, dann Licht an") und gibt über einen Aktor einen Schaltbefehl heraus. Der ganze Kreislauf läuft im eigenen Subnetz, solange kein Cloud-Hub als Zwischenhändler eingeschaltet ist.</p>
 <h2>Home Assistant: Funktionsumfang, Geräte- und Protokollunterstützung, Betriebswege</h2>
 <p>Home Assistant (HA) ist primär eine Geräte- und Diensterkennung. Das Projekt vereint Tausende von Integrationen und versucht, heterogene Geräte in eine einheitliche Oberfläche zu bringen. Unterstützt werden klassische Funkprotokolle wie Zigbee und Z-Wave (typischerweise über einen USB-Stick oder einen separaten Zigbee-Controller), aber auch MQTT als transportunabhängiges Bus-Protokoll. Mit Matter und Thread gibt es zudem einen moderneren, standardisierten Anbindungsrahmen, der längerfristig die Fragmentierung reduzieren soll.</p>
 <p>Betriebswege: HA läuft als Docker-Container (bald mit dem offiziellen Image), als virtuelle Umgebung und — vor allem für Einsteiger — als Add-on in Home Assistant OS. Der Docker-Pfad ist für Server- und Homelab-Betreiber oft der natürlichere, weil er in bestehende Compose-Umgebungen passt. Der Add-on-Pfad reduziert die Einrichtung, hält aber die Plattform näher an eine vollständige Appliance-Philosophie.</p>
 <p>Grenzen: Die Einrichtung kann Flaschenhälse produzieren, besonders an der Schnittstelle zwischen Funk-Controller und Container. Ein Zigbee-USB-Stick ist kein automatisch plug-and-play-Gerät im Container; die Weiterleitung erfordert Aufmerksamkeit. Auch wenn HA über reichlich Geräteunterstützung verfügt, bleibt die eigentliche Automatisierungslogik einfacher als bei einem vollwertigen Skript- oder Flow-Tool — das ist ein Design-Auswahl, keine Mängel.</p>
 <h2>ioBroker: Scripting-Logik, Adapterwelt und wann es die bessere Wahl ist</h2>
-<p>ioBroker bringt eine andere Schwerpunktlage: eine große Adapterökosystem, in dem fast jede erdenkliche Schnittstelle verfügbar ist, und eine regelbasierte Logik, die Skripte, Datenpunkte und Zustände expliziter verwaltet. Es ist weniger &quot;alles in einer Oberfläche erkannt&quot; und mehr &quot;ein Adapter-Ökosystem, in dem man Datenpunkte abbildet, transformiert und mit Regeln/Scripten verknüpft&quot;.</p>
-<p>Für Anwendungen, bei denen die Umsetzung von Datenströmen, Schnittstellenanpassungen und individuellen Datenbanken im Vordergrund steht, ist ioBroker oft die flexiblere Wahl. Wer mehrere Protokollwelten parallel betreiben will, eigene Datenreihen speichert und skriptet und gerade keine reine &quot;Konsolen-Appliance&quot; sucht, landet mit ioBroker schneller im richtigen Betriebsweg.</p>
+<p>ioBroker bringt eine andere Schwerpunktlage: eine große Adapterökosystem, in dem fast jede erdenkliche Schnittstelle verfügbar ist, und eine regelbasierte Logik, die Skripte, Datenpunkte und Zustände expliziter verwaltet. Es ist weniger "alles in einer Oberfläche erkannt" und mehr "ein Adapter-Ökosystem, in dem man Datenpunkte abbildet, transformiert und mit Regeln/Scripten verknüpft".</p>
+<p>Für Anwendungen, bei denen die Umsetzung von Datenströmen, Schnittstellenanpassungen und individuellen Datenbanken im Vordergrund steht, ist ioBroker oft die flexiblere Wahl. Wer mehrere Protokollwelten parallel betreiben will, eigene Datenreihen speichert und skriptet und gerade keine reine "Konsolen-Appliance" sucht, landet mit ioBroker schneller im richtigen Betriebsweg.</p>
 <p>Der Unterschied zur reinen Regelverarbeitung liegt in der Tiefe: ioBroker kann Zustände speichern, anreichern, filtern und weitergeben — nicht nur auslösen, wenn eine Event-Regel feuert.</p>
 <h2>Node-RED: was die reine Automatisierungs-Ebene kann und warum sie ohne Zentrale nicht läuft</h2>
 <p>Node-RED ist eine Flow-basierte Automatisierungs-Engine. Man verbindet Nodes (Eingänge, Transformationen, Ausgänge) zu Flows, die auf Ereignisse reagieren. Das passt besonders gut, wenn die Logik selbst der komplexe Teil ist — etwa: empfange MQTT-Nachrichten, filtere bestimmte Geräte, aggregiere Zustände über Zeitfenster und entscheide dann über mehrere Ausgänge.</p>
@@ -58,20 +53,20 @@
 <p>|Bedienoberfläche | Umfangreich, differenziert; steileres Lernen | Zustands- und Adapterzentriert | Flow-basiert, visuell intuitiv für Logikflüsse |</p>
 <p>|Docker-Einrichtung | Offizielles Docker-Image verfügbar | Docker-Container verfügbar | Standard-Node.js-Container einfach |</p>
 <p>|Geschätzte Einstiegskosten | Server 150–350 € + ggf. Funk-Controller 30–120 € | ähnlich, plus Adapter-Wahl | geringer, wenn Schnittstellen bereits vorhanden |</p>
-<p>|Eignung für Nichttechniker | Add-on-Pfad erleichtert; Docker-Weg setzt mehr voraus | mittelschwer | Hoch für Logik, aber &quot;ohne Zentrale&quot; nicht vollständig |</p>
+<p>|Eignung für Nichttechniker | Add-on-Pfad erleichtert; Docker-Weg setzt mehr voraus | mittelschwer | Hoch für Logik, aber "ohne Zentrale" nicht vollständig |</p>
 <p>|Lizenz | Open Source (Allgemeingemeinfreiheit je Komponente prüfen) | Open Source | Open Source (Apache-2-Lizenz je Version prüfen) |</p>
 <p>Die Zahlen sind Schätzwerte vor dem konkreten Produktivsystem. RAM- und CPU-Werte hängen stark von der Anzahl der Integrationen, der Datenbank und der Polling-Frequenz ab.</p>
 <h2>Praxis-Teil: Docker-Compose-Grundgerüst für Home Assistant plus MQTT- und Zigbee-Ergänzung</h2>
 <p>Ein minimales Grundgerüst für Home Assistant als Docker-Container mit MQTT-Broker und Zigbee-Unterstützung könnte so aussehen. (Zeilenanzahl der Weise kurz halten.)</p>
 <pre><code>
-version: &quot;3.8&quot;
+version: "3.8"
 services:
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:stable
     container_name: homeassistant
     restart: unless-stopped
     ports:
-      - &quot;8123:8123&quot;
+      - "8123:8123"
     volumes:
       - ./ha_config:/config
       - /etc/localtime:/etc/localtime:ro
@@ -84,7 +79,7 @@ services:
     container_name: mosquitto
     restart: unless-stopped
     ports:
-      - &quot;1883:1883&quot;
+      - "1883:1883"
     volumes:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/config:/mosquitto/config
@@ -98,14 +93,14 @@ services:
 <li><strong>Netzwerkmodus:</strong> host-Netzwerk vereinfacht einige LAN-Interaktionen, kann aber Sicherheitsanforderungen erhöhen. Für Umgebungen mit Subnetzsegmentierung sollte man die Auswirkungen prüfen.</li>
 </ul>
 <h2>Datenschutz und Grenzen: was lokal nicht verschwindet</h2>
-<p>Selbst im eigenen Netz gibt es Signale, die man nicht einfach &quot;wegeräumt&quot; hat. Multicast-basierte Protokolle wie mDNS/DNS-SD (oft für Diensterkennung genutzt) verbreiten Informationen im LAN, unabhängig davon, ob eine Cloud involviert ist. Manche Geräte senden Zustandsupdates oder Messwerte auch ohne ausdrücklichen Funktionszweck, weil es in der Firmware eingebaut ist.</p>
+<p>Selbst im eigenen Netz gibt es Signale, die man nicht einfach "wegeräumt" hat. Multicast-basierte Protokolle wie mDNS/DNS-SD (oft für Diensterkennung genutzt) verbreiten Informationen im LAN, unabhängig davon, ob eine Cloud involviert ist. Manche Geräte senden Zustandsupdates oder Messwerte auch ohne ausdrücklichen Funktionszweck, weil es in der Firmware eingebaut ist.</p>
 <p>Hersteller-Cloud: Geräte, die zwingend eine Cloud für das erstmalige Pairing, die Firmware-Aktualisierung oder bestimmte erweiterte Funktionen nutzen, können selbst gehostete Autonomie einschränken. Das lässt sich nicht immer durch lokale Alternativen umgehen.</p>
 <p>Protokollierungspflicht: Für private Nutzung gelten grundsätzlich andere Anforderungen als für Unternehmen. Entscheidend: Wenn eine Lösung genutzt wird, um personenbezogene Daten oder betriebliche Abläufe zu verarbeiten, die einer Rechenschaft unterliegen, müssen konkrete Datenschutzgrundsätze beachtet werden — Speicherdauer, Zugriffskontrolle, Löschkonzepte. Für kleine Firmen ist das kein Randthema: Wenn zum Beispiel ein Arbeitszeiterfassungs-Sensornetz den Standort oder Präsenz von Personen erfasst, kann das in den Anwendungsbereich datenschutzrechtlicher Pflichten fallen. Die konkreten Anforderungen hängen vom Verarbeitungszweck ab, nicht von der Technik allein.</p>
 <h2>Fazit: Empfehlung je Kundenprofil</h2>
 <p>Privat, Einsteiger: Wenn es primär um Komfort, Gerätekonsolidierung und wenig Skript-Qualabraucht geht, ist Home Assistant oft der direkteste Einstieg — besonders mit Home Assistant OS oder einem gut dokumentierten Docker-Container. Der Weg über MQTT und Zigbee ist gut belegt. Wer keine Lust auf tiefes Scripting hat, profitiert am meisten.</p>
 <p>Familie, Mehrpersonengebäude: Wenn mehr Personen, mehr Gerätetypen und etwas mehr Datenverarbeitung im Spiel sind, kann Home Assistant immer noch die Basis sein. ioBroker kommt ins Spiel, wenn Datenpunkte, eigene Verknüpfungen und individuelle Speicherlogik wichtiger werden als reine Komfortintegration.</p>
 <p>Kleine Firma: Für kleine Betriebe mit technischem Know-how liegt der Schwerpunkt oft anders: Datenverarbeitung, Skriptlogik, Schnittstellenanbindung. ioBroker oder Node-RED als Logikschicht hinter einer integrierenden Zentrale können hier produktiver sein als ein rein komfortgetriebener Ansatz. SSH, Logging, Backup und Netzwerksegmentierung müssen dabei von Anfang an Teil der Planung sein, nicht nachträglicher Glaskasten.</p>
-<p>Der Vergleich zeigt: Die Wahl ist selten zwischen &quot;gut&quot; und &quot;schlecht&quot;. Sie ist zwischen &quot;welches Problem soll primär gelöst werden — Gerätekonsolidierung, Skriptflexibilität oder Flow-Logik&quot;.</p>
+<p>Der Vergleich zeigt: Die Wahl ist selten zwischen "gut" und "schlecht". Sie ist zwischen "welches Problem soll primär gelöst werden — Gerätekonsolidierung, Skriptflexibilität oder Flow-Logik".</p>
 <h2>FAQ</h2>
 <h2>1. Brauche ich immer einen eigenen Server für selbst gehostetes Smart Home?</h2>
 <p>Nicht zwingend immer. Ein Mini-PC oder Single-Board-Computer reicht für viele Umgebungen. Der Server sollte jedoch zuverlässig laufen und ausreichend Arbeitsspeicher sowie eine stabile Verbindung zum LAN haben. Wer nur wenige Geräte steuert, kann mit kleineren Plattformen beginnen — aber der Server darf nicht zum Engpass bei Wiederherstellung oder Backup werden.</p>
@@ -124,9 +119,7 @@ services:
 <li><a href="/artikel/monitoring-ohne-cloud">Monitoring ohne Cloud: Zustandsüberwachung im eigenen Netz</a> — Messwerte und Status lokal verwalten.</li>
 <li><a href="/artikel/sso-selbst-gehostet">Single Sign-On selbst gehostet: Login-Zentrale statt 분산er Accounts</a> — Authentifizierung bündeln, wenn mehrere Dienste laufen.</li>
 </ul>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

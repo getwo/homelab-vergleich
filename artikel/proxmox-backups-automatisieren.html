@@ -1,20 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Proxmox Backups automatisieren: Zeitplan & Retention — Homelab Vergleich</title>
-<meta name="description" content="--- title: "Proxmox Backups automatisieren: Zeitplan & Retention" description: "Proxmox Backups automatisieren mit vzdump: Backup-Zeitpläne einrichten">
-<link rel="stylesheet" href="../style.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Proxmox Backups automatisieren: Zeitplan &amp; Retention — Homelab Vergleich</title>
+<meta "proxmox="" &="" automatisieren="" automatisieren:="" backup-zeitpläne="" backups="" content="--- title: " description:="" einrichten"="" mit="" name="description" proxmox="" retention"="" vzdump:="" zeitplan=""/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
-<hr>
-<p>title: &quot;Proxmox Backups automatisieren: Zeitplan &amp; Retention&quot;</p>
-<p>description: &quot;Proxmox Backups automatisieren mit vzdump: Backup-Zeitpläne einrichten, Retention (Aufbewahrung) richtig konfigurieren, Offsite-Kopie nach der 3-2-1-Regel und Wiederherstellung regelmäßig testen.&quot;</p>
-<hr>
+<div class="content">
+<hr/>
+<p>title: "Proxmox Backups automatisieren: Zeitplan &amp; Retention"</p>
+<p>description: "Proxmox Backups automatisieren mit vzdump: Backup-Zeitpläne einrichten, Retention (Aufbewahrung) richtig konfigurieren, Offsite-Kopie nach der 3-2-1-Regel und Wiederherstellung regelmäßig testen."</p>
+<hr/>
 <h1>Proxmox Backups automatisieren: Zeitplan &amp; Retention</h1>
 <p>Ein Backup, das nur dann läuft, wenn du daran denkst, ist kein Backup. Proxmox VE bringt mit <code>vzdump</code> ein eingebautes Werkzeug mit, das sich vollständig automatisieren lässt. Dieser Artikel zeigt, wie du sinnvolle Zeitpläne einrichtest, die Aufbewahrung (Retention) konfigurierst und deine Backups mit einer Offsite-Kopie und einem echten Restore-Test absicherst.</p>
 <h2>Backup-Zeitpläne mit vzdump einrichten</h2>
@@ -47,7 +48,7 @@ vzdump 100 --compress zstd --mode snapshot --dumpdir /mnt/backup/vzdump
 <p>Für die meisten Homelabs ist ein täglicher Lauf mit kurzer Retention plus ein wöchentlicher mit längerer Aufbewahrung ein guter Start. Entscheidend ist die Regelmäßigkeit, nicht die maximale Frequenz.</p>
 <p><strong>Wie teste ich, ob mein Backup wirklich funktioniert?</strong></p>
 <p>Stelle einen Gast in einem separaten Bereich wieder her und prüfe, ob die Dienste starten. Teste das mindestens einmal pro Quartal – oder nach jeder größeren Änderung an deiner Backup-Konfiguration.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

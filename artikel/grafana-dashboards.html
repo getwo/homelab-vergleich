@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Homelab-Monitoring: Schöne Grafana-Dashboards bauen — Homelab Vergleich</title>
-<meta name="description" content="Homelab-Monitoring: Schöne Grafana-Dashboards bauen  Ein Homelab wächst schnell: Server, NAS, Container, virtuelle Maschinen. Irgendwann willst du wis">
-<link rel="stylesheet" href="../style.css">
+<meta content="Homelab-Monitoring: Schöne Grafana-Dashboards bauen  Ein Homelab wächst schnell: Server, NAS, Container, virtuelle Maschinen. Irgendwann willst du wis" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Homelab-Monitoring: Schöne Grafana-Dashboards bauen</h1>
 <p>Ein Homelab wächst schnell: Server, NAS, Container, virtuelle Maschinen. Irgendwann willst du wissen, wie ausgelastet deine Hardware wirklich ist – und ob eine Festplatte kurz davorsteht, vollzulaufen. Genau dafür ist Grafana das Werkzeug der Wahl. Es wandelt Messdaten in ansprechende, übersichtliche Dashboards um. Dieser Artikel zeigt dir die Grundlagen, welche Datenquellen du brauchst, welche Metriken wichtig sind und wie du ein Dashboard baust, das nicht nur informiert, sondern auch gut aussieht.</p>
 <h2>Grafana-Dashboard-Grundlagen</h2>
@@ -48,7 +49,7 @@
 <li><strong>Variablen nutzen</strong>: Ein Dashboard mit Host-Variable funktioniert für alle Server, statt eines pro Maschine.</li>
 <li><strong>Sinnvoller Zeitbereich</strong>: Standardmäßig 6 oder 24 Stunden, damit die Seite schnell lädt.</li>
 </ul>
-<p>Grafana bietet außerdem fertige Dashboards aus der Community. Die beliebte Vorlage „Node Exporter Full&quot; importierst du mit einer ID und sparst dir stundenlange Handarbeit.</p>
+<p>Grafana bietet außerdem fertige Dashboards aus der Community. Die beliebte Vorlage „Node Exporter Full" importierst du mit einer ID und sparst dir stundenlange Handarbeit.</p>
 <h2>Beispiel: Ein Basis-Dashboard</h2>
 <p>Ein einfaches Dashboard könnte so aufgebaut sein:</p>
 <ul>
@@ -59,7 +60,7 @@
 <p>Die wichtigsten PromQL-Abfragen für den Einstieg:</p>
 <pre><code>
 # CPU-Auslastung in Prozent
-100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=&quot;idle&quot;}[5m])) * 100)
+100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
 
 # Freier Arbeitsspeicher in Prozent
 100 * (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
@@ -70,7 +71,7 @@
 <p>Damit hast du in wenigen Minuten ein Dashboard, das dir sofort zeigt, ob in deinem Homelab alles gesund läuft.</p>
 <h2>Fazit</h2>
 <p>Grafana ist der Standard fürs Homelab-Monitoring – kostenlos, mächtig und dank Community-Vorlagen schnell eingerichtet. Mit Prometheus und Node-Exporter als Datenquelle hast du CPU, RAM, Disk und Netzwerk jederzeit im Blick. Ein aufgeräumtes Dashboard mit klaren Schwellwerten macht aus rohen Messdaten einen echten Überblick, der dir Ärger erspart, bevor er entsteht.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

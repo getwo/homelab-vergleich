@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Vaultwarden: Passwort-Manager selbst hosten — Homelab Vergleich</title>
-<meta name="description" content="Vaultwarden: Passwort-Manager selbst hosten  Ein Passwort-Manager gehört heute zur Grundausstattung jedes Homelabs – und Vaultwarden ist die beliebtes">
-<link rel="stylesheet" href="../style.css">
+<meta content="Vaultwarden: Passwort-Manager selbst hosten  Ein Passwort-Manager gehört heute zur Grundausstattung jedes Homelabs – und Vaultwarden ist die beliebtes" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Vaultwarden: Passwort-Manager selbst hosten</h1>
 <p>Ein Passwort-Manager gehört heute zur Grundausstattung jedes Homelabs – und Vaultwarden ist die beliebteste Self-Hosted-Lösung dafür. Statt deine Zugangsdaten einem Cloud-Anbieter anzuvertrauen, betreibst du deinen eigenen, verschlüsselten Passwort-Tresor auf eigener Hardware. In diesem Guide erklären wir, was Vaultwarden genau ist, warum sich das Selbsthosten lohnt und wie du den Dienst per Docker installierst, einrichtest und sicherst.</p>
 <h2>Was ist Vaultwarden?</h2>
@@ -28,7 +29,7 @@
 <h2>Installation per Docker</h2>
 <p>Der schnellste Weg führt über Docker. Eine <code>docker-compose.yml</code> genügt, um den Dienst inklusive persistentem Datenverzeichnis zu starten:</p>
 <pre><code>
-version: &quot;3.9&quot;
+version: "3.9"
 
 services:
   vaultwarden:
@@ -38,7 +39,7 @@ services:
     volumes:
       - ./vw-data:/data
     ports:
-      - &quot;8080:80&quot;
+      - "8080:80"
 </code></pre>
 <p>Gestartet wird der Stack wie gewohnt mit:</p>
 <pre><code>
@@ -65,11 +66,11 @@ docker compose up -d
 <p>Weitere grundlegende Maßnahmen findest du in unserem [Homelab-Sicherheitsguide](homelab-sicherheit-guide.md).</p>
 <h2>Backup der Datenbank</h2>
 <p>Das wichtigste Backup ist schnell erklärt: Vaultwarden speichert alle Daten in der SQLite-Datei im <code>vw-data</code>-Verzeichnis. Ein regelmäßiges Backup dieses Verzeichnisses sichert deinen kompletten Tresor.</p>
-<p>Am saubersten läuft das über den integrierten Backup-Endpunkt. In der Admin-Oberfläche unter „Backup&quot; kannst du ein verschlüsseltes Backup direkt herunterladen – ideal für automatische Skripte. Zusätzlich lohnt sich ein Datei-Backup des gesamten <code>vw-data</code>-Ordners, etwa per Cron-Job oder mit einem Tool wie Borg oder Restic.</p>
+<p>Am saubersten läuft das über den integrierten Backup-Endpunkt. In der Admin-Oberfläche unter „Backup" kannst du ein verschlüsseltes Backup direkt herunterladen – ideal für automatische Skripte. Zusätzlich lohnt sich ein Datei-Backup des gesamten <code>vw-data</code>-Ordners, etwa per Cron-Job oder mit einem Tool wie Borg oder Restic.</p>
 <p>Wichtig: Teste die Wiederherstellung regelmäßig. Ein Backup, das nie wiederhergestellt wurde, ist nur eine Vermutung.</p>
 <h2>Fazit</h2>
 <p>Vaultwarden ist der ideale Einstieg ins Self-Hosting von Passwort-Managern: schlank, kostenlos und voll kompatibel mit den offiziellen Bitwarden-Apps. Wer die Kontrolle über seine Zugangsdaten behalten will, bekommt hier eine robuste Lösung, die selbst auf einem Raspberry Pi läuft. Mit Docker-Compose ist die Installation in Minuten erledigt – den Rest erledigen Gewohnheit und ein konsequentes Backup.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

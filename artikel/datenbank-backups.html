@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Datenbank-Backups richtig planen: PostgreSQL, MySQL und die Container-Falle</title>
-<meta name="description" content="Warum ein einfaches Kopieren des Datenverzeichnisses bei PostgreSQL und MySQL fehlerhaft ist – und wie man logische Backups mit pg_dump, mysqldump sowie WAL-Archivierung korrekt erstellt und wiederherstellt.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Warum ein einfaches Kopieren des Datenverzeichnisses bei PostgreSQL und MySQL fehlerhaft ist – und wie man logische Backups mit pg_dump, mysqldump sowie WAL-Archivierung korrekt erstellt und wiederherstellt." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Datenbank-Backups richtig planen: PostgreSQL, MySQL und die Container-Falle</h1>
 <h2>Einleitung: Warum Dateisystem-Backups allein nicht reichen</h2>
 <p>Ein Backup, das nie getestet wurde, ist kein Backup. Diese Erkenntnis ist besonders schmerzhaft, wenn sie im Moment des Datenverlusts aufkommt – etwa wenn Nextcloud aus dem Nothingness zurückkehrt, Vaultwarden Passwörter verweigert oder Immich nicht mehr auf alte Fotos zugreifen kann. Die meisten Homelab-Betreiber sichern die Datenverzeichnisse ihrer Container oder VMs mit rsync, Borg oder Restic – und glauben, sie wären gesichert. Doch wenn die Datenbank im aktuellen Zustand schreibt, während das Backup läuft, bleibt das Ergebnis hinter dem eigentlichen Datenbestand zurück.</p>
@@ -56,7 +51,7 @@ pg_restore -U postgres -d meine_datenbank_restored /backup/meine_datenbank.dump
 # postgresql.conf
 wal_level = replica
 archive_mode = on
-archive_command = &#x27;cp %p /var/lib/postgresql/wal_archive/%f&#x27;
+archive_command = 'cp %p /var/lib/postgresql/wal_archive/%f'
 </code></pre>
 <p>Diese Archivierung ist unabhängig von dem Datenbank-Backup und ermöglicht es später, ein pg_dump-Backup zu einem früheren Zeitpunkt wiederherzustellen und die fehlenden WAL-Dateien nachzuspielen, um auf den aktuellen Stand zu kommen.</p>
 <p>Für Homelab-Umgebungen, die PITR nicht benötigen, reicht ein regelmäßiges pg_dump oft aus. Wer jedochUMAN-Charakteristiken wie Nextcloud oder Vaultwarden betreibt und im Worst-Case einen katastrophalen Datenverlust vermeiden will, sollte WAL-Archivierung in Betracht ziehen.</p>
@@ -93,14 +88,14 @@ mysqldump --user=root --password meine_datenbank \
 services:
   postgres-backup:
     image: postgres:16-alpine
-    entrypoint: [&quot;sh&quot;, &quot;-c&quot;]
+    entrypoint: ["sh", "-c"]
     command: &gt;
       pg_dump -U postgres -d meine_datenbank -Fc -f /backup/meine_datenbank.dump
       &amp;&amp; chown -R 1000:1000 /backup/
     volumes:
       - ./backups:/backup
       - postgres_data:/var/lib/postgresql/data
-    user: &quot;1000:1000&quot;
+    user: "1000:1000"
 </code></pre>
 <p>Wichtig: Der Nutzer im Container muss die gleichen UID/GID haben wie der Besitzer des Mountpoints, oder die Datei darf nicht erstellt werden können. Alternativ lässt man den Backup-Container als root laufen und fixiert die Rechte nachträglich.</p>
 <h2>Systemd-Timer für Host-Instanzen</h2>
@@ -132,9 +127,9 @@ WantedBy=timers.target
 <p>Das Script <code>pg_backup.sh</code> kann sein:</p>
 <pre><code>
 #!/bin/bash
-BACKUP_DIR=&quot;/var/backups/postgresql&quot;
+BACKUP_DIR="/var/backups/postgresql"
 DATE=$(date +%Y%m%d_%H%M%S)
-pg_dump -U postgres -d meine_datenbank -Fc -f &quot;$BACKUP_DIR/meine_datenbank_$DATE.dump&quot;
+pg_dump -U postgres -d meine_datenbank -Fc -f "$BACKUP_DIR/meine_datenbank_$DATE.dump"
 </code></pre>
 <h2>Dateirechte und UID/GID</h2>
 <p>Container-Volumes werden typischerweise mit den Rechten des Host-Benutzers angelegt. Der Backup-Container muss entweder die gleiche UID nutzen oder der Backup-Ordner wird mit <code>chmod 777</code> (nicht empfohlen für Produktionsumgebungen) oder expliziter <code>chown</code> versehen. Ein sicherer Weg: Den Backup-Ordner vorher anlegen und mit der korrekten UID besitzen:</p>
@@ -153,16 +148,16 @@ chown 1000:1000 /var/backups/postgresql
 <p>Ein einfaches Script stösst das an:</p>
 <pre><code>
 #!/bin/bash
-BACKUP_DIR=&quot;/var/backups/postgresql&quot;
+BACKUP_DIR="/var/backups/postgresql"
 AGE_DAYS=7
 AGE_WEEKS=4
 AGE_MONTHS=12
 
-find &quot;$BACKUP_DIR&quot; -name &quot;*.dump&quot; -mtime +$AGE_DAYS -delete
+find "$BACKUP_DIR" -name "*.dump" -mtime +$AGE_DAYS -delete
 # wöchentliche: Prüfe mit Datum-Suffix
-find &quot;$BACKUP_DIR&quot; -name &quot;*_weekly_*.dump&quot; -mtime +$(($AGE_WEEKS * 7)) -delete
+find "$BACKUP_DIR" -name "*_weekly_*.dump" -mtime +$(($AGE_WEEKS * 7)) -delete
 # monatliche: Prüfe monatliche Backups separat
-find &quot;$BACKUP_DIR&quot; -name &quot;*_monthly_*.dump&quot; -mtime +$(($AGE_MONTHS * 30)) -delete
+find "$BACKUP_DIR" -name "*_monthly_*.dump" -mtime +$(($AGE_MONTHS * 30)) -delete
 </code></pre>
 <h2>Verschlüsselung</h2>
 <p>Backups sollten verschlüsselt werden, besonders wenn sie auf Cloud-Speicher oder externe Festplatten wandern. Ein gängiger Weg mit GPG:</p>
@@ -189,7 +184,7 @@ gpg --symmetric --cipher-algo AES256 \
 <p>     --clean --if-exists \</p>
 <p>     /backup/meine_datenbank.dump</p>
 <p>   ```</p>
-<p>   <code>--clean</code> entfernt vorhandene Objekte vor dem Wiederherstellen, <code>--if-exists</code> verhindert Fehler bei fehlenden Objekten.</p>
+<p> <code>--clean</code> entfernt vorhandene Objekte vor dem Wiederherstellen, <code>--if-exists</code> verhindert Fehler bei fehlenden Objekten.</p>
 <p>4. <strong>Datenvalidierung</strong>: Einzelne Tabellen mit <code>SELECT COUNT(*)</code> oder <code>pg_stat_user_tables</code> überprüfen, ob Zeilenanzahl plausibel ist.</p>
 <p>5. <strong>Anwendungstests</strong>: Nextcloud- oder Vaultwarden-Instanz mit der wiederhergestellten Datenbank starten und prüfen, ob Login, Dateien, ○○Einträge etc. funktionieren.</p>
 <p>6. <strong>Dokumentation</strong>: Ergebnis, Dauer, eventuelle Probleme in einem Wiederherstellungstest-Protokoll festhalten.</p>
@@ -197,7 +192,7 @@ gpg --symmetric --cipher-algo AES256 \
 <p>1. <strong>Vorbereitung</strong>: Dump-Datei prüfen (<code>head -n 50 dump.sql</code> zeigt Struktur und Tabellen).</p>
 <p>2. <strong>Zieldatenbank erstellen</strong>:</p>
 <p>   ```bash</p>
-<p>   mysql -u root -p -e &quot;CREATE DATABASE meine_datenbank_test;&quot;</p>
+<p>   mysql -u root -p -e "CREATE DATABASE meine_datenbank_test;"</p>
 <p>   ```</p>
 <p>3. <strong>Wiederherstellung</strong>:</p>
 <p>   ```bash</p>
@@ -224,9 +219,7 @@ gpg --decrypt --passphrase-file /etc/backup-credentials/gpg-passphrase \
   /backup/meine_datenbank.dump.gpg &gt; /backup/meine_datenbank.dump
 </code></pre>
 <p>Dasselbe gilt für symmetrische Verschlüsselung mit OpenSSL oder age. Wichtig: Der Encryption-Key muss separat und sicher gespeichert werden – sonst ist das Backup verloren.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

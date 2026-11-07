@@ -1,20 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Proxmox Backup Server einrichten: Backups automatisieren — Homelab Vergleich</title>
-<meta name="description" content="--- title: "Proxmox Backup Server einrichten: Backups automatisieren" description: "Proxmox Backup Server (PBS) einrichten: So automatisierst du dedup">
-<link rel="stylesheet" href="../style.css">
+<meta "proxmox="" (pbs)="" automatisieren"="" automatisierst="" backup="" backups="" content="--- title: " dedup"="" description:="" du="" einrichten:="" name="description" proxmox="" server="" so=""/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
-<hr>
-<p>title: &quot;Proxmox Backup Server einrichten: Backups automatisieren&quot;</p>
-<p>description: &quot;Proxmox Backup Server (PBS) einrichten: So automatisierst du deduplizierte, inkrementelle Backups deiner VMs und Container und stellst sie im Ernstfall schnell wieder her.&quot;</p>
-<hr>
+<div class="content">
+<hr/>
+<p>title: "Proxmox Backup Server einrichten: Backups automatisieren"</p>
+<p>description: "Proxmox Backup Server (PBS) einrichten: So automatisierst du deduplizierte, inkrementelle Backups deiner VMs und Container und stellst sie im Ernstfall schnell wieder her."</p>
+<hr/>
 <h1>Proxmox Backup Server einrichten: Backups automatisieren</h1>
 <p>Wer ein Homelab mit Proxmox VE betreibt, kennt das Problem: Virtuelle Maschinen und Container sammeln sich an, und irgendwann steht die Frage im Raum, wie man sie zuverlässig sichert. Die eingebaute Backup-Lösung von Proxmox (vzdump) funktioniert, stößt aber bei vielen Gästen und großen Datenmengen schnell an Grenzen. Genau hier setzt der <strong>Proxmox Backup Server</strong> (PBS) an – eine eigenständige Open-Source-Plattform, die Backups nicht nur ablegt, sondern intelligent verwaltet.</p>
 <h2>Was ist der Proxmox Backup Server?</h2>
@@ -47,7 +48,7 @@
 <p>Im Ernstfall startest du die Wiederherstellung direkt über den Backup-Speicher in Proxmox. Wähle den gewünschten Backup-Snapshot und den Ziel-Storage – Proxmox legt den Gast als neue VM oder neuen Container wieder an. Für einzelne Dateien öffnest du den Backup-Inhalt im <strong>File-Restore</strong> und lädst gezielt herunter, was du brauchst.</p>
 <h2>Fazit</h2>
 <p>Der Proxmox Backup Server verwandelt die oft vernachlässigte Backup-Pflicht in einen automatisierten, platzsparenden Prozess. Deduplizierung und inkrementelle Sicherungen halten den Speicherbedarf klein, der File-Restore rettet im Notfall einzelne Dateien statt ganzer Systeme. Für jedes Homelab mit mehr als einer Handvoll Gäste ist PBS die Investition wert – einmal eingerichtet, läuft die Sicherung von selbst.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

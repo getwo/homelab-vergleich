@@ -1,21 +1,22 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>TrueNAS vs Unraid vs Proxmox: Welches System für dein NAS? — Homelab Vergleich</title>
-<meta name="description" content="TrueNAS vs Unraid vs Proxmox: Welches System für dein NAS?  Drei Namen tauchen immer wieder auf, wenn es um den selbstgebauten Speicher im Homelab geh">
-<link rel="stylesheet" href="../style.css">
+<meta content="TrueNAS vs Unraid vs Proxmox: Welches System für dein NAS?  Drei Namen tauchen immer wieder auf, wenn es um den selbstgebauten Speicher im Homelab geh" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>TrueNAS vs Unraid vs Proxmox: Welches System für dein NAS?</h1>
 <p>Drei Namen tauchen immer wieder auf, wenn es um den selbstgebauten Speicher im Homelab geht: TrueNAS, Unraid und Proxmox. Dabei ist die Ausgangslage alles andere als gleich — TrueNAS und Unraid sind fertige NAS-Betriebssysteme, Proxmox dagegen eine Virtualisierungsplattform. Wer das versteht, trifft die richtige Entscheidung. Dieser Artikel vergleicht Dateisysteme, RAID-Konzepte, Virtualisierung, Kosten und Hardware-Anforderungen und endet mit einer klaren Empfehlung pro Anwendungsfall.</p>
 <h2>Was sind die drei Systeme?</h2>
 <p><strong>TrueNAS</strong> ist ein quelloffenes NAS-Betriebssystem, das in zwei Varianten existiert: TrueNAS CORE (auf FreeBSD-Basis) und TrueNAS SCALE (auf Linux/Debian-Basis). Beide setzen konsequent auf das Dateisystem ZFS und liefern eine ausgereifte Weboberfläche für Freigaben, Snapshots, Replikation und Datenintegrität. TrueNAS ist der Spezialist für zuverlässigen, großen Speicher.</p>
-<p><strong>Unraid</strong> ist ein kommerzielles, aber preiswert lizenziertes NAS-Betriebssystem auf Linux-Basis. Sein Markenzeichen ist das eigene Paritäts-Array: Du kannst Festplatten unterschiedlicher Größe mischen und jederzeit ergänzen, solange die größte Platte als Parität dient. Docker und virtuelle Maschinen sind direkt integriert — Unraid versteht sich als „Apps plus Speicher&quot; in einem.</p>
+<p><strong>Unraid</strong> ist ein kommerzielles, aber preiswert lizenziertes NAS-Betriebssystem auf Linux-Basis. Sein Markenzeichen ist das eigene Paritäts-Array: Du kannst Festplatten unterschiedlicher Größe mischen und jederzeit ergänzen, solange die größte Platte als Parität dient. Docker und virtuelle Maschinen sind direkt integriert — Unraid versteht sich als „Apps plus Speicher" in einem.</p>
 <p><strong>Proxmox VE</strong> ist keine NAS-Software, sondern ein Hypervisor auf Debian-Basis. Er verwaltet virtuelle Maschinen (KVM) und LXC-Container über ein Web-Interface. Ein NAS baust du damit nicht direkt, sondern als virtuelle Maschine (zum Beispiel mit TrueNAS als Gast) — dafür bekommst du maximale Freiheit, beliebige Dienste isoliert auf einer Maschine zu betreiben.</p>
 <h2>Dateisysteme im Vergleich: ZFS vs BTRFS vs LVM</h2>
 <p>Der wichtigste Unterschied liegt unter der Haube:</p>
@@ -52,7 +53,7 @@
 <h2>Fazit</h2>
 <p>TrueNAS, Unraid und Proxmox konkurrieren nur teilweise miteinander. TrueNAS ist der Datenintegritäts-Spezialist, Unraid der flexible Allrounder für Speicher plus Apps, und Proxmox die Virtualisierungsbasis für alles darüber hinaus. Frag dich zuerst, ob dein Fokus auf Speicher oder auf Anwendungen liegt: Für reine Daten greifst du zu TrueNAS oder Unraid, für einen ausgewachsenen Homelab-Server mit vielen Diensten ist Proxmox die richtige Wahl — notfalls mit einem NAS-System als virtuellem Gast obendrauf.</p>
 <p><em>Hinweis: Alle Preise und Lizenzmodelle sind Richtwerte (Stand Anfang 2026) und können sich ändern. Affiliate-Links sind in diesem Artikel nicht enthalten.</em></p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

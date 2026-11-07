@@ -1,17 +1,18 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Docker für Einsteiger: Container in 20 Minuten verstehen — Homelab Vergleich</title>
-<meta name="description" content="Docker für Einsteiger: Container in 20 Minuten verstehen  Docker ist die mit Abstand beliebteste Container-Plattform und aus keinem modernen Homelab m">
-<link rel="stylesheet" href="../style.css">
-<link rel="canonical" href="https://homelab.brillianze.de/artikel/docker-homelab.html">
+<meta content="Docker für Einsteiger: Container in 20 Minuten verstehen  Docker ist die mit Abstand beliebteste Container-Plattform und aus keinem modernen Homelab m" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
+<link href="https://homelab.brillianze.de/artikel/docker-homelab.html" rel="canonical"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Docker für Einsteiger: Container in 20 Minuten verstehen</h1>
 <p>Docker ist die mit Abstand beliebteste Container-Plattform und aus keinem modernen Homelab mehr wegzudenken. Statt jede Anwendung mühsam manuell auf einem Server einzurichten, packst du sie samt aller Abhängigkeiten in einen Container – und startest sie damit auf jedem Rechner identisch. In diesem Guide lernst du in rund 20 Minuten, was Container von virtuellen Maschinen unterscheidet, warum Docker auch für dein Homelab sinnvoll ist und wie du mit den ersten Befehlen sofort loslegst.</p>
 <h2>Container vs. virtuelle Maschine: der entscheidende Unterschied</h2>
@@ -22,7 +23,7 @@
 </ul>
 <p>Faustregel: <strong>Ein Container isoliert eine Anwendung, eine VM isoliert ein ganzes Betriebssystem.</strong> Für die allermeisten Linux-Dienste im Homelab ist der Container die schlankere, schnellere Wahl.</p>
 <h2>Warum Docker im Homelab?</h2>
-<p>Docker löst ein klassisches Problem: „Auf meinem Rechner lief es doch!&quot; Weil jede Anwendung ihre komplette Umgebung mitbringt, gibt es keine Konflikte durch unterschiedliche Python-, Node- oder Datenbankversionen. Dazu kommen klare Vorteile:</p>
+<p>Docker löst ein klassisches Problem: „Auf meinem Rechner lief es doch!" Weil jede Anwendung ihre komplette Umgebung mitbringt, gibt es keine Konflikte durch unterschiedliche Python-, Node- oder Datenbankversionen. Dazu kommen klare Vorteile:</p>
 <ul>
 <li><strong>Reproduzierbar:</strong> Ein Dienst läuft auf jedem Docker-Host identisch – egal ob Raspberry Pi, Mini-PC oder Server.</li>
 <li><strong>Portabel:</strong> Container lassen sich als Image speichern, teilen und in Sekunden auf anderer Hardware starten.</li>
@@ -66,13 +67,13 @@ docker rm mein-test     # Container entfernen
 <h2>Mehrere Dienste mit Docker Compose verwalten</h2>
 <p>Sobald du mehr als einen Dienst betreibst, lohnt sich Docker Compose. Statt langer <code>docker run</code>-Befehle beschreibst du alle Container in einer deklarativen Datei. Ein typisches Beispiel, das einen Webserver und eine Datenbank gemeinsam startet:</p>
 <pre><code>
-version: &quot;3.9&quot;
+version: "3.9"
 
 services:
   web:
     image: nginx:latest
     ports:
-      - &quot;8080:80&quot;
+      - "8080:80"
     restart: unless-stopped
 
   db:
@@ -111,7 +112,7 @@ docker compose up -d
 </ul>
 <h2>Fazit</h2>
 <p>Docker senkt die Einstiegshürde für Homelab-Selbsthoster erheblich: Ein Befehl genügt, um einen fertigen Dienst zu starten, und mit Compose bleibt das ganze Setup reproduzierbar. Wer Container einmal verstanden hat, wird seine Dienste kaum noch anders betreiben wollen – egal ob auf einem Raspberry Pi oder einem ausgewachsenen Server.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

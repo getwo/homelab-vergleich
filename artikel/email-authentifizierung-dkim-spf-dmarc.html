@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>DKIM, SPF und DMARC: E-Mail-Authentifizierung richtig einrichten</title>
-<meta name="description" content="Erfahren Sie, wie DKIM, SPF und DMARC zusammenarbeiten, um Ihre selbst gehostete E-Mail-Infrastruktur vor Spoofing und Phishing abzusichern — mit Praxis-Beispielen für Mailcow und Postfix.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Erfahren Sie, wie DKIM, SPF und DMARC zusammenarbeiten, um Ihre selbst gehostete E-Mail-Infrastruktur vor Spoofing und Phishing abzusichern — mit Praxis-Beispielen für Mailcow und Postfix." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>DKIM, SPF und DMARC: E-Mail-Authentifizierung richtig einrichten</h1>
 <p>E-Mail ist das Rückgrat der Kommunikation im eigenen Homelab — aber ohne Authentifizierung landen Ihre Nachrichten schnell im Spam-Filter oder werden ganz blockiert. DKIM, SPF und DMARC sind die drei Säulen, auf denen eine vertrauenswürdige Absenderidentität ruht. Dieser Artikel zeigt, wie Sie sie Schritt für Schritt einrichten und worauf Sie bei der Konfiguration achten müssen.</p>
 <h2>Warum E-Mail-Authentifizierung notwendig ist</h2>
@@ -38,7 +33,7 @@ v=spf1 include:_spf.mailcow.email -all
 <ul>
 <li><code>v=spf1</code> kennzeichnet den Record.</li>
 <li><code>include:</code> bindet externe SPF-Definitionen ein (beispielsweise die Mailserver Ihres Providers oder von Mailcow).</li>
-<li><code>-all</code> bedeutet &quot;hard fail&quot;: E-Mails von nicht aufgelisteten Servern werden abgelehnt.</li>
+<li><code>-all</code> bedeutet "hard fail": E-Mails von nicht aufgelisteten Servern werden abgelehnt.</li>
 <li>Alternativ <code>~all</code> (SoftFail) für die Testphase, wenn Sie noch nicht sicher sind.</li>
 </ul>
 <h2>Beispiele für häufige Konfigurationen</h2>
@@ -74,12 +69,12 @@ chown opendkim:opendkim /etc/opendkim/keys/brillianze.de/mail.*
 <h2>DNS-Eintrag veröffentlichen</h2>
 <p>Der generierte <code>mail.txt</code>-Inhalt enthält den Public-Key als TXT-Record. Diesen tragen Sie unter folgender Adresse ein:</p>
 <pre><code>
-mail._domainkey.brillianze.de. IN TXT &quot;v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC...&quot;
+mail._domainkey.brillianze.de. IN TXT "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC..."
 </code></pre>
 <p>Stellen Sie sicher, dass:</p>
 <ul>
 <li>Der Selektor (hier <code>mail</code>) im DNS-Eintrag und in der DKIM-Konfiguration übereinstimmt.</li>
-<li>Der Schlüssel intakt ist — kein Zeilenumbruch im <code>p=</code>-Wert, kein fehlendes <code>&quot;</code> oder Leerzeichen.</li>
+<li>Der Schlüssel intakt ist — kein Zeilenumbruch im <code>p=</code>-Wert, kein fehlendes <code>"</code> oder Leerzeichen.</li>
 </ul>
 <h2>Rotation des DKIM-Schlüssels</h2>
 <p>Schlüssel sollten regelmäßig (alle 6–12 Monate) ausgetauscht werden:</p>
@@ -99,7 +94,7 @@ mail._domainkey.brillianze.de. IN TXT &quot;v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQ
 <p>| <code>p=reject</code> | Nachrichten komplett ablehnen | Abschlussziel — nur setzen, wenn SPF + DKIM zuverlässig funktionieren. |</p>
 <h2>Beispiel für einen DMARC-Record</h2>
 <pre><code>
-_dmarc.brillianze.de. IN TXT &quot;v=DMARC1; p=none; rua=mailto:dmarc@brillianze.de; ruf=mailto:dmarc-forensics@brillianze.de; fo=1; pct=100&quot;
+_dmarc.brillianze.de. IN TXT "v=DMARC1; p=none; rua=mailto:dmarc@brillianze.de; ruf=mailto:dmarc-forensics@brillianze.de; fo=1; pct=100"
 </code></pre>
 <ul>
 <li><code>rua</code>: Adresse für aggregierte Berichte (XML), die täglich von empfänger-Servern gesendet werden.</li>
@@ -125,7 +120,7 @@ _dmarc.brillianze.de. IN TXT &quot;v=DMARC1; p=none; rua=mailto:dmarc@brillianze
 <h2>2. Subdomain-Authentifizierung vergessen</h2>
 <p>SPF gilt standardmäßig nur für die Hauptdomain. Wenn Sie auch E-Mails von <code>newsletter.brillianze.de</code> versenden, benötigen Sie einen eigenen SPF-Record für die Subdomain:</p>
 <pre><code>
-newsletter.brillianze.de. IN TXT &quot;v=spf1 include:_spf.mailcow.email ~all&quot;
+newsletter.brillianze.de. IN TXT "v=spf1 include:_spf.mailcow.email ~all"
 </code></pre>
 <h2>3. DMARC-Alignment (ausrichtung) falsch verstanden</h2>
 <p>DMARC erwartet, dass der <code>From</code>-Header mit dem authentifizierten Domain übereinstimmt (relaxed oder strict).</p>
@@ -165,9 +160,7 @@ newsletter.brillianze.de. IN TXT &quot;v=spf1 include:_spf.mailcow.email ~all&qu
 <p>Eine fundierte E-Mail-Authentifizierung basiert auf drei Bausteinen: SPF definiert die autorisierten Sender, DKIM signiert die Inhalte kryptografisch und DMARC steuert das Verhalten bei Fehlern sowie die Berichterstattung. Beginnen Sie mit <code>p=none</code>, sammeln Sie DMARC-Berichte, korrigieren Sie Auffälligkeiten und steigern Sie nach und nach zu <code>quarantine</code> und schließlich <code>reject</code>.</p>
 <p>Vor jeder Änderung testen Sie Ihre Konfiguration mit Tools wie MXToolbox, einem DMARC-Berichts-Parser oder einem eigenen Test-Mail-Kreislauf. Dieser Aufwand zahlt sich aus: Ihre Nachrichten erreichen die Empfänger, und Ihre Domain bleibt vor unbefugtem Gebrauch geschützt.</p>
 <p>Für weiterführende Informationen zu Mailservern im Homelab siehe auch C:\\00hermes\\unternehmen\\artikel-neu\\drafts\\mailserver-selbst-hosten.md, zur allgemeinen DNS-Konfiguration mit Caddy: C:\\00hermes\\unternehmen\\artikel-neu\\drafts\\caddy-reverse-proxy-https.md, und eine Übersicht zu Reverse-Proxies und Transport-Sicherheit: C:\\00hermes\\unternehmen\\artikel-neu\\drafts\\reverse-proxy-vergleich.md.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

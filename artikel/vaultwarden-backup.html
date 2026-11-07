@@ -1,24 +1,25 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vaultwarden Backup & Restore: Passwörter sicher sichern — Homelab Vergleich</title>
-<meta name="description" content="--- title: "Vaultwarden Backup & Restore: Passwörter sicher sichern" description: "Vaultwarden Backup & Restore: So sicherst du Datenbank, Anhänge und">
-<link rel="stylesheet" href="../style.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vaultwarden Backup &amp; Restore: Passwörter sicher sichern — Homelab Vergleich</title>
+<meta "vaultwarden="" &="" anhänge="" backup="" content="--- title: " datenbank,="" description:="" du="" name="description" passwörter="" restore:="" sicher="" sichern"="" sicherst="" so="" und"="" vaultwarden=""/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
-<hr>
-<p>title: &quot;Vaultwarden Backup &amp; Restore: Passwörter sicher sichern&quot;</p>
-<p>description: &quot;Vaultwarden Backup &amp; Restore: So sicherst du Datenbank, Anhänge und Attachments deines Passwort-Tresors – inklusive verschlüsseltem Backup, Restore-Test und 3-2-1-Regel.&quot;</p>
-<hr>
+<div class="content">
+<hr/>
+<p>title: "Vaultwarden Backup &amp; Restore: Passwörter sicher sichern"</p>
+<p>description: "Vaultwarden Backup &amp; Restore: So sicherst du Datenbank, Anhänge und Attachments deines Passwort-Tresors – inklusive verschlüsseltem Backup, Restore-Test und 3-2-1-Regel."</p>
+<hr/>
 <h1>Vaultwarden Backup &amp; Restore: Passwörter sicher sichern</h1>
 <p>Ein Passwort-Manager, der nicht gesichert wird, ist eine tickende Zeitbombe. In Vaultwarden liegen sämtliche Zugangsdaten – sie zu verlieren bedeutet im schlimmsten Fall den Verlust des Zugriffs auf Dutzende Konten. Ein durchdachtes Backup gehört deshalb nicht zum Optionalen, sondern zur Pflicht. In diesem Guide zeigen wir, was du sichern musst, welche Methoden sich bewährt haben und wie du die Wiederherstellung absicherst.</p>
 <h2>Warum ein Passwort-Backup kritisch ist</h2>
-<p>Bei den meisten Daten ist ein Verlust ärgerlich. Beim Passwort-Tresor ist er existenziell: Die Zugangsdaten sind der Schlüssel zu deinem gesamten digitalen Leben. Geht die Datenbank verloren, sind E-Mail-Konten, Banking, Cloud-Dienste und Foren-Logins auf einen Schlag unerreichbar – und anders als bei einem Textdokument gibt es keine „letzte Kopie&quot;, die sich per Hand neu eintippen ließe.</p>
+<p>Bei den meisten Daten ist ein Verlust ärgerlich. Beim Passwort-Tresor ist er existenziell: Die Zugangsdaten sind der Schlüssel zu deinem gesamten digitalen Leben. Geht die Datenbank verloren, sind E-Mail-Konten, Banking, Cloud-Dienste und Foren-Logins auf einen Schlag unerreichbar – und anders als bei einem Textdokument gibt es keine „letzte Kopie", die sich per Hand neu eintippen ließe.</p>
 <p>Dazu kommt ein zweites Risiko, das oft übersehen wird: Wegen der Verschlüsselung sind die Daten ohne das Master-Passwort ohnehin nutzlos. Ein Backup schützt dich also nicht nur vor Hardware-Ausfällen und versehentlichem Löschen, sondern auch davor, nach einem Einbruch oder einer Ransomware-Infektion komplett ohne Zugangsdaten dazustehen.</p>
 <h2>Was sichern: Datenbank, Anhänge und Attachments</h2>
 <p>Vaultwarden speichert alle Daten in einem einzigen Datenverzeichnis – im Docker-Setup meist der Ordner <code>vw-data</code>. Die wichtigsten Bestandteile:</p>
@@ -34,7 +35,7 @@
 <p><strong>1. Datenbank-Dump (SQLite)</strong></p>
 <p>Die sauberste Methode für die Datenbank ist ein Online-Dump über SQLite:</p>
 <pre><code>
-sqlite3 /data/db.sqlite3 &quot;.backup &#x27;/backup/db-$(date +%F).sqlite3&#x27;&quot;
+sqlite3 /data/db.sqlite3 ".backup '/backup/db-$(date +%F).sqlite3'"
 </code></pre>
 <p>Der Befehl erstellt eine konsistente Kopie, während der Dienst weiterläuft – ideal für tägliche Cron-Jobs. Attachments musst du zusätzlich kopieren.</p>
 <p><strong>2. Ordner-Kopie</strong></p>
@@ -53,7 +54,7 @@ sqlite3 /data/db.sqlite3 &quot;.backup &#x27;/backup/db-$(date +%F).sqlite3&#x27
 <p>Für ein Passwort-Backup ist der Offsite-Anteil besonders wichtig: Ein Brand oder Einbruch trifft sonst Original und Backup gleichzeitig. Da das Backup verschlüsselt ist, kannst du es bedenkenlos extern ablegen.</p>
 <h2>Fazit</h2>
 <p>Vaultwarden sichert deine Passwörter – aber nur ein durchdachtes Backup sichert Vaultwarden. Sichere Datenbank und Attachments gemeinsam, nutze verschlüsselte Kopien für den Offsite-Speicher und teste die Wiederherstellung regelmäßig. Wer diese Routine einmal eingerichtet hat, verliert im Ernstfall keine Zugangsdaten, sondern höchstens ein paar Minuten Zeit. Wie du Vaultwarden überhaupt einrichtest, erklärt unser [Vaultwarden-Einsteiger-Guide](vaultwarden-passwortmanager.md).</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

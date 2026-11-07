@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Medien selbst hosten: Jellyfin, Navidrome und Plex als Ersatz für Netflix und Spotify</title>
-<meta name="description" content="Jellyfin, Navidrome, Plex oder Emby? Praxisvergleich, Docker-Anleitung, Hardware-Decoding, Speicherplanung und Rechtsfragen für eigenen Medienserver.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Jellyfin, Navidrome, Plex oder Emby? Praxisvergleich, Docker-Anleitung, Hardware-Decoding, Speicherplanung und Rechtsfragen für eigenen Medienserver." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Medien selbst hosten: Jellyfin, Navidrome und Plex als Ersatz für Netflix und Spotify</h1>
 <p>Du willst, dass deine Filme, Serien und Musik immer da sind — auf dem Smart-TV, dem Laptop, im Auto und am Handy. Du willst keine monatlichen Abos, keine Algorithmen, die dir Inhalte verbergen, und keine Angst vor einem Abo, das plötzlich teurer wird. Das ist der Ausgangspunkt. Der Rest ist technische Entscheidung.</p>
 <h2>Das Problem</h2>
@@ -38,7 +33,7 @@
 <h2>Docker-Compose-Grundgerüst</h2>
 <p>Erstelle <code>docker-compose.yml</code>:</p>
 <pre><code>
-version: &quot;3.8&quot;
+version: "3.8"
 
 services:
   jellyfin:
@@ -74,7 +69,7 @@ services:
 <p>Für Serien ist <code>&lt;Show&gt;/Season XX/&lt;Show&gt; SXXEYY.mkv</code> am zuverlässigsten.</p>
 <h2>Hardware-Decoding</h2>
 <p>Ohne Hardware-Decoding macht Jellyfin Transcoding nur auf die CPU — das reicht für ein bis zwei parallele 1080p-Streams, bei 4K wird es schnell eng.</p>
-<p><strong>VAAPI (Intel/AMD):</strong> Stelle sicher, dass <code>intel-media-driver</code> (Intel) oder <code>libva-llvm</code> (AMD) auf dem Host installiert ist. Dann die Device-Map in Docker (<code>/dev/dri:/dev/dri</code>) wie oben zeigen. In Jellyfin: Einstellungen → Player → Hardware-Decoding auf &quot;VAAPI&quot; oder &quot;Auto&quot;.</p>
+<p><strong>VAAPI (Intel/AMD):</strong> Stelle sicher, dass <code>intel-media-driver</code> (Intel) oder <code>libva-llvm</code> (AMD) auf dem Host installiert ist. Dann die Device-Map in Docker (<code>/dev/dri:/dev/dri</code>) wie oben zeigen. In Jellyfin: Einstellungen → Player → Hardware-Decoding auf "VAAPI" oder "Auto".</p>
 <p><strong>NVIDIA:</strong> Voraussetzung ist das <code>nvidia-container-toolkit</code> auf dem Host. Dann:</p>
 <pre><code>
     environment:
@@ -88,7 +83,7 @@ services:
               count: 1
               capabilities: [gpu]
 </code></pre>
-<p>In Jellyfin: Hardware-Decoding auf &quot;Nvidia&quot; (NVENC) stellen.</p>
+<p>In Jellyfin: Hardware-Decoding auf "Nvidia" (NVENC) stellen.</p>
 <h2>Backup: Nur die Konfiguration</h2>
 <p>Jellyfin speichert Einstellungen, Nutzerdaten und Metadaten-Cache in <code>/config</code>. Die eigentlichen Filme und Serien liegen außerhalb des Containers. Das bedeutet: Das Jellyfin-Backup ist das Backup des <code>/config</code>-Verzeichnisses. Die Mediendateien werden nicht durch Jellyfin gesichert — dafür muss dein Storage-Backup sorgen.</p>
 <pre><code>
@@ -98,7 +93,7 @@ tar czf /backup/jellyfin-config-$(date +%Y%m%d).tar.gz /pfad/zu/jellyfin/config
 <p>Navidrome ist ein Subsonic-kompatibler Musikstreaming-Server. Das bedeutet: Apps, die Subsonic unterstützen, verbinden sich ohne Zusatzprogramm.</p>
 <h2>Docker-Compose für Navidrome</h2>
 <pre><code>
-version: &quot;3.8&quot;
+version: "3.8"
 
 services:
   navidrome:
@@ -170,15 +165,13 @@ services:
 <h2>Bildvorschlag</h2>
 <ul>
 <li><strong>Dateiname:</strong> <code>jellyfin-navidrome-vergleich.png</code></li>
-<li><strong>Alt-Text:</strong> &quot;Jellyfin und Navidrome im Vergleich: Programme für Film- und Musikstreaming auf dem eigenen Server — offene Software ohne Abo-Modelle&quot;</li>
+<li><strong>Alt-Text:</strong> "Jellyfin und Navidrome im Vergleich: Programme für Film- und Musikstreaming auf dem eigenen Server — offene Software ohne Abo-Modelle"</li>
 <li><strong>Zielformat:</strong> PNG, 1400 × 800 Pixel, Verhältnis 7:4</li>
 </ul>
 <p>Das Bild könnte eine geteilte Ansicht zeigen: links Jellyfin-Weboberfläche mit Film-Bibliothek, rechts Navidrome-Musik-Ansicht mit Album-Browse — als schematische Darstellung, keine echten Daten.</p>
-<hr>
+<hr/>
 <p>Dieser Artikel liegt als <strong>Draft</strong> vor. Die Veröffentlichung erfolgt erst nach inhaltlicher Prüfung durch Benjamin. Preise und Produktspezifikationen sind keine Empfehlungen und können sich ändern.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

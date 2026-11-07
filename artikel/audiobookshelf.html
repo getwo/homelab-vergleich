@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Audiobookshelf: Hörbücher selbst hosten – die Audible-Alternative fürs Homelab — Homelab Vergleich</title>
-<meta name="description" content="Audiobookshelf: Hörbücher selbst hosten – die Audible-Alternative fürs Homelab  Audible kostet dich Monat für Monat Geld für Hörbücher, die dir nicht ">
-<link rel="stylesheet" href="../style.css">
+<meta content="Audiobookshelf: Hörbücher selbst hosten – die Audible-Alternative fürs Homelab  Audible kostet dich Monat für Monat Geld für Hörbücher, die dir nicht " name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Audiobookshelf: Hörbücher selbst hosten – die Audible-Alternative fürs Homelab</h1>
 <p>Audible kostet dich Monat für Monat Geld für Hörbücher, die dir nicht wirklich gehören – gekauft, aber an eine Plattform gebunden. Audiobookshelf ist die Self-Hosted-Alternative: ein quelloffener Server, der deine Hörbücher und Podcasts zentral speichert und auf alle Geräte streamt. In diesem Artikel erfährst du, was Audiobookshelf kann, wie du ihn per Docker installierst und warum er für viele die bessere Audible-Alternative ist.</p>
 <h2>Was ist Audiobookshelf?</h2>
@@ -32,7 +33,7 @@ services:
     image: ghcr.io/advplyr/audiobookshelf:latest
     container_name: audiobookshelf
     ports:
-      - &quot;13378:80&quot;
+      - "13378:80"
     volumes:
       - ./audiobooks:/audiobooks
       - ./podcasts:/podcasts
@@ -69,7 +70,7 @@ docker compose up -d
 <p>Der wichtigste Unterschied ist die Eigentumsfrage: Audible verkauft dir Zugang zu einem Katalog, den du nicht besitzt. Audiobookshelf spielt genau die Dateien ab, die dir gehören – dauerhaft und ohne Abo. Dafür musst du deine Hörbücher selbst besitzen und den Server einmal einrichten und pflegen.</p>
 <h2>Fazit</h2>
 <p>Audiobookshelf ist die überzeugendste Audible-Alternative für alle, die ihre Hörbücher und Podcasts selbst in der Hand behalten wollen. Die Docker-Installation dauert Minuten, die offiziellen Apps für Android und iOS synchronisieren den Hörfortschritt, und die Podcast-Funktion macht den Server zum zentralen Ort für alles, was man hört. Wer bereits ein Homelab betreibt, gewinnt damit digitale Souveränität – ganz ohne Abo und ohne Cloud-Zwang.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

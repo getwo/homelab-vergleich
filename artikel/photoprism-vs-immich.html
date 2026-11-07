@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Photoprism vs Immich: Welches Foto-Tool fürs Homelab? — Homelab Vergleich</title>
-<meta name="description" content="Photoprism vs Immich: Welches Foto-Tool fürs Homelab?  Deine Fotos liegen über mehrere Handys, Festplatten und Cloud-Dienste verstreut – und irgendwan">
-<link rel="stylesheet" href="../style.css">
+<meta content="Photoprism vs Immich: Welches Foto-Tool fürs Homelab?  Deine Fotos liegen über mehrere Handys, Festplatten und Cloud-Dienste verstreut – und irgendwan" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Photoprism vs Immich: Welches Foto-Tool fürs Homelab?</h1>
 <p>Deine Fotos liegen über mehrere Handys, Festplatten und Cloud-Dienste verstreut – und irgendwann findest du das Urlaubsfoto von vor drei Jahren einfach nicht mehr. Genau hier setzen Photoprism und Immich an: Beide verwalten deine Bildersammlung auf eigener Hardware, sortieren sie automatisch und durchsuchen sie per Gesichtserkennung. Doch die beiden Tools verfolgen unterschiedliche Ziele. Dieser Artikel zeigt, was sie können, worin sie sich unterscheiden und welches zu deinem Homelab passt.</p>
 <h2>Was Photoprism und Immich gemeinsam können</h2>
@@ -37,7 +38,7 @@ services:
       DB_HOSTNAME: immich-db
       REDIS_HOSTNAME: immich-redis
     ports:
-      - &quot;2283:2283&quot;
+      - "2283:2283"
     restart: unless-stopped
   immich-db:
     image: tensorchord/pgvecto-rs:pg14-v0.2.0
@@ -58,11 +59,11 @@ services:
   photoprism:
     image: photoprism/photoprism:latest
     ports:
-      - &quot;2342:2342&quot;
+      - "2342:2342"
     environment:
-      PHOTOPRISM_ADMIN_USER: &quot;admin&quot;
-      PHOTOPRISM_ADMIN_PASSWORD: &quot;geheim&quot;
-      PHOTOPRISM_DATABASE_DRIVER: &quot;sqlite&quot;
+      PHOTOPRISM_ADMIN_USER: "admin"
+      PHOTOPRISM_ADMIN_PASSWORD: "geheim"
+      PHOTOPRISM_DATABASE_DRIVER: "sqlite"
     volumes:
       - ./originals:/photoprism/originals
       - ./storage:/photoprism/storage
@@ -89,7 +90,7 @@ services:
 </ul>
 <h2>Fazit</h2>
 <p>Photoprism und Immich sind keine echten Konkurrenten, sondern zwei Werkzeuge mit unterschiedlichem Schwerpunkt. Immich ist die moderne Google-Photos-Alternative mit Handy-Sync und vertrautem Look, Photoprism das solide Foto-Archiv mit tiefer Suche und geringem Ressourcenbedarf. Wer den Cloud-Komfort ersetzen will, greift zu Immich; wer eine bestehende Sammlung sauber strukturieren möchte, fährt mit Photoprism am besten. In einem gut ausgebauten Homelab haben im Zweifel beide ihren Platz.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

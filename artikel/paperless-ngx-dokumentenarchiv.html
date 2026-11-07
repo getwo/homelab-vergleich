@@ -1,29 +1,24 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Paperless-ngx im Homelab: Rechnungen und Belege automatisch scannen, OCR-en und durchsuchbar machen</title>
-<meta name="description" content="Paperless-ngx im Homelab betreiben: Docker-Compose mit Postgres und Redis, Brother-Scanner-Anbindung, Tesseract-OCR mit deutscher Spracherkennung, ZUGFeRD/XRechnung-Import und ein belastbares Backup-Konzept – inklusive Fehlertabelle.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Paperless-ngx im Homelab betreiben: Docker-Compose mit Postgres und Redis, Brother-Scanner-Anbindung, Tesseract-OCR mit deutscher Spracherkennung, ZUGFeRD/XRechnung-Import und ein belastbares Backup-Konzept – inklusive Fehlertabelle." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Paperless-ngx im Homelab: Rechnungen und Belege automatisch scannen, OCR-en und durchsuchbar machen</h1>
-<p>Ein Schuhkarton voller Rechnungen, drei Ordner mit „Steuer&quot; beschriftet und ein Handyfoto eines Belegs, den du vor zwei Jahren gebraucht hättest – so sieht typische Belegverwaltung aus, bevor sie digital wird. Paperless-ngx löst genau dieses Problem: Du wirfst Scans und PDFs in einen Posteingang, das System extrahiert per OCR den Text, vergibt Metadaten und indexiert alles. Danach findest du jeden Beleg über die Volltextsuche in Sekunden statt über Ordnerpfade.</p>
+<p>Ein Schuhkarton voller Rechnungen, drei Ordner mit „Steuer" beschriftet und ein Handyfoto eines Belegs, den du vor zwei Jahren gebraucht hättest – so sieht typische Belegverwaltung aus, bevor sie digital wird. Paperless-ngx löst genau dieses Problem: Du wirfst Scans und PDFs in einen Posteingang, das System extrahiert per OCR den Text, vergibt Metadaten und indexiert alles. Danach findest du jeden Beleg über die Volltextsuche in Sekunden statt über Ordnerpfade.</p>
 <h2>Warum Papierchaos teuer wird: Datenhoheit und Volltextsuche</h2>
 <p>Die Motivation ist nicht Ordnungsliebe, sondern Zugriff. Steuerlich relevante Unterlagen unterliegen Aufbewahrungsfristen (§ 147 AO, § 257 HGB – je nach Art 2 bis 10 Jahre), Versicherungen und Gewährleistungen verlangen Rechnungen oft Jahre nach dem Kauf. Wer nur in Papier denkt, sortiert manuell und findet trotzdem nichts wieder.</p>
 <p>Drei konkrete Gründe sprechen für ein selbst gehostetes Archiv:</p>
 <p>1. <strong>Datenhoheit:</strong> Rechnungen enthalten Adressen, Bankdaten und Kundennamen. In der Cloud bist du auf die Verfügbarkeit, die Preispolitik und die Sicherheit eines fremden Anbieters angewiesen. Auf eigener Hardware bleiben sie unter deiner Kontrolle.</p>
-<p>2. <strong>Volltextsuche statt Ordnerchaos:</strong> Du suchst „Stadtwerke August 2026&quot; oder eine Rechnungsnummer und bekommst den Treffer, weil der komplette Text indexiert ist – auch bei gescannten Seiten.</p>
+<p>2. <strong>Volltextsuche statt Ordnerchaos:</strong> Du suchst „Stadtwerke August 2026" oder eine Rechnungsnummer und bekommst den Treffer, weil der komplette Text indexiert ist – auch bei gescannten Seiten.</p>
 <p>3. <strong>Kostenlos und unabhängig:</strong> Paperless-ngx ist Open Source unter der GPL-3.0-Lizenz. Keine Lizenzgebühr, kein Abo, kein Anbieterwechsel-Risiko.</p>
 <h2>Was Paperless-ngx kann: Dokumentenarten, Tags, Korrespondenten, Custom Fields</h2>
 <p>Die Kernlogik des Systems baut auf vier Metadaten-Bausteinen:</p>
@@ -31,7 +26,7 @@
 <li><strong>Dokumentenarten (Document Types):</strong> strukturieren nach Form, etwa <em>Rechnung</em>, <em>Vertrag</em>, <em>Kontoauszug</em>, <em>Bescheid</em>.</li>
 <li><strong>Korrespondenten (Correspondents):</strong> der Absender oder Empfänger, etwa <em>Stadtwerke</em>, <em>Finanzamt</em>, <em>Versicherung</em>.</li>
 <li><strong>Tags:</strong> freie, themenübergreifende Schlagworte wie <em>Steuer 2026</em> oder <em>Wohnung</em>. Ein Dokument kann beliebig viele tragen.</li>
-<li><strong>Custom Fields:</strong> eigene Felder mit Datentypen (Text, Zahl, Datum, Auswahl, Ja/Nein), etwa <em>Garantie bis</em> oder <em>Rechnungsbetrag</em>. Paperless-ngx führt über ein Custom Field vom Typ „Währung&quot; sogar Summen pro Dokumentenart.</li>
+<li><strong>Custom Fields:</strong> eigene Felder mit Datentypen (Text, Zahl, Datum, Auswahl, Ja/Nein), etwa <em>Garantie bis</em> oder <em>Rechnungsbetrag</em>. Paperless-ngx führt über ein Custom Field vom Typ „Währung" sogar Summen pro Dokumentenart.</li>
 </ul>
 <p>Hinzu kommen <strong>Speicherorte (Storage Paths)</strong>, die den Ablagepfad im Medienordner über Platzhalter wie <code>{created_year}/{correspondent}/{title}</code> definieren. So entsteht auf der Platte eine lesbare Ordnerstruktur, während du in der Oberfläche weiter über Metadaten suchst. Automatische Regeln können Tags und Korrespondenten beim Import anhand von Suchbegriffen vergeben.</p>
 <h2>Docker-Compose-Setup mit PostgreSQL und Redis</h2>
@@ -61,7 +56,7 @@ services:
       - db
       - broker
     ports:
-      - &quot;8000:8000&quot;
+      - "8000:8000"
     volumes:
       - /srv/paperless/data:/usr/src/paperless/data
       - /srv/paperless/media:/usr/src/paperless/media
@@ -76,7 +71,7 @@ services:
       PAPERLESS_OCR_LANGUAGE: deu
       PAPERLESS_TIME_ZONE: Europe/Berlin
       PAPERLESS_SECRET_KEY: bitte-aendern
-      PAPERLESS_FILENAME_FORMAT: &quot;{created_year}/{correspondent}/{title}&quot;
+      PAPERLESS_FILENAME_FORMAT: "{created_year}/{correspondent}/{title}"
       PAPERLESS_ADMIN_USER: admin
 </code></pre>
 <p>Start mit <code>docker compose up -d</code>, danach erreichst du die Oberfläche unter <code>http://&lt;server-ip&gt;:8000</code>. Wichtig: <code>PAPERLESS_SECRET_KEY</code> und beide Passwörter durch lange Zufallswerte ersetzen, bevor der Dienst erreichbar ist. Getrennte Verzeichnisse für <code>pgdata</code>, <code>media</code> und <code>data</code> erleichtern später das selektive Backup. Vertiefende Hinweise zur Container-Praxis sammelt der Artikel zu <a href="docker-compose-best-practices.html">Docker-Compose Best Practices</a>.</p>
@@ -87,7 +82,7 @@ services:
 <p>3. Scanprofil auf <strong>Schwarzweiß oder Graustufen, 300 dpi, PDF</strong> stellen. Diese Werte liefern die zuverlässigste OCR-Grundlage.</p>
 <p>Nach dem Scan erkennt Paperless-ngx die neue Datei innerhalb weniger Sekunden, verarbeitet sie und ordnet sie über die Regeln ein. Ein FTP-Profil auf denselben Ordner funktioniert als Alternative, falls SMB an deinem Gerät nicht verfügbar ist.</p>
 <h2>OCR mit Tesseract und deutscher Sprachdatei</h2>
-<p>Die Texterkennung übernimmt Tesseract, das im offiziellen Paperless-Container bereits enthalten ist. Über <code>PAPERLESS_OCR_LANGUAGE: deu</code> aktivierst du die deutsche Spracherkennung; für gemischte Dokumente kombinierst du Sprachen als <code>deu+eng</code>. Umlaute und ß erkennt die deutsche Sprachdatei <code>tesseract-ocr-deu</code> korrekt – ohne sie würde aus „Straße&quot; schnell „StraBe&quot;.</p>
+<p>Die Texterkennung übernimmt Tesseract, das im offiziellen Paperless-Container bereits enthalten ist. Über <code>PAPERLESS_OCR_LANGUAGE: deu</code> aktivierst du die deutsche Spracherkennung; für gemischte Dokumente kombinierst du Sprachen als <code>deu+eng</code>. Umlaute und ß erkennt die deutsche Sprachdatei <code>tesseract-ocr-deu</code> korrekt – ohne sie würde aus „Straße" schnell „StraBe".</p>
 <p>Bei schlechten Scans helfen diese Optionen: <code>PAPERLESS_OCR_DESKEW</code> (horizontales Ausrichten), <code>PAPERLESS_OCR_ROTATE_PAGES</code> (automatisches Drehen) und <code>PAPERLESS_OCR_DESKEW</code> zusammen mit 300 dpi als Mindestauflösung. Für durchsuchbare Ausgaben setzt <code>PAPERLESS_OCR_MODE: redo-ocr</code> oder das Standardverfahren die Textebene direkt ins PDF.</p>
 <h2>E-Rechnungen: ZUGFeRD und XRechnung aus dem Posteingang</h2>
 <p>Hybride ZUGFeRD-PDFs (Factur-X) enthalten sichtbares PDF plus eingebettetes XML. Paperless-ngx liest dieses XML beim Import direkt aus und übernimmt Rechnungsnummer, Datum, Betrag und Absender als Metadaten – du musst die Datei nur in <code>consume</code> legen. Für reine XRechnung-XML-Dateien gilt ehrlich: Sie werden als Dokument importiert und die Kerndaten ausgewertet; die vollständige Buchungslogik bleibt dem Rechnungswesen überlassen. Lege dafür einen Unterordner wie <code>/srv/paperless/consume/erechnung</code> an, um E-Rechnungen getrennt zu beobachten. Die XML-Standards selbst sind in der offiziellen Spezifikation von Factur-X/ZUGFeRD beschrieben (siehe Quellen).</p>
@@ -104,7 +99,7 @@ tar czf /backup/paperless-media-$(date +%F).tar.gz -C /srv/paperless media
 <h2>Typische Fehlerquellen und Troubleshooting</h2>
 <p>Die meisten Probleme entstehen nicht im Betrieb, sondern beim Import. Häufig sind:</p>
 <ul>
-<li><strong>Zeichensatz-Fehler:</strong> Wird Text als „StraÃŸe&quot; angezeigt, wurde eine Datei als ISO-8859-1 statt UTF-8 interpretiert. Prüfe die Quelldatei und den Dateinamen auf UTF-8.</li>
+<li><strong>Zeichensatz-Fehler:</strong> Wird Text als „StraÃŸe" angezeigt, wurde eine Datei als ISO-8859-1 statt UTF-8 interpretiert. Prüfe die Quelldatei und den Dateinamen auf UTF-8.</li>
 <li><strong>Schlechte Scans:</strong> Unter 200 dpi, schief eingezogen oder kontrastarm – die OCR produziert Kauderwelsch. 300 dpi als Standard löst das.</li>
 <li><strong>Duplikate:</strong> Gleiches Dokument doppelt importiert. Paperless-ngx vergleicht Checksummen und kann Duplikate erkennen; gegen Mehrfachimporte hilft der Konsumenten-Schalter <code>PAPERLESS_CONSUMER_RECURSIVE</code> nur bewusst eingesetzt.</li>
 </ul>
@@ -140,9 +135,7 @@ tar czf /backup/paperless-media-$(date +%F).tar.gz -C /srv/paperless media
 <li>PostgreSQL 16 – Dokumentation: https://www.postgresql.org/docs/16/</li>
 </ul>
 <p>Siehe auch: <a href="paperless-ngx-einrichten.html">Paperless-ngx einrichten</a>, <a href="paperless-backup.html">Paperless-ngx Backup</a>, <a href="backup-3-2-1.html">Backup-Strategie 3-2-1</a>, <a href="docker-compose-best-practices.html">Docker-Compose Best Practices</a>.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

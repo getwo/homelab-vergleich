@@ -1,18 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Paperless-ngx Backup: So sicherst du deine Dokumente — Homelab Vergleich</title>
-<meta name="description" content="Paperless-ngx Backup: So sicherst du deine Dokumente  Paperless-ngx verwaltet deine wichtigsten Unterlagen: Rechnungen, Verträge, Kontoauszüge und Bes">
-<link rel="stylesheet" href="../style.css">
+<meta content="Paperless-ngx Backup: So sicherst du deine Dokumente  Paperless-ngx verwaltet deine wichtigsten Unterlagen: Rechnungen, Verträge, Kontoauszüge und Bes" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Paperless-ngx Backup: So sicherst du deine Dokumente</h1>
-<p>Paperless-ngx verwaltet deine wichtigsten Unterlagen: Rechnungen, Verträge, Kontoauszüge und Bescheide. Genau die willst du bei einem Festplattendefekt oder einer Fehlkonfiguration als Letztes verlieren. Ein gutes Backup macht aus „alles weg&quot; ein kurzes Ärgernis statt eines Totalverlusts.</p>
+<p>Paperless-ngx verwaltet deine wichtigsten Unterlagen: Rechnungen, Verträge, Kontoauszüge und Bescheide. Genau die willst du bei einem Festplattendefekt oder einer Fehlkonfiguration als Letztes verlieren. Ein gutes Backup macht aus „alles weg" ein kurzes Ärgernis statt eines Totalverlusts.</p>
 <h2>Warum Backups bei Paperless-ngx so wichtig sind</h2>
 <p>Belege haben rechtliche und finanzielle Bedeutung – für Steuererklärung, Gewährleistung oder Versicherung lassen sie sich kaum wiederbeschaffen. Anders als eine reine Dateiablage speichert Paperless-ngx zusätzlich Metadaten wie Tags und Korrespondenten. Geht nur die Datenbank verloren, bleiben deine PDFs unauffindbar; gehen nur die Dateien verloren, bleiben leere Metadaten. Ein vollständiges Backup sichert beides.</p>
 <p>Dazu kommen die typischen Risiken eines selbst gehosteten Systems: defekte Festplatten, fehlgeschlagene Updates oder Ransomware, die auch gemountete Ordner verschlüsselt. Backup ist daher keine Option, sondern Pflicht.</p>
@@ -35,7 +36,7 @@ docker compose exec webserver document_exporter ../export
 <h2>2. Docker-Volumes sichern</h2>
 <p>Volumes lassen sich direkt packen, unabhängig davon, ob Paperless läuft:</p>
 <pre><code>
-docker run --rm -v paperless-ngx_data:/data -v &quot;$(pwd)&quot;:/backup \
+docker run --rm -v paperless-ngx_data:/data -v "$(pwd)":/backup \
   alpine tar czf /backup/paperless-data.tar.gz -C /data .
 </code></pre>
 <p>Denselben Befehl wiederholst du für das <code>media</code>-Volume. Nutzt du stattdessen Bind-Mounts unter <code>/srv/paperless</code>, sicherst du die Ordner direkt.</p>
@@ -66,7 +67,7 @@ docker compose exec webserver document_importer ../export
 <p>Stelle es in einer Testinstallation wieder her – etwa in einem separaten Docker-Stack oder einer VM – und prüfe, ob Dokumente, Tags und Suche vollständig erscheinen. Nur so erkennst du stille Fehler, bevor es ernst wird.</p>
 <p><strong>Was schützt mich zusätzlich?</strong></p>
 <p>Eine verschlüsselte Offsite-Kopie nach der 3-2-1-Regel. Sichere außerdem deinen Zugriff ab, etwa über ein [VPN wie WireGuard](wireguard-homelab.md), damit dein Archiv kein Angriffsziel wird.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

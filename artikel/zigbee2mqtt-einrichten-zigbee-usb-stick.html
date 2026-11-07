@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Zigbee2MQTT einrichten: Zigbee-Geräte ohne Hersteller-Cloud betreiben – kompletter Guide</title>
-<meta name="description" content="Zigbee2MQTT Schritt für Schritt: Den richtigen Zigbee-USB-Stick wählen, die Software installieren und Zigbee-Geräte lokal ohne Hersteller-Cloud anlernen – für Home Assistant, ESPHome und Co.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Zigbee2MQTT Schritt für Schritt: Den richtigen Zigbee-USB-Stick wählen, die Software installieren und Zigbee-Geräte lokal ohne Hersteller-Cloud anlernen – für Home Assistant, ESPHome und Co." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Zigbee2MQTT einrichten: Zigbee-Geräte ohne Hersteller-Cloud betreiben – kompletter Guide</h1>
 <p>Hersteller-Clouden für Smart-Home-Geräte sind praktisch, bis sie nicht mehr sind: Server-Schließungen, Lizenzänderungen, ausgefeilte ToS – und deine Lampe wird plötzlich zentral. Das ist der Hauptgrund, warum eine wachsende Zahl von Homelab-Betreibern auf <strong>lokal gesteuerte Zigbee-Netze</strong> umsteigt. Die Software, die diese Bewegung technisch hält, heißt <strong>Zigbee2MQTT</strong> – und sie macht Zigbee-Geräte unabhängig von Hersteller-Apps, Cloud-APIs und proprietären Hubs.</p>
 <p>Dieser Artikel zeigt Schritt für Schritt, wie du Zigbee2MQTT einrichtest, welchen USB-Stick du dafür brauchst, wie du deine ersten Geräte einbindest – und worauf du achten solltest, bevor du den Coordinator ins Netz schaltest.</p>
@@ -51,7 +46,7 @@
 <li><strong>Texas Instruments CC2652-basierte Dongles</strong> – funktionieren mit deaktiviertem NC/Factory-Chip-Modus; so mancher Stick braucht ein Flashen mit Koordinator-Firmware.</li>
 <li><strong>Conbee II / Conbee III</strong> – funktionieren unter bestimmten Bedingungen, haben aber teilweise Eigenheiten in der Treiber- bzw. Firmware-Pipeline.</li>
 </ul>
-<p>Wichtig: Viele günstige Dongles verkaufen sich als &quot;Zigbee 3.0 Stick&quot;, sind aber als Koordinator nicht unterstützt oder haben Firmware-Probleme. Bevor du bestellst, prüfe, ob der Stick offiziell in der Zigbee2MQTT-Dokumentation als unterstützter Koordinator gelistet ist.</p>
+<p>Wichtig: Viele günstige Dongles verkaufen sich als "Zigbee 3.0 Stick", sind aber als Koordinator nicht unterstützt oder haben Firmware-Probleme. Bevor du bestellst, prüfe, ob der Stick offiziell in der Zigbee2MQTT-Dokumentation als unterstützter Koordinator gelistet ist.</p>
 <h2>Koordinator flashen und vorbereiten</h2>
 <p>Manche Dongles liefern ohne Koordinator-Firmware oder mit szenarioabhängigen Auslieferungspartien. Wenn der Stick nicht als Koordinator startet, liegt das selten an Zigbee2MQTT selbst, sondern an der Firmware. Übliche Vorgehensweise:</p>
 <ul>
@@ -123,7 +118,7 @@
 <p>Für wenige Geräte ist die Einrichtung Aufwand. Für drei und mehr Geräte, die lokal erfolgreich bleiben sollen, lohnt sich die Investition in einen Koordinator oft schon nach kurzer Zeit.</p>
 <p><strong>Gibt es Probleme mit Matter/Thread?</strong></p>
 <p>Zigbee2MQTT betrifft Zigbee, Matter/Thread sind andere Netzwerke. In einem Mischumfeld benötigst du ggf. auch einen Thread-Koordinator.</p>
-<hr>
+<hr/>
 <p><strong>Verlinkter Artikel:</strong></p>
 <ul>
 <li><a href="../artikel/docker-compose-best-practices.html">Docker Compose Best Practices für Homelabs</a></li>
@@ -132,12 +127,10 @@
 <li><a href="../artikel/frigate-nvr.html">Frigate NVR: Überwachungskameras selbst hosten</a></li>
 <li><a href="../artikel/uptime-kuma-einrichten-monitoring.html">Monitoring ohne Cloud: Uptime Kuma einrichten</a> <em>(in Bearbeitung)</em></li>
 </ul>
-<hr>
+<hr/>
 <p><strong>Affiliate-Anmerkung:</strong></p>
 <p>Die Produktlinks und Preisangaben in diesem Artikel sind aktuell als Ersatzlinks ohne Affiliate-IDs eingebunden. Sobald echte Partner-IDs (Amazon PartnerNet, etc.) vorliegen, werden die Links entsprechend angepasst und mit einer offenen Kennzeichnung versehen. Es handelt sich hierbei nicht um vertriebsfähige Affiliate-Links ohne Kennzeichnung – bis dahin sind keine Provisionen gebunden und die Empfehlungen sind rein redaktionell.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Lokale RAG-Pipeline: eigene Dokumente durchsuchen, ohne sie in die Cloud zu geben</title>
-<meta name="description" content="">
-<link rel="stylesheet" href="../style.css">
+<meta content="" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Lokale RAG-Pipeline: eigene Dokumente durchsuchen, ohne sie in die Cloud zu geben</h1>
 <p>Du hast einen Berg eigener Unterlagen — Handbücher, Verträge, Notizen, ein Wiki-Export — und möchtest Fragen daran stellen können, ohne alles zu einer US-Cloud hochzuladen. Genau dafür gibt es Retrieval-Augmented Generation (RAG). Dieser Artikel zeigt, wie eine solche Pipeline lokal aussieht, welche Bausteine es wirklich gibt, und wo die typischen Qualitätsfallen liegen.</p>
 <p>Eine Abgrenzung vorweg, damit keine Verwechslung entsteht: Der Artikel <a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a> behandelt die Frage, <strong>welche Software ein Sprachmodell als Dienst betreibt</strong> — Ollama, llama.cpp server, vLLM, LM Studio. RAG beginnt erst danach. Ein laufender LLM-Server ist die Voraussetzung, nicht das Thema. Dieser Text beschäftigt sich mit dem Weg <strong>von deinen Dokumenten zur fundierten Antwort mit Quellenangabe</strong>: dem Einbetten, Speichern, Wiederfinden und Belegen.</p>
@@ -43,16 +38,16 @@
 <h2>Vektor-Datenbanken</h2>
 <p>Die Vektor-Datenbank speichert die Vektoren und findet die nächsten Nachbarn schnell wieder.</p>
 <ul>
-<li><strong>Chroma</strong> — prozessnah, keine Serverinstallation. In Python: <code>PersistentClient(path=&quot;./chroma&quot;)</code>, dann <code>get_or_create_collection(&quot;dokumente&quot;)</code> und <code>collection.add(...)</code>. Abfrage über <code>collection.query(query_embeddings=[...], n_results=5)</code>; <code>where={&quot;mandant&quot;: &quot;a&quot;}</code> filtert nach Metadaten. Ideal für Einzelplatz und Prototypen.</li>
+<li><strong>Chroma</strong> — prozessnah, keine Serverinstallation. In Python: <code>PersistentClient(path="./chroma")</code>, dann <code>get_or_create_collection("dokumente")</code> und <code>collection.add(...)</code>. Abfrage über <code>collection.query(query_embeddings=[...], n_results=5)</code>; <code>where={"mandant": "a"}</code> filtert nach Metadaten. Ideal für Einzelplatz und Prototypen.</li>
 <li><strong>Qdrant</strong> — eigener Dienst (HTTP 6333, gRPC 6334), als Container betrieben. Du legst eine Collection mit <code>vector size</code> und <code>distance: Cosine</code> an, schreibst Punkte mit Payload, filterst per <code>filter</code>. Bringt Snapshots und ist für Mehrbenutzer-Setups die robustere Wahl.</li>
 <li><strong>pgvector</strong> — eine Erweiterung für PostgreSQL: <code>CREATE EXTENSION vector;</code>, Spalte <code>embedding vector(768)</code>, Index <code>USING hnsw (embedding vector_cosine_ops)</code>, Suche per <code>ORDER BY embedding &lt;=&gt; :query LIMIT 5</code>. Wenn du ohnehin Postgres laufen hast, sparst du eine zusätzliche Datenbank und behältst Backups, Rechte und Transaktionen in gewohnter Hand.</li>
 <li><strong>FAISS</strong> — eine Bibliothek, kein Dienst. <code>IndexFlatL2(dim)</code> für den Einstieg, <code>IndexIVFFlat</code> für größere Mengen (erfordert <code>train()</code>), Persistenz per <code>write_index()</code> / <code>read_index()</code>. Kein Metadaten-Filter und keine Zugriffskontrolle — die musst du drumherum bauen.</li>
 </ul>
 <h2>LiteRAG, fertige Oberflächen und Frameworks</h2>
 <ul>
-<li><strong>LiteRAG</strong> — ein leichtgewichtiger, graph-basierter RAG-Ansatz: Statt nur flache Vektorähnlichkeit zu nutzen, verbindet er Abschnitte über Beziehungen, um Mehrfach-Sprünge („wer hängt mit wem zusammen&quot;) besser zu beantworten. Sinnvoll, wenn deine Fragen über mehrere Dokumente hinweg zusammenhängen. Für reine Stichwortsuche ist es Überdimensionierung.</li>
+<li><strong>LiteRAG</strong> — ein leichtgewichtiger, graph-basierter RAG-Ansatz: Statt nur flache Vektorähnlichkeit zu nutzen, verbindet er Abschnitte über Beziehungen, um Mehrfach-Sprünge („wer hängt mit wem zusammen") besser zu beantworten. Sinnvoll, wenn deine Fragen über mehrere Dokumente hinweg zusammenhängen. Für reine Stichwortsuche ist es Überdimensionierung.</li>
 <li><strong>Open WebUI (mit RAG)</strong> — eine Weboberfläche, die Dokumente direkt hochladen, einbetten und im Chat durchsuchen lässt. Konfiguration über Umgebungsvariablen: <code>RAG_EMBEDDING_ENGINE</code> (z. B. <code>ollama</code>), <code>RAG_EMBEDDING_MODEL</code>, <code>CHUNK_SIZE</code>, <code>CHUNK_OVERLAP</code>, <code>RAG_TOP_K</code>, <code>VECTOR_DB</code>. Fertig, wenn du schnell zu einer Chat-Oberfläche mit Dokumentenbezug willst.</li>
-<li><strong>AnythingLLM</strong> — Desktop- und Server-Variante mit „Workspaces&quot;: pro Arbeitsbereich eigene Dokumente und eigener Embedder. Vector-Backend wählbar (standardmäßig LanceDB, alternativ Chroma, Qdrant, PGVector, Milvus). Die Server-Version bringt Mehrbenutzerverwaltung mit.</li>
+<li><strong>AnythingLLM</strong> — Desktop- und Server-Variante mit „Workspaces": pro Arbeitsbereich eigene Dokumente und eigener Embedder. Vector-Backend wählbar (standardmäßig LanceDB, alternativ Chroma, Qdrant, PGVector, Milvus). Die Server-Version bringt Mehrbenutzerverwaltung mit.</li>
 <li><strong>LlamaIndex</strong> — ein Python-Framework statt fertiger Oberfläche. Bausteine: <code>SimpleDirectoryReader</code> zum Einlesen, <code>SentenceSplitter</code> fürs Chunking, <code>VectorStoreIndex</code> für den Index, ein Query-Engine für die Abfrage. Maximale Kontrolle, mehr Eigenbau.</li>
 </ul>
 <h2>Vergleichstabelle</h2>
@@ -81,22 +76,22 @@
 <p><strong>Voraussetzungen:</strong> Python-Umgebung mit <code>chromadb</code> und einem Einbettungsmodell (lokal über sentence-transformers oder Ollama).</p>
 <p><strong>Schritt 1 — Notizen einlesen.</strong> Sammle alle <code>.md</code>- und <code>.txt</code> aus deinem Notizordner, lies sie ein und teile sie nach Überschriften in Abschnitte. Als Metadaten speicherst du den Dateipfad und die Überschrift.</p>
 <p><strong>Schritt 2 — Einbetten.</strong> Erzeuge für jeden Abschnitt das Embedding. Lokal reicht ein kleines mehrsprachiges Modell; für einen Notizbestand ist die Geschwindigkeit ausreichend.</p>
-<p><strong>Schritt 3 — In Chroma ablegen.</strong> Mit <code>PersistentClient(path=&quot;./chroma&quot;)</code> und <code>get_or_create_collection(&quot;notizen&quot;)</code>, dann <code>add(documents, embeddings, id=&quot;pfad#abschnitt&quot;, metadatas={&quot;pfad&quot;: ..., &quot;titel&quot;: ...})</code>.</p>
+<p><strong>Schritt 3 — In Chroma ablegen.</strong> Mit <code>PersistentClient(path="./chroma")</code> und <code>get_or_create_collection("notizen")</code>, dann <code>add(documents, embeddings, id="pfad#abschnitt", metadatas={"pfad": ..., "titel": ...})</code>.</p>
 <p><strong>Schritt 4 — Suchen.</strong> Frage einbetten und <code>query(query_embeddings=[...], n_results=5)</code> aufrufen. Du bekommst die fünf ähnlichsten Abschnitte samt Pfad zurück — für eine Notizsuche ist das oft schon das Ergebnis, ganz ohne Sprachmodell.</p>
 <p><strong>Schritt 5 — Optional beantworten lassen.</strong> Willst du eine formulierte Antwort, gib die gefundenen Abschnitte und die Frage an ein lokales Modell (Ollama) und verlange die Quellenangabe.</p>
 <h2>Anleitung 2: Frage-Antwort über Handbuch oder Vertragsdokumente</h2>
-<p>Ziel: Fragen wie „Welche Kündigungsfrist steht im Vertrag von 2024?&quot; oder „Was sagt das Handbuch zur Wartung?&quot; — mit Belegstelle.</p>
+<p>Ziel: Fragen wie „Welche Kündigungsfrist steht im Vertrag von 2024?" oder „Was sagt das Handbuch zur Wartung?" — mit Belegstelle.</p>
 <p><strong>Voraussetzungen:</strong> Ein laufender LLM-Server (siehe <a href="{slug: llm-server-software-vergleich}">LLM-Server-Software im Vergleich</a>), ein Embedding-Modell, eine Vektor-Datenbank (hier Qdrant oder Chroma).</p>
 <p><strong>Schritt 1 — Dokumente aufbereiten.</strong> Vertrags-PDFs haben meist eine Textschicht; Handbücher teils nicht. Prüfe stichprobenweise, ob Text herauskommt, und rüste für Scans OCR nach.</p>
 <p><strong>Schritt 2 — Abschnittsgröße festlegen.</strong> Vertragsklauseln sind kurz; Handbuchabschnitte länger. Setze die Stückgröße so, dass eine vollständige Klausel in ein Stück passt, und gib etwas Überlappung mit, damit ein Satz über die Grenze nicht zerrissen wird.</p>
 <p><strong>Schritt 3 — Einbetten und ablegen.</strong> Metadaten tragen hier Dokumentname, Datum und Abschnittsnummer — sie erscheinen später in der Quellenangabe.</p>
 <p><strong>Schritt 4 — Antwort mit Zitat erzwingen.</strong> Der Prompt muss verlangen, dass die Antwort <strong>nur</strong> aus den gelieferten Abschnitten stammt und jede Aussage mit Dokumentname und Abschnitt belegt. Ohne diese Vorgabe liefert das Modell dir flüssige Sätze ohne Fundstelle — und du kannst nichts prüfen.</p>
-<p><strong>Schritt 5 — Gegentest.</strong> Stelle eine Frage, deren Antwort du kennst, und eine, deren Antwort es in den Unterlagen gar nicht gibt. Bei der zweiten muss „dazu finde ich nichts&quot; kommen — kommt ein erfundener Satz, ist die Vorgabe zu schwach oder es werden zu viele Abschnitte übergeben.</p>
+<p><strong>Schritt 5 — Gegentest.</strong> Stelle eine Frage, deren Antwort du kennst, und eine, deren Antwort es in den Unterlagen gar nicht gibt. Bei der zweiten muss „dazu finde ich nichts" kommen — kommt ein erfundener Satz, ist die Vorgabe zu schwach oder es werden zu viele Abschnitte übergeben.</p>
 <h2>Anleitung 3: Mehrbenutzer-Setup mit Zugriffskontrolle je Mandant</h2>
 <p>Ziel: Mehrere Personen oder getrennte Mandanten fragen ihre eigenen Unterlagen ab — und niemand sieht fremde Dokumente.</p>
 <p><strong>Voraussetzungen:</strong> Eine Vektor-Datenbank mit Metadatenfilter (Qdrant, pgvector oder Chroma), eine Oberfläche mit Benutzerkonten, ein gemeinsames Einbettungsmodell.</p>
 <p><strong>Schritt 1 — Mandant als Metadatenfeld.</strong> Jeder Abschnitt bekommt ein Feld <code>mandant</code> (oder <code>gruppe</code>). Das ist der Schlüssel, an dem später gefiltert wird.</p>
-<p><strong>Schritt 2 — Beim Abrufen filtern, nicht danach.</strong> Die Berechtigung muss <strong>in die Abfrage</strong> hinein, nicht erst in die Oberfläche. In Qdrant per <code>filter</code>, in pgvector als <code>WHERE</code>-Bedingung, in Chroma via <code>where={&quot;mandant&quot;: &quot;a&quot;}</code>.</p>
+<p><strong>Schritt 2 — Beim Abrufen filtern, nicht danach.</strong> Die Berechtigung muss <strong>in die Abfrage</strong> hinein, nicht erst in die Oberfläche. In Qdrant per <code>filter</code>, in pgvector als <code>WHERE</code>-Bedingung, in Chroma via <code>where={"mandant": "a"}</code>.</p>
 <p><strong>Schritt 3 — Getrennte Collections als Alternative.</strong> Statt eines Metadatenfeldes kannst du je Mandant eine eigene Collection anlegen. Mehr Aufwand, aber sauberer isoliert — ein vergessener Filter kann dann nicht fremde Daten liefern.</p>
 <p><strong>Schritt 4 — Oberfläche nur als Tür, nicht als Schloss.</strong> Benutzerkonten in Open WebUI oder AnythingLLM sind die Anmeldung. Sie sind <strong>nicht</strong> die Zugriffskontrolle auf den Index — die liegt in der Abfrage. Wer nur die Oberfläche absichert, aber alle Dokumente in einem gemeinsamen, ungefilterten Index hält, hat in Wahrheit keine Trennung.</p>
 <p><strong>Schritt 5 — Rechte testen.</strong> Melde dich als Mandant A an und stelle absichtlich eine Frage, deren Antwort nur in den Unterlagen von Mandant B steht. Kommt eine Antwort, ist der Filter falsch — dann nicht in Produktion gehen.</p>
@@ -104,12 +99,12 @@
 <p><strong>Falsche Abschnittsgröße.</strong> Zu große Abschnitte (etwa eine ganze PDF-Seite) enthalten viel Beiwerk; der relevante Satz geht in der Ähnlichkeitsbewertung unter. Zu kleine Abschnitte (Halbsätze) verlieren den Zusammenhang. <em>Abhilfe:</em> an der Struktur trennen, nicht an der Zeichenzahl — nach Überschriften, nach Absätzen, nach Klauseln. Überschriften im Abschnitt mitführen. Stückgröße an echten Fragen testen, nicht theoretisch festlegen.</p>
 <p><strong>Embedding-Modell tauschen ohne Neuaufbau des Index.</strong> Der häufigste stille Fehler. Vektoren aus zwei verschiedenen Modellen liegen in unterschiedlichen Räumen und sind nicht vergleichbar — die Suche liefert dann Unsinn, ohne eine Fehlermeldung. Auch eine andere Vektorlänge passt nicht in die alte Collection. <em>Abhilfe:</em> Modellwechsel <strong>immer</strong> als Neuindex behandeln: alle Abschnitte neu einbetten und die Collection neu anlegen.</p>
 <p><strong>Antworten ohne Quellenangabe.</strong> Ohne Prompt-Vorgabe liefert das Modell gern schöne, unbelegte Sätze. <em>Abhilfe:</em> die Quelle zur Pflicht machen — im Prompt verlangen, dass jede Aussage Dokumentname und Abschnitt nennt, und in der Oberfläche die Fundstelle mit anzeigen. Eine Antwort ohne Beleg ist im Zweifel nicht brauchbar.</p>
-<p><strong>Halluzination trotz Belegen.</strong> Selbst mit gelieferten Abschnitten kann das Modell etwas ergänzen, was dort nicht steht — und trotzdem eine Quelle dranhängen. <em>Abhilfe:</em> im Prompt schreiben, dass nur belegt werden darf, was im Text steht, und bei fehlender Grundlage ausdrücklich „nicht in den Unterlagen&quot; zu antworten. Der Gegentest aus Anleitung 2 deckt das auf.</p>
+<p><strong>Halluzination trotz Belegen.</strong> Selbst mit gelieferten Abschnitten kann das Modell etwas ergänzen, was dort nicht steht — und trotzdem eine Quelle dranhängen. <em>Abhilfe:</em> im Prompt schreiben, dass nur belegt werden darf, was im Text steht, und bei fehlender Grundlage ausdrücklich „nicht in den Unterlagen" zu antworten. Der Gegentest aus Anleitung 2 deckt das auf.</p>
 <p><strong>Berechtigungen, die nur die Schnittstelle betreffen.</strong> Die Oberfläche zeigt nur die eigenen Dokumente — die Vektor-Datenbank hält aber alles in einem ungefilterten Index, und die Abfrage holt ohne Filter über alle Mandanten. <em>Abhilfe:</em> Rechte in der Abfrage erzwingen (Metadatenfilter oder getrennte Collection), nicht in der Anzeige.</p>
 <h2>Häufige Fehler — mit realen Beispielen</h2>
 <p><strong>Beispiel 1: Der leere Scan-Index.</strong> Ein Nutzer lädt einen Ordner eingescannte Rechnungen in Open WebUI, stellt Fragen und bekommt entweder nichts oder frei erfundene Beträge. Ursache: Die PDFs hatten keine Textschicht, das System hat leere Abschnitte eingebettet. <em>Lehre:</em> vor dem Index prüfen, ob überhaupt Text herauskommt — bei Scans erst OCR, dann einbetten.</p>
 <p><strong>Beispiel 2: Der unsichtbare Modellwechsel.</strong> Jemand stellt in AnythingLLM den Embedder von einem kleinen auf ein größeres Modell um, ohne den Bestand neu einbetten zu lassen. Die Suche liefert danach zufällig wirkende Treffer. Ursache: alte Vektoren im neuen Raum. <em>Lehre:</em> Modellwechsel heißt immer Neuindex, nie nur Umschalten.</p>
-<p><strong>Beispiel 3: Die zu grobe Trennung.</strong> Ein Handbuch wird komplett seitenweise eingebettet. Fragen wie „Welcher Drehmomentwert gilt für Schraube X?&quot; liefern zwar die richtige Seite, aber das Modell wählt daraus den falschen Wert. <em>Lehre:</em> kleine, in sich geschlossene Abschnitte — eine Tabelle oder ein Absatz, nicht eine Seite.</p>
+<p><strong>Beispiel 3: Die zu grobe Trennung.</strong> Ein Handbuch wird komplett seitenweise eingebettet. Fragen wie „Welcher Drehmomentwert gilt für Schraube X?" liefern zwar die richtige Seite, aber das Modell wählt daraus den falschen Wert. <em>Lehre:</em> kleine, in sich geschlossene Abschnitte — eine Tabelle oder ein Absatz, nicht eine Seite.</p>
 <p><strong>Beispiel 4: Zwei Mandanten, ein Index.</strong> Zwei Firmen teilen sich eine Instanz, alle Dokumente liegen mit einem Mandantenfeld zusammen. Die Oberfläche zeigt nur die eigenen Dateien — aber die Suche filtert nicht, und in einer Antwort taucht eine Vertragsklausel der anderen Firma auf. Ursache: Berechtigung nur in der Anzeige. <em>Lehre:</em> Der Filter gehört in die Abfrage.</p>
 <p><strong>Beispiel 5: Die doppelte Quelle.</strong> Derselbe Ordner liegt einmal im Original und einmal als Kopie im Index. Jede Antwort zitiert denselben Inhalt zweimal und wirkt widersprüchlich. <em>Lehre:</em> eine Quelle der Wahrheit, Dubletten vor dem Einbetten aussortieren.</p>
 <p><strong>Beispiel 6: Kein Backup des Index.</strong> Der Vektor-Index ist nach einem Ausfall weg, und niemand weiß mehr, welche Abschnittsgröße und welches Modell benutzt wurde. <em>Lehre:</em> Index und seine Konfiguration gehören ins Backup — siehe <a href="{slug: datenbank-backups}">Datenbank-Backups</a>.</p>
@@ -144,7 +139,7 @@
 <p><strong>Bild 2</strong></p>
 <ul>
 <li>Typ: Vergleichstabelle als Infografik</li>
-<li>Inhalt: Die Vergleichstabelle aus dem Artikel als visuelle Matrix: Chroma, Qdrant, pgvector, FAISS, LiteRAG, Open WebUI, AnythingLLM, LlamaIndex als Zeilen; Einrichtung, Speicherbedarf, Modellwechsel, Offline-Fähigkeit als Spalten; Fußnote „Modellwechsel = Index neu bauen&quot;</li>
+<li>Inhalt: Die Vergleichstabelle aus dem Artikel als visuelle Matrix: Chroma, Qdrant, pgvector, FAISS, LiteRAG, Open WebUI, AnythingLLM, LlamaIndex als Zeilen; Einrichtung, Speicherbedarf, Modellwechsel, Offline-Fähigkeit als Spalten; Fußnote „Modellwechsel = Index neu bauen"</li>
 <li>Alt-Text: Vergleich lokaler RAG-Komponenten — Vektor-Datenbanken und Oberflächen nach Einrichtung, Speicherbedarf, Modellwechsel und Offline-Fähigkeit</li>
 </ul>
 <p><strong>Bild 3</strong></p>
@@ -165,9 +160,7 @@
 <li>Inhalt: Nutzer (Mandant A, Mandant B) → Oberfläche mit Anmeldung → Abfrage mit Metadatenfilter (<code>mandant</code>) → eine Vektor-Datenbank → Sprachmodell; hervorgehoben, dass der Filter in der Abfrage sitzt, nicht in der Anzeige</li>
 <li>Alt-Text: Mehrbenutzer-RAG-Architektur — der Mandantenfilter sitzt in der Abfrage an der Vektor-Datenbank, nicht in der Oberfläche</li>
 </ul>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

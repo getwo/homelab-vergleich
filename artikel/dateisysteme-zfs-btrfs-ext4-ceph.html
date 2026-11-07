@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Dateisysteme im Homelab: ZFS, Btrfs, ext4 oder Ceph – was wann passt</title>
-<meta name="description" content="Welches Dateisystem für dein Selfhosting? ZFS vs. Btrfs vs. ext4 vs. Ceph im Vergleich: Datenintegrität, Snapshots, RAM, RAID-Z, Deduplizierung, Kompression und konkrete Empfehlungen für NAS, Proxmox, Docker und Cluster.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Welches Dateisystem für dein Selfhosting? ZFS vs. Btrfs vs. ext4 vs. Ceph im Vergleich: Datenintegrität, Snapshots, RAM, RAID-Z, Deduplizierung, Kompression und konkrete Empfehlungen für NAS, Proxmox, Docker und Cluster." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Dateisysteme im Homelab: ZFS, Btrfs, ext4 oder Ceph – was wann passt</h1>
 <p>Du hast plötzlich drei Festplatten mehr, willst sie sinnvoll zusammenfassen und starrst auf die Auswahl an Dateisystemen: ZFS, Btrfs, ext4, Ceph – die Namen klingeln dir vielleicht schon aus Foren und YouTube-Empfehlungen. Die Frage ist keine reine Hardware-Frage. Sie ist eine Infrastruktur-Entscheidung, die sich auf Wartung, Wiederherstellungszeit und Datenrisiko über die ganze Nutzungsdauer auswirkt.</p>
 <p>Dieser Artikel geht es systematisch an: Eine Entscheidungsmatrix, dann tief in die vier Kandidaten, dann konkrete Empfehlungen nach Einsatzzweck, ein Kapitel über häufige Fehler und abschließend ein kleines CLI-Kapitel mit Befehlen, die du direkt anpassen kannst.</p>
@@ -272,24 +267,22 @@ sudo zpool status my-pool
 <h2>Bildvorschläge für den Artikel</h2>
 <p>1. <strong>Bildtyp: Vergleichsmatrix als Grafik</strong></p>
 <p>   Was zu zeigen: Eine übersichtliche Matrix-Grafik, die ZFS, Btrfs, ext4 und Ceph gegen die Kriterien Datenintegrität, Snapshots, RAM-Overhead, RAID-Konzept und Wiederherstellungszeit abbildet. Farbcodierung: ZFS in Blau, Btrfs in Grün, ext4 in Orange-Gelb, Ceph in Violett.</p>
-<p>   Alt-Text: &quot;Vergleichsmatrix: ZFS vs. Btrfs vs. ext4 vs. Ceph – Datenintegrität, Snapshots, RAM-Overhead und RAID-Konzept im Überblick&quot;</p>
+<p>   Alt-Text: "Vergleichsmatrix: ZFS vs. Btrfs vs. ext4 vs. Ceph – Datenintegrität, Snapshots, RAM-Overhead und RAID-Konzept im Überblick"</p>
 <p>2. <strong>Bildtyp: Entscheidungsbaum als Flussdiagramm</strong></p>
-<p>   Was zu zeigen: Ein einfaches Flussdiagramm, das bei der Frage &quot;Welches Dateisystem für mein Homelab?&quot; startet und nach RAM-Verfügbarkeit, Node-Anzahl, Datenmenge und gewünschten Features (Snapshots, Kompression, Cluster) zu den vier Kandidaten führt. Kein realistisches Foto, sondern eine schematische Darstellung.</p>
-<p>   Alt-Text: &quot;Entscheidungsbaum: Welches Dateisystem für mein Homelab? – Pfade zu ZFS, Btrfs, ext4 und Ceph nach RAM, Node-Anzahl und Features&quot;</p>
+<p>   Was zu zeigen: Ein einfaches Flussdiagramm, das bei der Frage "Welches Dateisystem für mein Homelab?" startet und nach RAM-Verfügbarkeit, Node-Anzahl, Datenmenge und gewünschten Features (Snapshots, Kompression, Cluster) zu den vier Kandidaten führt. Kein realistisches Foto, sondern eine schematische Darstellung.</p>
+<p>   Alt-Text: "Entscheidungsbaum: Welches Dateisystem für mein Homelab? – Pfade zu ZFS, Btrfs, ext4 und Ceph nach RAM, Node-Anzahl und Features"</p>
 <p>3. <strong>Bildtyp: Btrfs-Subvolume-Struktur als Schema</strong></p>
 <p>   Was zu zeigen: Ein vereinfachtes Diagramm, das die Hierarchie von Btrfs-Subvolumes zeigt: Ein Btrfs-Dateisystem mit mehreren Subvolumes (z.B. <code>/</code>, <code>/home</code>, <code>/var/lib/docker</code>), die jeweils einen eigenen Snapshot haben. Pfeile zwischen Subvolumes und Snapshots. Schematisch, nicht fotorealistisch.</p>
-<p>   Alt-Text: &quot;Schema: Btrfs-Subvolumes mit eigenen Snapshots – Hierarchie und Schnittstellen für Daten, Home und Docker-Volumes&quot;</p>
+<p>   Alt-Text: "Schema: Btrfs-Subvolumes mit eigenen Snapshots – Hierarchie und Schnittstellen für Daten, Home und Docker-Volumes"</p>
 <p>4. <strong>Bildtyp: ZFS-Pool-Architektur als Schema</strong></p>
 <p>   Was zu zeigen: Ein Diagramm, das einen ZFS-Pool mit Mirror (zwei Platten) und einem Dataset mit Kompression und Snapshots zeigt. Datenfluss: Schreibvorgang → Copy-on-Write → neuer Block → Snapshot-Referenz. Schematisch, nicht fotorealistisch.</p>
-<p>   Alt-Text: &quot;Schema: ZFS-Pool mit Mirror und Dataset – Copy-on-Write, Kompression und Snapshot-Referenz für Datenintegrität&quot;</p>
+<p>   Alt-Text: "Schema: ZFS-Pool mit Mirror und Dataset – Copy-on-Write, Kompression und Snapshot-Referenz für Datenintegrität"</p>
 <p>5. <strong>Bildtyp: Cluster-Storage-Vergleich als Leverage-Diagramm</strong></p>
 <p>   Was zu zeigen: Ein Leverage-Diagramm oder einfache Spannbreite, das den RAM-Overhead, den Implementierungs-Aufwand und die Wiederherstellungszeit für ZFS (Single-Node mit Mirror), Btrfs (Single-Node) und Ceph (3-Node-Cluster) gegenüberstellt. Kein fotorealistisch, sondern schematisch oder als einfache Balken-/Flächengrafik.</p>
-<p>   Alt-Text: &quot;Vergleich: RAM-Overhead, Implementierungs-Aufwand und Wiederherstellungszeit für ZFS, Btrfs und Ceph im Selfhosting – Single-Node vs. Cluster&quot;</p>
-<hr>
+<p>   Alt-Text: "Vergleich: RAM-Overhead, Implementierungs-Aufwand und Wiederherstellungszeit für ZFS, Btrfs und Ceph im Selfhosting – Single-Node vs. Cluster"</p>
+<hr/>
 <p><em>Artikel wurde für den BsN-Blog unter homelab.brillianze.de verfasst. Die Veröffentlichung erfolgt über das bestehende Deploy-Skript. Technische Daten basieren auf vorhandener Dokumentation und Praxis – keine erfundenen Benchmarks, keine exakten Preise. Bei konkreten Entscheidungen prüfen, welche Daten und Hardware vorliegen.</em></p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

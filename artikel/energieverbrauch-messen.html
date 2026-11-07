@@ -1,20 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Energieverbrauch messen: Smart-Plug & Prometheus im Homelab — Homelab Vergleich</title>
-<meta name="description" content="--- title: "Energieverbrauch messen: Smart-Plug & Prometheus im Homelab" description: "Stromverbrauch im Homelab messen: Shelly Plug S als Smart-Plug ">
-<link rel="stylesheet" href="../style.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Energieverbrauch messen: Smart-Plug &amp; Prometheus im Homelab — Homelab Vergleich</title>
+<meta "="" "stromverbrauch="" &="" als="" content="--- title: " description:="" energieverbrauch="" homelab="" homelab"="" im="" messen:="" name="description" plug="" prometheus="" s="" shelly="" smart-plug=""/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
-<hr>
-<p>title: &quot;Energieverbrauch messen: Smart-Plug &amp; Prometheus im Homelab&quot;</p>
-<p>description: &quot;Stromverbrauch im Homelab messen: Shelly Plug S als Smart-Plug mit Messfunktion, Daten per Exporter in Prometheus, Grafana-Dashboard und automatische Kostenberechnung.&quot;</p>
-<hr>
+<div class="content">
+<hr/>
+<p>title: "Energieverbrauch messen: Smart-Plug &amp; Prometheus im Homelab"</p>
+<p>description: "Stromverbrauch im Homelab messen: Shelly Plug S als Smart-Plug mit Messfunktion, Daten per Exporter in Prometheus, Grafana-Dashboard und automatische Kostenberechnung."</p>
+<hr/>
 <h1>Energieverbrauch messen: Smart-Plug &amp; Prometheus im Homelab</h1>
 <p>Wer sein Homelab ernsthaft optimieren will, muss zuerst wissen, wo der Strom hingeht. Gefühlt läuft der Server „irgendwie sparsam“ – gemessen wird es konkret. Ein Smart-Plug mit Messfunktion macht aus dem Gefühl eine Zahl, und mit Prometheus und Grafana wird daraus ein dauerhaftes Monitoring. So sehen Sie auf den Cent genau, was der Dauerbetrieb kostet.</p>
 <h2>Warum Stromverbrauch messen?</h2>
@@ -34,7 +35,7 @@
 - job_name: shelly
   metrics_path: /meter/0
   static_configs:
-    - targets: [&#x27;192.168.1.50&#x27;]
+    - targets: ['192.168.1.50']
 </code></pre>
 <p>Der Shelly liefert dann unter anderem <code>power</code> (aktuelle Watt) und <code>total</code> (kumulierte kWh). Der Exporter wandelt das in saubere Metriken wie <code>shelly_power_watts</code> und <code>shelly_total_kwh</code> um, die sich wie jede andere Metrik behandeln lassen.</p>
 <h2>Homelab-Verbrauch in Grafana tracken</h2>
@@ -52,7 +53,7 @@ increase(shelly_total_kwh[30d]) * 0.40
 <p>So sehen Sie auf einen Blick, was die letzten 30 Tage gekostet haben – ohne Excel und ohne zu schätzen. Bei mehreren Plugs (Server, Netzwerk, NAS) addiert eine Summen-Query alles zu einer Gesamtbilanz. Ändert sich der Strompreis, genügt eine Zahl im Query.</p>
 <h2>Fazit</h2>
 <p>Wer sein Homelab optimieren will, muss es messen. Ein Smart-Plug mit Messfunktion wie der Shelly Plug S kostet um die 20 €, liefert aber exakte Verbrauchsdaten, die sich mit Prometheus und Grafana zu einem vollständigen Strom-Monitoring ausbauen lassen. So werden Stromfresser sichtbar, Optimierungen messbar und die monatlichen Kosten automatisch berechnet – besser als jede Schätzung.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

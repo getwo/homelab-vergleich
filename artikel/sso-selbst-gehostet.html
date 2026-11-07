@@ -1,32 +1,27 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Single Sign-On selbst gehostet: Authentik, Keycloak und Cloudflare Access im Vergleich</title>
-<meta name="description" content="Single Sign-On selbst gehostet: Praxisvergleich von Authentik, Keycloak und Cloudflare Access mit OIDC/SAML, Docker-Setup, Token-Test und FAQ — fuer kleine Firmen und Homelab-Betreiber.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Single Sign-On selbst gehostet: Praxisvergleich von Authentik, Keycloak und Cloudflare Access mit OIDC/SAML, Docker-Setup, Token-Test und FAQ — fuer kleine Firmen und Homelab-Betreiber." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Single Sign-On selbst gehostet: Authentik, Keycloak und Cloudflare Access im Vergleich</h1>
 <p>Du kennst das: Jeder Dienst im eigenen Netz hat eigene Login-Seiten, eigene Passwörter, eigene Benutzerdatenbanken. Ein Mitarbeiter verlässt das Unternehmen — und drei Wochen später findest du noch, dass sein Account auf dem internen Wiki, in der Ticketsystem-Oberfläche und im Monitoring noch aktiv ist. Oder du selbst hast auf vier verschiedenen Selfhosted-Services in verschiedenen Passwörtern gesetzt, weil du sie nicht alle auf einmal ändern wolltest.</p>
-<p>Single Sign-On (SSO) löst dieses Problem, indem es einen zentralen Identitätsanbieter (Identity Provider, IdP) einführt, gegen den sich alle Dienste richten. Der User meldet sich einmal an — und die Dienste vertrauen dem IdP, wenn er ihnen sagt: <em>„Das ist diese Person, und sie hat sich erfolgreich authentifiziert.&quot;</em></p>
+<p>Single Sign-On (SSO) löst dieses Problem, indem es einen zentralen Identitätsanbieter (Identity Provider, IdP) einführt, gegen den sich alle Dienste richten. Der User meldet sich einmal an — und die Dienste vertrauen dem IdP, wenn er ihnen sagt: <em>„Das ist diese Person, und sie hat sich erfolgreich authentifiziert."</em></p>
 <p>Warum die meisten Selfhoster trotzdem keine SSO einrichten, ist nicht technische Schwierigkeit allein — es ist, dass die meisten Articles entweder zu theoretisch sind (Prozess-Auth-Flows mit Paint-Strichdiagrammen) oder direkt in eine Enterprise-Wolke laufen. Dieser Artikel befasst sich mit dem, was für kleine Firmen (5–50 Mitarbeiter) und technisch interessierte Homelab-Betreiber tatsächlich umsetzbar ist: drei Kandidaten, ein konkretes Docker-Setup, Realitätscheck im Produktivbetrieb.</p>
 <h2>Was SSO fachlich löst — und was nicht</h2>
 <p><strong>SSO löst:</strong></p>
 <ul>
 <li><strong>Einmalige Anmeldung:</strong> Der Nutzer authentifiziert sich einmal gegen den IdP. Danach akzeptieren alle am IdP registrierten Services diesen Login ohne weitere Passwortabfrage (Single Sign-On).</li>
 <li><strong>Zentrales Onboarding/Offboarding:</strong> Wenn ein Mitarbeiter die Firma verlässt, wird sein IdP-Konto deaktiviert — und er verliert automatisch den Zugang zu allen verbundenen Diensten. Keine manuelle Aufräumarbeit auf fünf verschiedenen App-Servern mehr.</li>
-<li><strong>Auditierbarkeit:</strong> Der IdP protokolliert, wann sich wer anmeldet — eine zentrale Logquelle für den Zugang zu internen Diensten. Das hilft bei Fragen wie: <em>„Hat der Ex-Mitarbeiter nach dem Ausscheiden noch was angefasst?&quot;</em></li>
+<li><strong>Auditierbarkeit:</strong> Der IdP protokolliert, wann sich wer anmeldet — eine zentrale Logquelle für den Zugang zu internen Diensten. Das hilft bei Fragen wie: <em>„Hat der Ex-Mitarbeiter nach dem Ausscheiden noch was angefasst?"</em></li>
 <li><strong>Standardisierte Integration:</strong> OIDC und SAML sind offene Protokolle. Wenn ein Dienst diese unterstützt, kannst du ihn an deinen IdP anbinden — ohne proprietäre Software von Drittanbietern.</li>
 </ul>
 <p><strong>SSO löst nicht:</strong></p>
@@ -37,7 +32,7 @@
 <li><strong>Device-Trust:</strong> Wenn ein Gerät gestohlen wird und der IdP-Login mit Passwort + 2FA möglich ist, kann der Dieb sich anmelden. SSO löst nicht das Device-Trust-Problem.</li>
 </ul>
 <h2>Die drei Kandidaten im Überblick</h2>
-<p>Für den Anwendungsfall &quot;kleine Firma oder Fortgeschrittener Homelab&quot; kommen drei Lösungen infrage. Die Auswahl fällt nicht nach Feature-Listen, sondern nach den tatsächlichen Bedingungen — wie viele Services müssen verbunden werden, welche Protokolle unterstützen die Dienste OIDC oder SAML, wie viel Wartungsaufwand ist akzeptabel.</p>
+<p>Für den Anwendungsfall "kleine Firma oder Fortgeschrittener Homelab" kommen drei Lösungen infrage. Die Auswahl fällt nicht nach Feature-Listen, sondern nach den tatsächlichen Bedingungen — wie viele Services müssen verbunden werden, welche Protokolle unterstützen die Dienste OIDC oder SAML, wie viel Wartungsaufwand ist akzeptabel.</p>
 <p>| Kriterium | Authentik | Keycloak | Cloudflare Access |</p>
 <p>|---|---|---|---|</p>
 <p>| <strong>Protokolle</strong> | OIDC (primär), SAML (über Brokern oder Flow-Editor), LDAP-Integration als Benutzerverzeichnis-Backend | OIDC, SAML (vollständig, inkl. Identity-Brokering), OpenID Connect Dynamic Client Registration | OIDC (für Dienste hinter Access geschützte Web-Applikationen), Cloudflare-eigenes Access-Protokoll fürZTNA; SAML nur in Enterprise-Plänen |</p>
@@ -49,7 +44,7 @@
 <h2>Abgrenzung zu den anderen BsN-Artikeln</h2>
 <p>Dieser Artikel behandelt <strong>nur</strong> die Authentifizierungsschicht — wer darf auf welchen Dienst zugreifen und wie wird diese Frage zentral entschieden. Die Artikel <em>sicherer-fernzugriff.md</em> (Tailscale, WireGuard) und <em>docker-vs-vm.md</em> behandeln andere Schichten:</p>
 <ul>
-<li><em>sicherer-fernzugriff.md</em> betrachtet, wie man Dienste <strong>Netzwerk-seitig</strong> erreichbar macht (Tailscale als Overlay-Netzwerk, WireGuard als VPN, Reverse-Tunnel). Mit SSO hast du eine Authentifizierung hinter dem Dienst — aber den Netzwerk-Zugang dazu regelt der Fernzugriff-Artikel einzeln. Die beiden Konzepte sind komplementär: Ein Dienst kann über Tailscale erreichbar gemacht sein und zusätzlich SSO-geschützt werden, oder ein Dienst kann nur lokal erreichbar sein und SSO als &quot;wer darf hier hingehen&quot;-Mechanismus nutzen.</li>
+<li><em>sicherer-fernzugriff.md</em> betrachtet, wie man Dienste <strong>Netzwerk-seitig</strong> erreichbar macht (Tailscale als Overlay-Netzwerk, WireGuard als VPN, Reverse-Tunnel). Mit SSO hast du eine Authentifizierung hinter dem Dienst — aber den Netzwerk-Zugang dazu regelt der Fernzugriff-Artikel einzeln. Die beiden Konzepte sind komplementär: Ein Dienst kann über Tailscale erreichbar gemacht sein und zusätzlich SSO-geschützt werden, oder ein Dienst kann nur lokal erreichbar sein und SSO als "wer darf hier hingehen"-Mechanismus nutzen.</li>
 <li><em>docker-vs-vm.md</em> betrachtet die <strong>Virtualisierungsebene</strong>: Container oder VM für einen Dienst. Authentik läuft typischerweise als Docker-Container (oder als VM, wenn man es anders betreiben will). Die Entscheidung dort ist eine Infrastruktur-Entscheidung; die SSO-Anbindung ist eine Anwendungskonfiguration. Der vorliegende Artikel setzt voraus, dass du Docker verwendest — eine Nicht-Docker-Alternative steht im FAQ-Block.</li>
 </ul>
 <h2>Vollständige Authentik-Anleitung mit OIDC</h2>
@@ -68,7 +63,7 @@ cd ~/authentik
 </code></pre>
 <p>Erstelle <code>docker-compose.yml</code> mit den folgenden Inhalten. Das Setup besteht aus drei Diensten: PostgreSQL als Datenbank, Redis als Caching/Session-Backend, und Authentik selbst.</p>
 <pre><code>
-version: &quot;3.8&quot;
+version: "3.8"
 
 services:
   # PostgreSQL-Datenbank für Authentik
@@ -76,7 +71,7 @@ services:
     image: docker.io/postgres:16-alpine
     restart: unless-stopped
     healthcheck:
-      test: [&quot;CMD-SHELL&quot;, &quot;pg_isready -U authentik&quot;]
+      test: ["CMD-SHELL", "pg_isready -U authentik"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -93,7 +88,7 @@ services:
   redis:
     image: docker.io/redis:7-alpine
     restart: unless-stopped
-    command: redis-server --save &quot;&quot; --appendonly &quot;no&quot;
+    command: redis-server --save "" --appendonly "no"
     networks:
       - authentik-net
 
@@ -141,8 +136,8 @@ PG_PASSWORD=$(openssl rand -hex 24)
 AUTHENTIK_SECRET=$(openssl rand -hex 32)
 
 # Diese beiden Variablen schreiben wir in .env, damit docker compose sie liest
-echo &quot;PG_PASSWORD=$PG_PASSWORD&quot; &gt; .env
-echo &quot;AUTHENTIK_SECRET=$AUTHENTIK_SECRET&quot; &gt;&gt; .env
+echo "PG_PASSWORD=$PG_PASSWORD" &gt; .env
+echo "AUTHENTIK_SECRET=$AUTHENTIK_SECRET" &gt;&gt; .env
 </code></pre>
 <p><strong>Anmerkung:</strong> In einer produktiven Umgebung solltest du diese Werte in einem Secrets-Manager oder zumindest in einer passwortgeschützten Datei ablegen. Die <code>.env</code>-Datei gehört nicht ins Git-Repository der Homelab-Konfiguration.</p>
 <p>Starte die Infrastruktur:</p>
@@ -160,13 +155,13 @@ docker compose logs -f authentik
 <h2>Schritt 2: Admin-Benutzer einrichten</h2>
 <p>Authentik bringt nach dem ersten Start keine vordefinierten Benutzer mit. Du erstellst den ersten Admin-Benutzer über die Authentik-Kommandozeilen-Schnittstelle (CLI) im Container:</p>
 <pre><code>
-# Container-Name &quot;authentik-authentik-1&quot; entsteht aus dem Verzeichnisnamen des Compose-Projekts;
-# prüfe mit &quot;docker ps&quot; den exakten Namen oder nutze &quot;docker compose exec authentik ...&quot;
+# Container-Name "authentik-authentik-1" entsteht aus dem Verzeichnisnamen des Compose-Projekts;
+# prüfe mit "docker ps" den exakten Namen oder nutze "docker compose exec authentik ..."
 
 docker compose exec authentik authentik createuser \
   --username admin \
   --email bsndemo@brillianze.de \
-  --password &quot;EinSehrStarkesPasswortDasNieWiederholtWird&quot; \
+  --password "EinSehrStarkesPasswortDasNieWiederholtWird" \
   --is-superuser \
   --autocomplete
 </code></pre>
@@ -203,25 +198,25 @@ requests==2.32.3
 </code></pre>
 <p><strong>app.py:</strong></p>
 <pre><code>
-&quot;&quot;&quot;
+"""
 Beispiel-Python-Service mit OIDC gegen Authentik.
 Dies ist ein minimales Beispiel — in einer produktiven Applikation
 solltest du Sessions sicherer verwalten, HTTPS erzwingen,
 Tokens nicht im Klartext loggen und PKCE aktivieren (authentik unterstützt es).
-&quot;&quot;&quot;
+"""
 import os
 from flask import Flask, redirect, session, url_for, jsonify, request
 from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 # Flask-Session Secret — separat vom Authentik Secret Key; eigenes Zufallspasswort
-app.secret_key = os.environ.get(&quot;FLASK_SECRET_KEY&quot;, &quot;bitte-aendern&quot;)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "bitte-aendern")
 
 # OIDC-Konfiguration aus Umgebungsvariablen — in Produktion durch Konfigurationsmanagement ersetzen
-AUTHTIK_BASE_URL = os.environ.get(&quot;AUTHTIK_BASE_URL&quot;, &quot;https://auth.brillianze.de&quot;)
-OIDC_CLIENT_ID = os.environ.get(&quot;OIDC_CLIENT_ID&quot;, &quot;python-exampleservice-oidc&quot;)
-OIDC_CLIENT_SECRET = os.environ.get(&quot;OIDC_CLIENT_SECRET&quot;, &quot;&quot;)
-OIDC_REDIRECT_URI = os.environ.get(&quot;OIDC_REDIRECT_URI&quot;, &quot;https://python-service.brillianze.de/callback&quot;)
+AUTHTIK_BASE_URL = os.environ.get("AUTHTIK_BASE_URL", "https://auth.brillianze.de")
+OIDC_CLIENT_ID = os.environ.get("OIDC_CLIENT_ID", "python-exampleservice-oidc")
+OIDC_CLIENT_SECRET = os.environ.get("OIDC_CLIENT_SECRET", "")
+OIDC_REDIRECT_URI = os.environ.get("OIDC_REDIRECT_URI", "https://python-service.brillianze.de/callback")
 
 # OAuth-Client initialisieren
 oauth = OAuth(app)
@@ -229,73 +224,73 @@ oauth = OAuth(app)
 # Den OIDC-Provider registrieren — Authlib nutzt die Discovery-URL, um
 # Authorization-Endpunkt, Token-Endpunkt usw. automatisch zu laden
 oauth.register(
-    name=&quot;authentik&quot;,
-    server_metadata_url=f&quot;{AUTHTIK_BASE_URL}/api/v3/providers/oidc/&lt;issuer-id&gt;/.well-known/openid-configuration&quot;,
+    name="authentik",
+    server_metadata_url=f"{AUTHTIK_BASE_URL}/api/v3/providers/oidc/&lt;issuer-id&gt;/.well-known/openid-configuration",
     client_id=OIDC_CLIENT_ID,
     client_secret=OIDC_CLIENT_SECRET,
-    access_token_url=f&quot;{AUTHTIK_BASE_URL}/api/v3/providers/oidc/&lt;issuer-id&gt;/token&quot;,
-    authorize_url=f&quot;{AUTHTIK_BASE_URL}/api/v3/providers/oidc/&lt;issuer-id&gt;/authorize&quot;,
-    client_kw={\&quot;token_endpoint_auth_method\&quot;: \&quot;client_secret_post\&quot;},
+    access_token_url=f"{AUTHTIK_BASE_URL}/api/v3/providers/oidc/&lt;issuer-id&gt;/token",
+    authorize_url=f"{AUTHTIK_BASE_URL}/api/v3/providers/oidc/&lt;issuer-id&gt;/authorize",
+    client_kw={\"token_endpoint_auth_method\": \"client_secret_post\"},
     # PKCE aktivieren: authentik unterstützt S256; CSRF-Schutz im Authorization Code Flow
-    pkce=&quot;S256&quot;,
+    pkce="S256",
 )
 
-@app.route(&quot;/&quot;)
+@app.route("/")
 def index():
-    &quot;&quot;&quot;Startseite: Wenn der Benutzer nicht authentifiziert ist, zum Login weiterleiten.&quot;&quot;&quot;
-    if &quot;user&quot; not in session:
-        return redirect(url_for(&quot;login&quot;))
-    return &quot;&quot;&quot;
+    """Startseite: Wenn der Benutzer nicht authentifiziert ist, zum Login weiterleiten."""
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return """
     &lt;h1&gt;Beispiel-Python-Service — geschützt mit OIDC&lt;/h1&gt;
     &lt;p&gt;Du bist angemeldet als: &lt;b&gt;{}&lt;/b&gt;&lt;/p&gt;
     &lt;p&gt;Access-Token (nicht im Produktivbetrieb im HTML ausgeben!): &lt;code&gt;{}&lt;/code&gt;&lt;/p&gt;
-    &lt;p&gt;&lt;a href=&quot;/logout&quot;&gt;Abmelden&lt;/a&gt;&lt;/p&gt;
-    &quot;&quot;&quot;.format(
-        session.get(&quot;user&quot;, {}).get(&quot;email&quot;, &quot;unbekannt&quot;),
-        session.get(&quot;access_token&quot;)[:20] + &quot;...&quot; if session.get(&quot;access_token&quot;) else &quot;keiner&quot;,
+    &lt;p&gt;&lt;a href="/logout"&gt;Abmelden&lt;/a&gt;&lt;/p&gt;
+    """.format(
+        session.get("user", {}).get("email", "unbekannt"),
+        session.get("access_token")[:20] + "..." if session.get("access_token") else "keiner",
     )
 
-@app.route(&quot;/login&quot;)
+@app.route("/login")
 def login():
-    &quot;&quot;&quot;Authentifizierung starten: Authorization Code Flow an Authentik.&quot;&quot;&quot;
+    """Authentifizierung starten: Authorization Code Flow an Authentik."""
     # Redirect URI muss exakt mit dem in Authentik konfigurierten Redirect URI übereinstimmen
-    redirect_uri = url_for(&quot;callback&quot;, _external=True)
+    redirect_uri = url_for("callback", _external=True)
     return oauth.authentik.authorize_redirect(
         redirect_uri=redirect_uri,
-        scope=&quot;openid profile email&quot;,
+        scope="openid profile email",
     )
 
-@app.route(&quot;/callback&quot;)
+@app.route("/callback")
 def callback():
-    &quot;&quot;&quot;Authentik hat den User zurückgeleitet und einen Code übergeben — Token austauschen.&quot;&quot;&quot;
+    """Authentik hat den User zurückgeleitet und einen Code übergeben — Token austauschen."""
     try:
         token = oauth.authentik.authorize_access_token()
     except Exception as exc:
         # In Produktion: detaillierte Fehlerbehandlung, Logging, keine Stack-Traces an Endnutzer
-        return &quot;Authentifizierungsfehler: {}&quot;.format(exc), 401
+        return "Authentifizierungsfehler: {}".format(exc), 401
 
     # Userinfo vom IdP anfordern — enthält claims wie email, name
     userinfo = oauth.authentik.userinfo(token=token)
-    session[&quot;user&quot;] = userinfo
-    session[&quot;access_token&quot;] = token.get(&quot;access_token&quot;, &quot;&quot;)
+    session["user"] = userinfo
+    session["access_token"] = token.get("access_token", "")
 
-    return redirect(url_for(&quot;index&quot;))
+    return redirect(url_for("index"))
 
-@app.route(&quot;/logout&quot;)
+@app.route("/logout")
 def logout():
-    &quot;&quot;&quot;Session löschen — keine Verbindung zum IdP (Local Logout).&quot;&quot;&quot;
+    """Session löschen — keine Verbindung zum IdP (Local Logout)."""
     session.clear()
-    return redirect(url_for(&quot;index&quot;))
+    return redirect(url_for("index"))
 
-if __name__ == &quot;__main__&quot;:
+if __name__ == "__main__":
     # Entwicklung nur: Flask-Built-in-Server über HTTP. In Produktion: WSGI-Server (Gunicorn)
     # hinter Reverse Proxy mit TLS
-    app.run(host=&quot;0.0.0.0&quot;, port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=False)
 </code></pre>
 <p><strong>Wichtige Hinweise zum Beispiel:</strong></p>
 <ul>
 <li><code>&lt;issuer-id&gt;</code> in den URLs muss durch die tatsächliche ID ersetzt werden, die Authentik vergibt. Die OpenID-Connect-Discovery-URL (<code>/.well-known/openid-configuration</code>) ist der Standardweg — Authlib lädt die Metadaten selbst und du kannst nur die <code>server_metadata_url</code> eingeben. Das spart, die einzelnen Endpunkte manuell zusammenzusuchen.</li>
-<li>Der <code>scope=&quot;openid profile email&quot;</code> definiert, welche Informationen der IdP über den authentifizierten Benutzer zurückgibt. <code>openid</code> ist obligatorisch für OIDC; <code>profile</code> und <code>email</code> sind optional, aber in der Praxis fast immer beantragt.</li>
+<li>Der <code>scope="openid profile email"</code> definiert, welche Informationen der IdP über den authentifizierten Benutzer zurückgibt. <code>openid</code> ist obligatorisch für OIDC; <code>profile</code> und <code>email</code> sind optional, aber in der Praxis fast immer beantragt.</li>
 <li>Den Access-Token nie in Logs, HTML oder Debug-Ausgaben vollständig ausgeben — nur Teile zum Testen, wie im Beispiel gezeigt.</li>
 </ul>
 <h2>Schritt 5: Den Token-Ausstellungsprozess mit curl testen</h2>
@@ -320,62 +315,62 @@ https://python-service.brillianze.de/callback?code=&lt;authorization-code&gt;&am
 <p><strong>Schritt B:</strong> Den Authorization Code gegen einen Access-Token austauschen:</p>
 <pre><code>
 # Die Werte aus deiner Authentik-Client-Konfiguration einsetzen
-CLIENT_ID=&quot;python-exampleservice-oidc&quot;
-CLIENT_SECRET=&quot;&lt;hier-den-Client-Secret-eintragen&gt;&quot;
-REDIRECT_URI=&quot;https://python-service.brillianze.de/callback&quot;
-ISSUER_ID=&quot;&lt;die-issuer-id-aus-authentik&gt;&quot;
-CODE=&quot;&lt;den-code-aus-dem-browser-aufruf-eintragen&gt;&quot;
+CLIENT_ID="python-exampleservice-oidc"
+CLIENT_SECRET="&lt;hier-den-Client-Secret-eintragen&gt;"
+REDIRECT_URI="https://python-service.brillianze.de/callback"
+ISSUER_ID="&lt;die-issuer-id-aus-authentik&gt;"
+CODE="&lt;den-code-aus-dem-browser-aufruf-eintragen&gt;"
 
-curl -X POST &quot;https://auth.brillianze.de/api/v3/providers/oidc/${ISSUER_ID}/token&quot; \
-  -H &quot;Content-Type: application/x-www-form-urlencoded&quot; \
-  -d &quot;grant_type=authorization_code&quot; \
-  -d &quot;code=${CODE}&quot; \
-  -d &quot;redirect_uri=${REDIRECT_URI}&quot; \
-  -d &quot;client_id=${CLIENT_ID}&quot; \
-  -d &quot;client_secret=${CLIENT_SECRET}&quot;
+curl -X POST "https://auth.brillianze.de/api/v3/providers/oidc/${ISSUER_ID}/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code" \
+  -d "code=${CODE}" \
+  -d "redirect_uri=${REDIRECT_URI}" \
+  -d "client_id=${CLIENT_ID}" \
+  -d "client_secret=${CLIENT_SECRET}"
 </code></pre>
 <p><strong>Erwartete Response (JSON):</strong></p>
 <pre><code>
 {
-  &quot;access_token&quot;: &quot;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...&quot;,
-  &quot;refresh_token&quot;: &quot;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...&quot;,
-  &quot;token_type&quot;: &quot;Bearer&quot;,
-  &quot;expires_in&quot;: 3600,
-  &quot;id_token&quot;: &quot;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...&quot;,
-  &quot;scope&quot;: &quot;openid profile email&quot;
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "id_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "scope": "openid profile email"
 }
 </code></pre>
 <p>Der <code>access_token</code> ist ein JWT (JSON Web Token). Du kannst ihn mit einem JWT-Debugger (offline, lokal — keine Tokens an Online-Debugger schicken) inspizieren, um zu sehen, welche Claims er enthält. Typische Claims in einem Authentik-ID-Token: <code>sub</code> (Subject-ID), <code>email</code>, <code>name</code>, <code>preferred_username</code>, <code>iss</code> (Issuer-URL), <code>aud</code> (Client-ID), <code>exp</code> (Ablaufzeit), <code>iat</code> (Ausgestellt-Zeit).</p>
 <p><strong>Validierung des Tokens:</strong></p>
 <p>Das JWT ist signiert — Authentik signiert mit einem privaten RSA-Schlüssel, und der öffentliche Schlüssel steht unter der Discovery-URL (<code>jwks_uri</code>). Eine korrekte Validierung würde den öffentlichen Schlüssel laden, die Signatur verifizieren und <code>exp</code>/<code>iss</code>/<code>aud</code> prüfen. Für den Test mit <code>curl</code> reicht es, den Token gegen den Userinfo-Endpunkt zu prüfen:</p>
 <pre><code>
-TOKEN=&quot;eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...&quot;
+TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-curl -X GET &quot;https://auth.brillianze.de/api/v3/providers/oidc/&lt;issuer-id&gt;/userinfo&quot; \
-  -H &quot;Authorization: Bearer ${TOKEN}&quot;
+curl -X GET "https://auth.brillianze.de/api/v3/providers/oidc/&lt;issuer-id&gt;/userinfo" \
+  -H "Authorization: Bearer ${TOKEN}"
 </code></pre>
 <p><strong>Erwartete Response:</strong></p>
 <pre><code>
 {
-  &quot;sub&quot;: &quot;abcdef123456&quot;,
-  &quot;email&quot;: &quot;testuser@brillianze.de&quot;,
-  &quot;email_verified&quot;: true,
-  &quot;name&quot;: &quot;Test Benutzer&quot;,
-  &quot;preferred_username&quot;: &quot;testuser&quot;
+  "sub": "abcdef123456",
+  "email": "testuser@brillianze.de",
+  "email_verified": true,
+  "name": "Test Benutzer",
+  "preferred_username": "testuser"
 }
 </code></pre>
 <p>Wenn die Userinfo-Antwort kommt und <code>sub</code> + <code>email</code> enthält, ist der Token gültig und die OIDC-Integration korrekt konfiguriert. Der Python-Service kann nun denselben Token vom Authorization Code Flow erhalten und gegen den Userinfo-Endpunkt validieren.</p>
 <h2>Schritt 6: Den Beispiel-Service als Docker-Container starten</h2>
 <p>Das <code>docker-compose.yml</code> für den Beispiel-Service (separates Projekt oder als zusätzlicher Dienst):</p>
 <pre><code>
-version: &quot;3.8&quot;
+version: "3.8"
 
 services:
   python-beispiel-service:
     image: docker.io/python:3.12-slim
     restart: unless-stopped
     ports:
-      - &quot;127.0.0.1:5000:5000&quot;
+      - "127.0.0.1:5000:5000"
     environment:
       FLASK_SECRET_KEY: ${FLASK_SECRET}
       AUTHTIK_BASE_URL: https://auth.brillianze.de
@@ -385,8 +380,8 @@ services:
     volumes:
       - ./app:/app
     command: &gt;
-      bash -c &quot;pip install --no-cache-dir -r /app/requirements.txt &amp;&amp;
-               gunicorn --bind 0.0.0.0:5000 --workers 2 &#x27;app:app&#x27;&quot;
+      bash -c "pip install --no-cache-dir -r /app/requirements.txt &amp;&amp;
+               gunicorn --bind 0.0.0.0:5000 --workers 2 'app:app'"
     networks:
       - authentik-net
 
@@ -398,7 +393,7 @@ networks:
 <h2>Produktivbetrieb: Was du nach derEinrichtung brauchst</h2>
 <h2>TLS über den eigenen Reverse Proxy</h2>
 <p>Authentik führt in der Standardkonfiguration <strong>keine</strong> TLS-terminierung selbst durch. Die <code>AUTHENTIK_URL</code> ist die URL, unter der es erreichbar sein soll — aber das Traffik von Clients zu Authentik muss verschlüsselt sein, sonst werden die Cookies (Session, OIDC- Tokens im Browser) unverschlüsselt übertragen.</p>
-<p>Ein Caddy-Reverse-Proxy in der BsN-Nutzung (vollständigere Konfiguration in einem separaten Artikel &quot;Interne PKI und Caddy für Selfhosted-Dienste&quot;):</p>
+<p>Ein Caddy-Reverse-Proxy in der BsN-Nutzung (vollständigere Konfiguration in einem separaten Artikel "Interne PKI und Caddy für Selfhosted-Dienste"):</p>
 <pre><code>
 auth.brillianze.de {
   tls /pfad/zu/zertifikat.crt /pfad/zu/private-key.key
@@ -415,7 +410,7 @@ auth.brillianze.de {
 <pre><code>
     environment:
       ...
-      AUTHENTIK_PROXY_FIX: &quot;true&quot;
+      AUTHENTIK_PROXY_FIX: "true"
 </code></pre>
 <h2>Backups der Konfiguration</h2>
 <p>Authentik speichert seine Konfiguration (Applications, OIDC-Clients, Policies, Benutzer, Flows) in der PostgreSQL-Datenbank. Die <code>media</code>- und <code>data</code>-Volumes enthalten hochgeladene Bilder (z.B. Logos für Anwendungen) und einige Konfigurationsdateien.</p>
@@ -425,23 +420,23 @@ auth.brillianze.de {
 # authentik-backup.sh — vereinfachtes Backup für Authentik-Datenbank und Volumes
 # In Produktion: verschlüsseln, nach einem separaten Host übertragen, Retention-Policy
 
-BACKUP_DIR=&quot;/var/backups/authentik&quot;
+BACKUP_DIR="/var/backups/authentik"
 DATE=$(date +%Y-%m-%d)
-PG_CONTAINER=&quot;authentik-postgres-1&quot;
-DATA_DIR=&quot;/home/bsn/authentik&quot;
+PG_CONTAINER="authentik-postgres-1"
+DATA_DIR="/home/bsn/authentik"
 
-mkdir -p &quot;${BACKUP_DIR}/${DATE}&quot;
+mkdir -p "${BACKUP_DIR}/${DATE}"
 
-# Datenbank-Dump über docker exec — der Dokumenten-User ist &quot;authentik&quot;
-docker exec &quot;${PG_CONTAINER}&quot; pg_dump -U authentik authentik | \
-  gzip &gt; &quot;${BACKUP_DIR}/${DATE}/authentik-db-${DATE}.sql.gz&quot;
+# Datenbank-Dump über docker exec — der Dokumenten-User ist "authentik"
+docker exec "${PG_CONTAINER}" pg_dump -U authentik authentik | \
+  gzip &gt; "${BACKUP_DIR}/${DATE}/authentik-db-${DATE}.sql.gz"
 
 # Volumes komprimiert archivieren
-tar czf &quot;${BACKUP_DIR}/${DATE}/authentik-media-${DATE}.tar.gz&quot; -C &quot;${DATA_DIR}&quot; media
-tar czf &quot;${BACKUP_DIR}/${DATE}/authentik-data-${DATE}.tar.gz&quot; -C &quot;${DATA_DIR}&quot; data
+tar czf "${BACKUP_DIR}/${DATE}/authentik-media-${DATE}.tar.gz" -C "${DATA_DIR}" media
+tar czf "${BACKUP_DIR}/${DATE}/authentik-data-${DATE}.tar.gz" -C "${DATA_DIR}" data
 
 # Alte Backups (älter als 30 Tage) aufräumen
-find &quot;${BACKUP_DIR}&quot; -type d -mtime +30 -exec rm -rf {} \;
+find "${BACKUP_DIR}" -type d -mtime +30 -exec rm -rf {} \;
 </code></pre>
 <p>Das Backup alleine bringt nichts, wenn es nicht getestet wurde — ein Restore-Test (Datenbank in eine Test-Instanz laden, prüfen ob Auth-Flows und Clients funktionieren) sollte mindestens einmal pro Quartal gemacht werden.</p>
 <h2>Ausfallverhalten wenn der Identity Provider steht</h2>
@@ -451,7 +446,7 @@ find &quot;${BACKUP_DIR}&quot; -type d -mtime +30 -exec rm -rf {} \;
 <li><strong>Access-Token in Diensten:</strong> Ein Access-Token, das der Dienst bereits erhalten hat, ist solange gültig, bis es abläuft (<code>expires_in</code>). Wenn der Dienst die Token nicht selbst verlängern muss (weil sie länger leben als die geplante IdP-Auszeit), können Nutzer solange weiterarbeiten, bis ihr Access-Token abläuft.</li>
 <li><strong>Refresh-Token:</strong> Wenn der Dienst den Refresh-Token-Flow nutzt und versucht, ein neues Access-Token zu holen, während der IdP offline ist — der Refresh scheitert. Das ist das Szenario, in dem Nutzer eine Unterbrechung merken.</li>
 </ul>
-<p>Praxisempfehlung: Für wenige kritische Dienste (z.B. das Ticketsystem) kannst du die Access-Token-Lebensdauer entsprechend lang bemessen (z.B. 8 Stunden), Refresh-Token ebenfalls, und machst es den Nutzern so gut wie möglich. Für hochkritische Dienste ist ein kluges Fallback (z.B. lokale Fallback-Authentifizierung mit eigenem Benutzernamens-Verzeichnis, das nur im Notbetrieb aktiviert wird) eine Facility, die enterprise-grade IdPs bieten. Authentik hat keine eingebaute &quot;Notfall-Modus&quot;-Funktion — das müsstest du selbst bauen (z.B. eine gesonderte Anwendung ohne OIDC-Client-Integration in der Produktion, aber mit der gleichen Benutzerdatenbank im Hintergrund über den Authentik-API-Schnittstelle oder direkt über die Datenbank).</p>
+<p>Praxisempfehlung: Für wenige kritische Dienste (z.B. das Ticketsystem) kannst du die Access-Token-Lebensdauer entsprechend lang bemessen (z.B. 8 Stunden), Refresh-Token ebenfalls, und machst es den Nutzern so gut wie möglich. Für hochkritische Dienste ist ein kluges Fallback (z.B. lokale Fallback-Authentifizierung mit eigenem Benutzernamens-Verzeichnis, das nur im Notbetrieb aktiviert wird) eine Facility, die enterprise-grade IdPs bieten. Authentik hat keine eingebaute "Notfall-Modus"-Funktion — das müsstest du selbst bauen (z.B. eine gesonderte Anwendung ohne OIDC-Client-Integration in der Produktion, aber mit der gleichen Benutzerdatenbank im Hintergrund über den Authentik-API-Schnittstelle oder direkt über die Datenbank).</p>
 <h2>Passwortrichtlinien</h2>
 <p>Authentik hat unter <em>Einstellungen → Passwortrichtlinien</em> grundlegende Regeln: Mindestlänge, Komplexitätsanforderungen (Großbuchstaben, Ziffern, Sonderzeichen), Verbotsliste für häufige Passwörter. Diese Einstellungen gelten für die Passwörter, die Nutzer gegen den IdP selbst setzen — nicht für Service-Accounts oder andere Systeme.</p>
 <p>In kleinen Firmen ist eine Praxis, die funktioniert: 12 Zeichen Mindestlänge, keine bekannten Passwörter (Authentik kann Common-Passwort-Listen laden), Protektion gegen Recycling (Passwort darf nicht dem letzten dritten Passwort entsprechen). Für besonders geschützte Accounts (Admin, IdP-Admin) zusätzlich einen Hardware-Schlüssel (YubiKey FIDO2) zu verlangen — Authentik unterstützt WebAuthn (FIDO2) als MFA-Methode, die ist im Enterprise-Kontext einer kleinen Firma eine sinnvolle Investition.</p>
@@ -469,7 +464,7 @@ find &quot;${BACKUP_DIR}&quot; -type d -mtime +30 -exec rm -rf {} \;
 <p>Eine typische Architektur für eine kleine Firma sieht so aus: Interne PKI (via BsN-Artikel) vergibt Zertifikate für alle Dienste, Caddy (via BsN-Artikel) terminiert TLS und routet Traffic, und Authentik (dieser Artikel) sitzt vor oder hinter dem Caddy und authentifiziert Nutzer auf Diensten, die OIDC unterstützen. Dienste, die kein OIDC/SAML unterstützen, bleiben ohne SSO schutz — das ist eine Einschränkung, die du akzeptieren musst, oder du setzt eine alternative Schutzschicht.</p>
 <h2>Häufige Fehler — drei realistische Beispiele</h2>
 <h2>Fehler 1: Redirect URI stimmt nicht exakt überein</h2>
-<p><strong>Symptom:</strong> Nach dem Login auf Authentik kommt eine Fehlermeldung: <em>„Invalid redirect URI&quot;</em> oder der Nutzer wird abgelehnt, ohne dass ein Token ausgestellt wird.</p>
+<p><strong>Symptom:</strong> Nach dem Login auf Authentik kommt eine Fehlermeldung: <em>„Invalid redirect URI"</em> oder der Nutzer wird abgelehnt, ohne dass ein Token ausgestellt wird.</p>
 <p><strong>Ursache:</strong> Der Redirect URI, den der Client im Authorization-Request sendet, stimmt nicht exakt mit dem Redirect URI überein, den du in der Authentik-OIDC-Client-Konfiguration eingetragen hast. Ein häufiger Fall: <code>https://python-service.brillianze.de/callback</code> in Authentik, aber im Client steht <code>http://</code> statt <code>https://</code>, oder ein abschließender Schrägstrich ist vorhanden (<code>/callback/</code> statt <code>/callback</code>).</p>
 <p><strong>Lösung:</strong> Redirect URIs in OAuth2 sind case-sensitiv und müssen exakt übereinstimmen. Prüfe in Authentik, was konfiguriert ist, und prüfe im Client-Code, was gesendet wird. <code>curl</code> hilft beim Debuggen — wenn du den Authorization-Request per <code>curl -v</code> sendest, siehst du die exakte URL im <code>Location</code>-Header des Redirects.</p>
 <h2>Fehler 2: Token-Empfang ohne State-Validierung</h2>
@@ -492,34 +487,34 @@ docker compose up -d
 <p><strong>Kann ich Authentik ohne Docker betreiben?</strong></p>
 <p>Authentik bringt ein Python-Paket (<code>pip install authentik</code>) und läuft theoretisch ohne Docker. In der Praxis empfiehlt das Authentik-Team Docker oder den Omnibus-Paket (für Debian/Ubuntu, kein Docker nötig). Für einen produktiven Betrieb ohne Docker müsstest du PostgreSQL, Redis, das Authentik-Paket und die Authentik-Webrahmen manuell installieren, konfigurieren und als Systemdienste laufen lassen — das ist mehr Wartung auf dich, als der Docker-Weg. Für ein kleines Homelab oder eine kleine Firma ist Docker die dokumentierte und unterstützte Variante.</p>
 <p><strong>Ist Keycloak besser als Authentik?</strong></p>
-<p>&quot;Better&quot; hängt vom Anwendungsfall ab. Keycloak hat mehr Features (Identity-Brokering zu anderen IdPs, komplexere Rollen-Engine, SAML-Identity-Provider, User-Federation zu LDAP/AD) — aber mehr Komplexität. Authentik ist simpler, OIDC-first, weniger Konfigurationsaufwand für Standard-Use-Cases. Wenn du eine SAML-lastige Umgebung mit vielen Legacy-Applikationen hast, die nah an AD anbinden wollen, ist Keycloak die sinnvollere Wahl. Wenn du primär moderne Webanwendungen mit OIDC hast, ist Authentik der günstigere Einstieg.</p>
+<p>"Better" hängt vom Anwendungsfall ab. Keycloak hat mehr Features (Identity-Brokering zu anderen IdPs, komplexere Rollen-Engine, SAML-Identity-Provider, User-Federation zu LDAP/AD) — aber mehr Komplexität. Authentik ist simpler, OIDC-first, weniger Konfigurationsaufwand für Standard-Use-Cases. Wenn du eine SAML-lastige Umgebung mit vielen Legacy-Applikationen hast, die nah an AD anbinden wollen, ist Keycloak die sinnvollere Wahl. Wenn du primär moderne Webanwendungen mit OIDC hast, ist Authentik der günstigere Einstieg.</p>
 <p><strong>Was ist der Unterschied zwischen OIDC und SAML? Ich dachte, SSO heißt SSO.</strong></p>
 <p>OIDC (OpenID Connect) ist ein moderner Standard auf dem HTTPS-Protokoll, JSON-basiert, mit JWT-Tokens — er ist das Protokoll der Wahl für neue Webanwendungen. SAML (Security Assertion Markup Language) ist älter, XML-basiert, schwerer zu handhaben, aber noch in vielen Enterprise- und Legacy-Umgebungen verbreitet (insbesondere bei SOAP-basierten Applikationen und bestimmten Single-Sign-On-Lösungen von Herstellern). Beide lösen SSO — aber OIDC ist leichter zu integrieren in moderne Tech-Stacks, SAML ist in bestimmten Legacy-Kontexten das, was man braucht.</p>
 <p><strong>Was passiert, wenn Authentik kompromittiert wird?</strong></p>
 <p>Wenn ein Angreifer Zugang zum Authentik-Server und zu seinen Secrets (insbesondere dem <code>AUTHENTIK_SECRET_KEY</code> und den OIDC-Client-Secrets) erhält, kann er Tokens für sich selbst ausstellen, die von verbundenen Diensten als gültig angesehen werden. Das ist der schlechteste Fall. Gegenmaßnahmen: Authentik auf einem dedizierten Server oder mindestens isoliert von anderen Diensten betreiben, Zugriff auf den Server streng begrenzen (nur SSH-Key, kein Passwort-Login, Firewall, Security-Updates), Backups verschlüsselt und extern halten, Secrets nicht in unverschlüsselten Konfigurationsdateien ablegen. Für besonders kritische Umgebungen ist eine ausgelagerte IdP- Variante (Cloudflare Access, ein anderer Managed IdP) eine Alternative — aber mit den Datenabhängigkeiten, die das mit sich bringt.</p>
 <h2>Interne Verlinkungsvorschläge</h2>
-<p>1. <strong>sicherer-fernzugriff.md</strong> — <em>„Sicher von unterwegs auf den Heimserver zugreifen: Tailscale, WireGuard und Reverse-Tunnel im Vergleich&quot;</em> — Verlinkung im Abschnitt zur Architektur: Der SSO-IdP ist meist über den eigenen Reverse Proxy von außen erreichbar; wie du den Tunnel schützt und die Zugänglichkeit regelst, steht in diesem Artikel.</p>
-<p>2. <strong>docker-vs-vm.md</strong> — <em>„Docker-Container vs. VM: Wann welcher Virtualisierungstyp das Richtige ist&quot;</em> — Verlinkung in der Docker-Compose-Anleitung: Wenn dein Server ein Hypervisor ist, kannst du Authentik auch als VM statt als Container betreiben; die Entscheidungshilfe in diesem Artikel hilft dir, die Infrastruktur-Entscheidung zu treffen.</p>
+<p>1. <strong>sicherer-fernzugriff.md</strong> — <em>„Sicher von unterwegs auf den Heimserver zugreifen: Tailscale, WireGuard und Reverse-Tunnel im Vergleich"</em> — Verlinkung im Abschnitt zur Architektur: Der SSO-IdP ist meist über den eigenen Reverse Proxy von außen erreichbar; wie du den Tunnel schützt und die Zugänglichkeit regelst, steht in diesem Artikel.</p>
+<p>2. <strong>docker-vs-vm.md</strong> — <em>„Docker-Container vs. VM: Wann welcher Virtualisierungstyp das Richtige ist"</em> — Verlinkung in der Docker-Compose-Anleitung: Wenn dein Server ein Hypervisor ist, kannst du Authentik auch als VM statt als Container betreiben; die Entscheidungshilfe in diesem Artikel hilft dir, die Infrastruktur-Entscheidung zu treffen.</p>
 <p>3. <strong>Artikel zur internen PKI und Caddy</strong> (falls verfasst — andernfalls interner Platzhalter) — Verlinkung im TLS-Abschnitt: Wie du Zertifikate für den Authentik-IdP und den Beispiel-Service beschaffst und einsetzt, steht im PKI-Artikel; die Caddy-Konfiguration für Reverse Proxy steht im Caddy-Artikel.</p>
 <p>4. <strong>Artikel über Passwort-Management und 2FA in der Firma</strong> (falls existent — andernfalls Verweis auf BsN-Praxis) — Verlinkung im Passwortrichtlinien-Abschnitt: Wie du YubiKey/FIDO2 in Authentik einbindest, User-Registration für MFA und Betrieb von Hardware-Schlüsseln in kleinen Teams — sobald dieser Artikel existiert.</p>
 <h2>Bildvorschläge</h2>
-<p>**Bild 1: SSO-aal&quot;</p>
+<p>**Bild 1: SSO-aal"</p>
 <ul>
 <li><strong>Typ:</strong> Diagramm (Flussdiagramm, schematisch)</li>
 <li><strong>Inhalt:</strong> Nutzer im Browser → IdP-Login-Seite (Authentik) → Redirect mit Code → Beispiel-Python-Service empfängt Token → Zugriff auf geschützte Ressource. Pfeile mit Bezeichnungen: <em>Authorization Request</em>, <em>Authorization Code</em>, <em>Access Token</em>, <em>Userinfo</em>.</li>
-<li><strong>Alt-Text:</strong> &quot;Ablaufdiagramm des OAuth2-Authorization-Code-Flows zwischen Browser, Authentik-IdP und einem Beispiel-Python-Service: Der Nutzer ruft den geschützten Service auf, wird zum IdP weitergeleitet, meldet sich dort an und löst den Code gegen einen Access-Token aus, den der Service zur Authentifizierung nutzt.&quot;</li>
+<li><strong>Alt-Text:</strong> "Ablaufdiagramm des OAuth2-Authorization-Code-Flows zwischen Browser, Authentik-IdP und einem Beispiel-Python-Service: Der Nutzer ruft den geschützten Service auf, wird zum IdP weitergeleitet, meldet sich dort an und löst den Code gegen einen Access-Token aus, den der Service zur Authentifizierung nutzt."</li>
 </ul>
 <p><strong>Bild 2: Vergleichstabelle der drei Kandidaten</strong></p>
 <ul>
 <li><strong>Typ:</strong> Tabelle als Grafik (oder direkt als Markdown-Tabelle — das ist in HTML einfacher)</li>
 <li><strong>Inhalt:</strong> Die Tabelle aus dem Artikel mit Authentik, Keycloak, Cloudflare Access als Spalten — Protokolle, Benutzerverzeichnis, Lizenzkosten, Hardwarebedarf, Bedienaufwand, Eignung — visuell hervorgehoben als zentrale Entscheidungshilfe.</li>
-<li><strong>Alt-Text:</strong> &quot;Vergleichstabelle von Authentik, Keycloak und Cloudflare Access nach Protokoll (OIDC/SAML), Benutzerverzeichnis, Lizenzkosten, Hardwarebedarf, Bedienaufwand und Eignung für kleine Firmen und Homelab-Betreiber.&quot;</li>
+<li><strong>Alt-Text:</strong> "Vergleichstabelle von Authentik, Keycloak und Cloudflare Access nach Protokoll (OIDC/SAML), Benutzerverzeichnis, Lizenzkosten, Hardwarebedarf, Bedienaufwand und Eignung für kleine Firmen und Homelab-Betreiber."</li>
 </ul>
 <p><strong>Bild 3: Docker-Compose-Architektur-Skizze</strong></p>
 <ul>
 <li><strong>Typ:</strong> Container-Architekturskizze (schematisch, nicht fotorealistisch)</li>
 <li><strong>Inhalt:</strong> Drei Container (PostgreSQL, Redis, Authentik) in einem Docker-Netzwerk, plus ein separater Container für den Beispiel-Python-Service, hinter einem Caddy-Reverse-Proxy. Beschriftungen für die Verbindungen (TLS, OIDC-Protokolle).</li>
-<li><strong>Alt-Text:</strong> &quot;Skalarische Docker-Compose-Architektur: PostgreSQL und Redis als Backend-Dienste, Authentik als IdP, ein Beispiel-Python-Service als OIDC-Client, alles über einen Caddy-Reverse-Proxy mit TLS-Terminierung nach außen.&quot;</li>
+<li><strong>Alt-Text:</strong> "Skalarische Docker-Compose-Architektur: PostgreSQL und Redis als Backend-Dienste, Authentik als IdP, ein Beispiel-Python-Service als OIDC-Client, alles über einen Caddy-Reverse-Proxy mit TLS-Terminierung nach außen."</li>
 </ul>
 <h2>Zielgruppe: Wann ein externer Anbieter wie Cloudflare Access die pragmatischere Wahl ist</h2>
 <p>Dieser Artikel hat Authentik und Keycloak als selbst-gehostete IdP-Lösungen behandelt. Für viele kleine Firmen (5–50 Mitarbeiter) und fortgeschrittene Homelab-Betreiber ist das der richtige Weg: volle Kontrolle über die Identitätsdaten, keine Abhängigkeit von einem Cloud-Anbieter, keine laufenden Kosten pro Nutzer.</p>
@@ -530,12 +525,10 @@ docker compose up -d
 <li><strong>Web-Dienste mit wenigen Integrationsanforderungen:</strong> Wenn deine Dienste primär Web-Applikationen sind, die über den Browser genutzt werden, und Machine-to-Machine-Integrationen (Dienst-zu-Dienst-Auth) nicht zentral sein müssen, reicht Cloudflare Access oft. OIDC für Dienste, die hinter dem Access-Proxy stehen, ist dort konfiguriert; für reine API-Zugänge brauchst du einen anderen Mechanismus.</li>
 <li><strong>Getrennte Identitäten für verschiedene Ziele:</strong> Wenn du in Zukunft eine Trennung willst (z.B. Mitarbeiter-Identitäten bei einem Anbieter, Homelab-Identitäten lokal), ist ein externer Anbieter für die Firmenseite eine saubere Trennung — und die Homelab-Seite bleibt bei deinem eigenen IdP, wenn du das willst.</li>
 </ul>
-<p>Die Entscheidung ist keine Frage von &quot;right vs. wrong&quot;, sondern von den tatsächlichen Bedingungen: Was hast du bereits (Server, Domain, Wartung), was willst du vermeiden (Abhängigkeit, Kosten, Komplexität), und was sind die tatsächlichen Integrationsanforderungen deiner Dienste. Für den typischen BsN-Kunden mit fünf bis 15 Mitarbeitern, einem oder zwei Servern und Web-Diensten, die OIDC unterstützen, ist Authentik mit Docker der beileibe pragmatischste Weg — für Kunden mit mehr Legacy-Anforderungen oder ohne Server-Wunschlust ist Cloudflare Access eine legitime, pragmatische Alternative.</p>
-<hr>
+<p>Die Entscheidung ist keine Frage von "right vs. wrong", sondern von den tatsächlichen Bedingungen: Was hast du bereits (Server, Domain, Wartung), was willst du vermeiden (Abhängigkeit, Kosten, Komplexität), und was sind die tatsächlichen Integrationsanforderungen deiner Dienste. Für den typischen BsN-Kunden mit fünf bis 15 Mitarbeitern, einem oder zwei Servern und Web-Diensten, die OIDC unterstützen, ist Authentik mit Docker der beileibe pragmatischste Weg — für Kunden mit mehr Legacy-Anforderungen oder ohne Server-Wunschlust ist Cloudflare Access eine legitime, pragmatische Alternative.</p>
+<hr/>
 <p><em>Der Artikel liegt als Markdown-Draft vor (C:\00hermes\unternehmen\artikel-neu\drafts\sso-selbst-gehostet.md) und wurde nicht veröffentlicht. Der Publish-Schritt — HTML-Generierung über das BsN-Build-Skript und Push ins getwo/homelab-vergleich-Repository — ist manuell durch Benjamin durchzuführen, nachdem der Artikel auf inhaltliche Korrektheit geprüft wurde.</em></p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

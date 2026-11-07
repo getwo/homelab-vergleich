@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Jellyfin Hardware-Transcoding: Intel Quick Sync vs NVIDIA — Homelab Vergleich</title>
-<meta name="description" content="Jellyfin Hardware-Transcoding: Intel Quick Sync vs NVIDIA  Dein Jellyfin-Server ruckelt, sobald du einen Film aufs Smartphone oder Smart-TV streamst, ">
-<link rel="stylesheet" href="../style.css">
+<meta content="Jellyfin Hardware-Transcoding: Intel Quick Sync vs NVIDIA  Dein Jellyfin-Server ruckelt, sobald du einen Film aufs Smartphone oder Smart-TV streamst, " name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Jellyfin Hardware-Transcoding: Intel Quick Sync vs NVIDIA</h1>
 <p>Dein Jellyfin-Server ruckelt, sobald du einen Film aufs Smartphone oder Smart-TV streamst, und die CPU-Last schnellt in die Höhe – dabei liegt die Lösung oft schon in deiner Hardware. Hardware-Transcoding verlagert das Umrechnen von Videos auf die Grafikeinheit deines Prozessors oder eine dedizierte GPU. In diesem Artikel erfährst du, was Hardware-Transcoding ist, warum es sich lohnt, wo Intel Quick Sync und NVIDIA NVENC ihre Stärken haben und wie du es in Jellyfin aktivierst.</p>
 <h2>Was ist Hardware-Transcoding?</h2>
@@ -50,19 +51,19 @@ services:
     devices:
       - /dev/dri:/dev/dri
     group_add:
-      - &quot;44&quot; # video-Gruppe für Zugriff auf /dev/dri
+      - "44" # video-Gruppe für Zugriff auf /dev/dri
     volumes:
       - ./config:/config
       - ./media:/media:ro
     ports:
-      - &quot;8096:8096&quot;
+      - "8096:8096"
     restart: unless-stopped
 </code></pre>
 <p>Danach aktivierst du die Beschleunigung in der Weboberfläche: <strong>Dashboard → Wiedergabe → Transcoding</strong>. Wähle bei „Hardware-Beschleunigung“ den passenden Eintrag – <strong>Quick Sync</strong> für Intel, <strong>NVENC</strong> für NVIDIA. Darunter kannst du zusätzlich die hardwarebeschleunigte Kodierung aktivieren, damit auch ausgehende Streams die GPU nutzen. Ein Neustart des Containers schließt die Einrichtung ab.</p>
 <p>Ob es funktioniert, prüfst du direkt im Dashboard: Beim Abspielen eines Videos zeigt Jellyfin im Wiedergabe-Infomenü an, ob der Stream per Hardware transkodiert wird.</p>
 <h2>Empfehlung</h2>
 <p>Für die allermeisten Homelabs ist <strong>Intel Quick Sync die beste Wahl</strong>: keine Zusatzkosten, minimaler Stromverbrauch und völlig ausreichende Leistung für mehrere parallele Streams. <strong>NVIDIA NVENC</strong> ist nur dann sinnvoll, wenn die Grafikkarte ohnehin schon da ist oder du gezielt maximale Stream-Anzahl und Qualität brauchst – und bereit bist, den Stromverbrauch dafür zu tragen. Wer bereits ein [Homelab betreibt](homelab-einrichten-guide.md) und [Docker beherrscht](docker-einsteiger.md), aktiviert Hardware-Transcoding in unter einer Stunde und streamt danach flüssig, ohne die CPU an ihre Grenzen zu treiben.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

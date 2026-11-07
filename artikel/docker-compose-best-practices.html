@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets — Homelab Vergleich</title>
-<meta name="description" content="Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets  Ein Homelab wächst schnell: Irgendwann laufen Pihole, Home Assistant, Jel">
-<link rel="stylesheet" href="../style.css">
+<meta content="Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets  Ein Homelab wächst schnell: Irgendwann laufen Pihole, Home Assistant, Jel" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets</h1>
 <p>Ein Homelab wächst schnell: Irgendwann laufen Pihole, Home Assistant, Jellyfin, Nextcloud und ein Dutzend weitere Dienste parallel – und jeder davon braucht eine eigene Konfiguration. Genau hier entscheidet sich, ob dein Setup wartbar bleibt oder zum undurchschaubaren Flickenteppich wird. Der Schlüssel liegt in sauberen <code>docker-compose.yml</code>-Dateien. Dieser Guide zeigt die wichtigsten Best Practices, mit denen deine Stacks übersichtlich, sicher und nachvollziehbar bleiben.</p>
 <h2>Sprechende Namen: Container und Services klar benennen</h2>
@@ -66,7 +67,7 @@ services:
   db:
     image: mariadb:11
     healthcheck:
-      test: [&quot;CMD&quot;, &quot;healthcheck.sh&quot;, &quot;--connect&quot;, &quot;--innodb_initialized&quot;]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -128,7 +129,7 @@ services:
     networks:
       - internal
     healthcheck:
-      test: [&quot;CMD&quot;, &quot;healthcheck.sh&quot;, &quot;--connect&quot;]
+      test: ["CMD", "healthcheck.sh", "--connect"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -148,7 +149,7 @@ docker compose pull       # Images aktualisieren
 </code></pre>
 <h2>Fazit</h2>
 <p>Saubere Docker-Compose-Dateien sind keine Kosmetik, sondern die Grundlage eines wartbaren Homelabs: Sprechende Namen, persistente Volumes, klar getrennte Netzwerke und ausgelagerte Secrets machen jeden Stack verständlich und sicher. Healthchecks und Restart-Policies sorgen dafür, dass deine Dienste Ausfälle selbst überstehen – und eine konsequente Ordnerstruktur macht das gesamte Setup reproduzierbar und einfach zu sichern. Wer diese Best Practices von Anfang an beherzigt, spart sich später Stunden an Fehlersuche.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

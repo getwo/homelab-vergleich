@@ -1,24 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Eigener Server oder doch gehostet? Cloud-Hoster gegen Homelab im ehrlichen Kosten- und Aufwandsvergleich</title>
-<meta name="description" content="Kostenvergleich: VPS bei einem Hoster vs. eigener Mini-PC zu Hause. Strom, Hardware, Wartung, versteckte Preise – mit echten Zahlen für 2026 und einem Entscheidungsbaum.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Kostenvergleich: VPS bei einem Hoster vs. eigener Mini-PC zu Hause. Strom, Hardware, Wartung, versteckte Preise – mit echten Zahlen für 2026 und einem Entscheidungsbaum." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Eigener Server oder doch gehostet? Cloud-Hoster gegen Homelab im ehrlichen Kosten- und Aufwandsvergleich</h1>
-<p>Die Frage, die jede Person im Homelab irgendwann stellt: Soll ich bei einem Cloud-Hoster bleiben, oder soll ich meine Dienste selbst zu Hause betreiben? Sie klingt einfacher, als sie ist – und die Antwort, die die meisten Angebote geben, ist meist genauso einseitig, wie sie verkauft wird: „Selbsthosting ist günstiger!&quot; oder „Cloud ist immer die bessere Wahl!&quot;</p>
+<p>Die Frage, die jede Person im Homelab irgendwann stellt: Soll ich bei einem Cloud-Hoster bleiben, oder soll ich meine Dienste selbst zu Hause betreiben? Sie klingt einfacher, als sie ist – und die Antwort, die die meisten Angebote geben, ist meist genauso einseitig, wie sie verkauft wird: „Selbsthosting ist günstiger!" oder „Cloud ist immer die bessere Wahl!"</p>
 <p>Bei der BsN isolieren wir das Problem nicht in eine dieser Ecken. Es gibt keine pauschale Antwort auf die Frage, ob eigene Server oder gehostete Dienste die richtige Wahl sind. Die Entscheidung hängt von dem ab, was die Dienste tun, wie viele Menschen sie nutzen, wie kritisch ein Ausfall ist und wie viel Zeit eine Person investieren will oder kann. Was für eine private Testumgebung mit zwei Containern völlig in Ordnung ist, kann für einen produktiven Dienst mit Kundendaten völlig ungeeignet sein – und umgekehrt.</p>
 <p>Dieser Artikel vergleicht beide Wege mit konkreten Zahlen, zeigt die versteckten Kosten auf beiden Seiten und liefert einen Entscheidungsbaum, der eine Einzelfallentscheidung ersetzt.</p>
 <h2>Kostenvergleich: VPS vs. Mini-PC zu Hause</h2>
@@ -43,17 +38,17 @@
 <p>| Unterschied | — | −389,36 € (selbst gehostet günstiger) |</p>
 <p>| Geringster Monatspreis (ohne Hardware-Abschreibung) | 96,00 € | 20,22 € |</p>
 <p>Auf den ersten Blick ist der Mini-PC günstiger – bei gleichem Zeitraum um rund 390 €. Die Frage ist aber nicht, wie viel Geld in 12 Monaten rauskommt. Hier beginnt der versteckte Preis.</p>
-<h2>Der versteckte Preis von „selbst&quot;: Zeit und Verantwortung</h2>
+<h2>Der versteckte Preis von „selbst": Zeit und Verantwortung</h2>
 <p>Was auf der Rechnung nicht steht, Moleküle an Faktoren sind, die eine selbst gehostete Umgebung erfordert.</p>
-<p><strong>Initialaufwand.</strong> Ein Mini-PC ist gekauft, aber er ist nicht einsatzbereit. Betriebssystemeinrichtung, Basis-Sicherheit, Container-Plattform, SSL-Zertifikate (z. B. Let&#x27;s Encrypt), Netzwerk-Konfiguration, Port-Forwarding oder Cloudflare-Tunnel – das sind im ersten Monat mehrere Stunden bis ein Tag Arbeit, je nach Vorwissen.</p>
+<p><strong>Initialaufwand.</strong> Ein Mini-PC ist gekauft, aber er ist nicht einsatzbereit. Betriebssystemeinrichtung, Basis-Sicherheit, Container-Plattform, SSL-Zertifikate (z. B. Let's Encrypt), Netzwerk-Konfiguration, Port-Forwarding oder Cloudflare-Tunnel – das sind im ersten Monat mehrere Stunden bis ein Tag Arbeit, je nach Vorwissen.</p>
 <p><strong>Laufende Wartung.</strong> Container-Aktualisierungen, Sicherheitsupdates des Hostsystems, Paket-Updates, Kernel-Updates – regelmäßig, damit der Dienst sicher bleibt. Bei einem einzigen Dienst mag das einmal im Monat sein, bei mehreren Diensten steigt die Anzahl der zu überwachenden Komponenten linear.</p>
-<p><strong>Zertifikate.</strong> Let&#x27;s Encrypt-Zertifikate laufen nach 90 Tagen ab. Automatische Erneuerung ist einrichtbar (z. B. mit Certbot), aber nur, wenn die DNS-Konfiguration stimmt und die Erneuerungs-URLs erreichbar sind. Wenn der eigenständige Server einmal nicht von außen erreichbar ist – etwa wegen eines Router-Neustarts – schlagen Zertifikate aus, und die Dienste melden das.</p>
+<p><strong>Zertifikate.</strong> Let's Encrypt-Zertifikate laufen nach 90 Tagen ab. Automatische Erneuerung ist einrichtbar (z. B. mit Certbot), aber nur, wenn die DNS-Konfiguration stimmt und die Erneuerungs-URLs erreichbar sind. Wenn der eigenständige Server einmal nicht von außen erreichbar ist – etwa wegen eines Router-Neustarts – schlagen Zertifikate aus, und die Dienste melden das.</p>
 <p><strong>Monitoring.</strong> Wer selbst hostet, muss selbst sehen, ob etwas ausgefallen ist. Das bedeutet entweder ein eigenes Monitoring-System (z. B. Prometheus, Grafana, Uptime-Kuma), das selbst gewartet werden muss oder ein manuelles Kopf-Nicken, ob der Server noch läuft. Beides hat einen Preis.</p>
 <p><strong>Backup.</strong> Ein Backup-Mechanismus muss selbst implementiert, getestet und regelmäßig überprüft werden. Daten, die nur auf dem eigenen Server liegen und nicht gesichert sind, sind bei einem hardwarebedingten Totalausfall weg. Das 3-2-1-Prinzip (drei Kopien, zwei Medien, eine außerhalb) erfordert einen zweiten Speicherort – was in der Regel wieder Kosten bedeutet.</p>
 <p><strong>Ausfallrisiko.</strong> Ein Server aus, Stromausfall, Router-Defekt, Internetausfall – im eigenen Haus gibt es keinen Ansprechpartner, der das behebt. Der Ausfall dauert, bis eine Person es repariert. Im schlimmsten Fall ist das mehrere Stunden oder Tage.</p>
 <p><strong>Fachwissen-Aufwand.</strong> Ein bedienender Server zu Hause ist nicht dasselbe wie ein produktiver Server. Fehlkonfigurationen, Sicherheitslücken, Probleme mit Netzwerkverbindungen – das Wissen, das erforderlich ist, um all das zu vermeiden und zu beheben, ist nicht kostenlos. Es ist Zeit.</p>
 <p><strong>Zusammengefasst:</strong> Der versteckte Preis von selbst hosten ist Zeit. Bei einer Person, die bereits die Fähigkeiten hat und Freude daran hat, ist die Zeit kein Kostenfaktor. Bei einer Person, die die Zeit anderweitig einsetzen will oder muss, ist die Zeit der größte Kostenfaktor – oft größer als die bereits berechneten Stromkosten.</p>
-<h2>Der versteckte Preis von „gehostet&quot;: Abhängigkeit und Einschränkungen</h2>
+<h2>Der versteckte Preis von „gehostet": Abhängigkeit und Einschränkungen</h2>
 <p>Auf der anderen Seite stehen Kosten, die bei einem Hoster unausgesprochen bleiben.</p>
 <p><strong>Anbieterbindung.</strong> Die Entscheidung für einen Hoster ist eine Entscheidung für dessen Infrastruktur, sein Preisgestaltungssystem und seine Bedingungen. Der Umstieg auf einen anderen Anbieter ist möglich, erfordert aber Migration, Konfiguration und Zeit.</p>
 <p><strong>Datenhoheit.</strong> Bei einem gehosteten Dienst liegt die Datenverantwortung beim Anbieter. Für Projekte mit personenbezogenen Daten oder sensiblen Informationen ist das ein rechtlicher und praktischer Unterschied. Selbst, wenn der Anbieter vertrauenswürdig ist, liegt die physische Kontrolle nicht bei der jeweiligen Person.</p>
@@ -122,12 +117,12 @@
 <p><strong>Stufe 2 – Für Homelab-Enthusiasten mit Fähigkeiten und Zeit:</strong> Eigener Mini-PC zu Hause. Geringere direkte Kosten als VPS, volle Kontrolle, Daten bleiben lokal. Erfordert Wartungszeit, Monitoring, Backup-Strategie und Bereitschaft für Ausfallzeiten. Sinnvoll, wenn die Arbeit an der Serverpflege als Hobby oder Lernziel verstanden wird.</p>
 <p><strong>Stufe 3 – Für produktive Dienste mit Daten oder mehreren Anforderungen:</strong> Kombination aus eigenem Server (Daten und Infrastruktur lokal) und gehostetem Backup-Ziel. Die Dienste laufen auf dem eigenen Server, Backups werden an einem separaten Ort gespeichert. Falls ein zweiter Standort existiert – bei Verwandten, in einer anderen Wohnung – kann Redundanz hinzukommen. Für Dienste mit besonderen rechtlichen oder compliance relevanten Anforderungen ist dieser gemischte Weg in der Regel sinnvoller als ein reines Hosting oder ein reines Homelab.</p>
 <p>Es gibt keine pauschale Antwort auf die Frage nach eigenem Server oder Hosting. Die Antwort hängt davon ab, was die Dienste tun, wie kritisch sie sind, wie viel Zeit eine Person investieren will und welche Werte – Geld, Kontrolle, Flexibilität, Datenschutz – im Vordergrund stehen.</p>
-<hr>
+<hr/>
 <p><strong>Quellen und Preisangaben</strong></p>
 <p>¹ Ø Strompreis Deutschland 2026: Berechnet aus BLS- und BDEW-Durchschnittswerten für Haushaltsstrom (ca. 0,4042 €/kWh netto + ca. 0,4000 €/kWh Ökofininanz/Steuern = ca. 0,8042 €/kWh Brutto). Stand 2026, Rundung auf vier Nachkommastellen. Preis wird je nach Tarif und Region variieren.</p>
 <p>Hardware-Preis (Mini-PC): Marktrecherche 2026 für Mini-PCs mit 4 Kernen / 8 GB RAM / 500 GB SSD im deutschen Markt. Preise variieren je nach Marke und Verfügbarkeit.</p>
 <p>VPS-Preis: Durchschnittlicher Marktpreis für KVM-basierte VPS mit 4 vCPU / 8 GB RAM / 200 GB Storage und IPv4-Adresse inklusive, europäische Rechenzentren, Stand 2026. Preise variieren je nach Anbieter und Vertragslänge.</p>
-<hr>
+<hr/>
 <p>Interne Verweise auf weitere Artikel der BsN-Bibliothek:</p>
 <ul>
 <li><a href="minipc-homelab-2026.html">Minipc-homelab-2026</a> – Hardware-Empfehlungen für eigenen Homelab-Betrieb</li>
@@ -135,9 +130,7 @@
 <li><a href="backup-strategie-selfhoster.html">Backup-Strategie-Selfhoster</a> – 3-2-1-Prinzip und praktische Backup-Implementierung</li>
 <li><a href="monitoring-ohne-cloud.html">Monitoring-ohne-Cloud</a> – Uptime-Kuma und lokales Monitoring für den eigenen Server</li>
 </ul>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

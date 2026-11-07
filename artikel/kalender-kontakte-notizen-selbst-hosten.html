@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Kalender, Kontakte und Notizen selbst hosten: Radicale, Baikal, Nextcloud und Joplin im Vergleich</title>
-<meta name="description" content="Vergleich von Radicale, Baikal, Nextcloud und Joplin für den eigenen Kalender-, Kontakt- und Notiz-Betrieb: Docker-Setup, Clients, Sync auf Android und iOS sowie Sicherheits- und Backup-Grundregeln.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Vergleich von Radicale, Baikal, Nextcloud und Joplin für den eigenen Kalender-, Kontakt- und Notiz-Betrieb: Docker-Setup, Clients, Sync auf Android und iOS sowie Sicherheits- und Backup-Grundregeln." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Kalender, Kontakte und Notizen selbst hosten: Radicale, Baikal, Nextcloud und Joplin im Vergleich</h1>
 <p>Die meisten Homelab-Betreiber und kleinen Firmen verwenden mindestens einen Cloud-Dienst für Kalender, Kontakte oder Notizen – sei es Google Kalender, Apple Kontakte oder ein Notizbuch bei einem großen Anbieter. Die Abonnements sind bequem, aber die Konsequenzen werden oft unterschätzt: Daten liegen auf fremden Servern, das Entfernen des Abonnements kann den Zugriff auf Jahre Arbeitsgeschichte abschneiden, und ein Export ist selten vollständig.</p>
 <p>Wer die Kontrolle über diese Daten zurückerhalten will, hat heute mehrere reife Open-Source-Optionen. Dieser Artikel vergleicht vier Kandidaten – Radicale, Baikal, Nextcloud und Joplin – und zeigt, wie ein eigener Betrieb mit Docker aussieht, welche Clients funktionieren und was bei der Migration von Cloud-Diensten zu beachten ist.</p>
@@ -40,17 +35,17 @@
 <p>| Clients | CalDAV-kompatible Kalender-Apps (iOS, Android, Thunderbird, Evolution, diverse Desktop-Clients) | CalDAV-kompatible Clients | Viele offizielle Apps (iOS, Android, Desktop), drittanbieter-Clients über CalDAV/CardDAV | Joplin-Desktop, -Mobile, -CLI; verschiedene Sync-Optionen |</p>
 <p>Die Wahl zwischen den Lösungen hängt also weniger von technischen Konzepten ab als von der Frage, ob eine umfassende Suite (Nextcloud) oder spezialisierte Einzelkomponenten (Radicale/Baikal für Kalender und Kontakte, Joplin für Notizen) passen.</p>
 <h2>Einstieg mit Docker – Realistische Konfigurationen</h2>
-<p>Alle vier Lösungen lassen sich mit Docker betreiben. Die folgenden Schnipsel sind als Ausgangspunkt gedacht, nicht als vollständige Produktionskonfiguration. Für den produktiven Betrieb gehört eine HTTPS-Ververbindung mit einem gültigen Zertifikat (z. B. über ACME/Let&#x27;s Encrypt), Authentifizierung und regelmäßige Wartung dazu.</p>
+<p>Alle vier Lösungen lassen sich mit Docker betreiben. Die folgenden Schnipsel sind als Ausgangspunkt gedacht, nicht als vollständige Produktionskonfiguration. Für den produktiven Betrieb gehört eine HTTPS-Ververbindung mit einem gültigen Zertifikat (z. B. über ACME/Let's Encrypt), Authentifizierung und regelmäßige Wartung dazu.</p>
 <h2>Radicale (Kalender und optional Kontakte)</h2>
 <p>Radicale ist ein leichtgewichtiger CalDAV-Server. Nach der Installation bietet er Kalender-Endpunkte für Clients. Für CardDAV (Kontakte) wird im Standard-Radicale-Setup häufig eine zusätzliche Komponente benötigt.</p>
 <p>Ein minimaler <code>docker-compose.yml</code>-Eintrag:</p>
 <pre><code>
-version: &quot;3&quot;
+version: "3"
 services:
   radicale:
     image: radicaleorg/radicale:latest
     ports:
-      - &quot;5232:5232&quot;
+      - "5232:5232"
     volumes:
       - ./radicale-data:/var/lib/radicale
     environment:
@@ -61,12 +56,12 @@ services:
 <h2>Baikal (Kalender und Kontakte)</h2>
 <p>Baikal ist eine PHP-Anwendung, die CalDAV und CardDAV kombiniert und einen Web-Interaktions-Assistenten für die Einrichtung anbietet.</p>
 <pre><code>
-version: &quot;3&quot;
+version: "3"
 services:
   baikal:
     image: sdiwi/baikal:latest
     ports:
-      - &quot;8080:80&quot;
+      - "8080:80"
     volumes:
       - ./baikal-data:/var/www/baikal/specific/data
     restart: unless-stopped
@@ -75,12 +70,12 @@ services:
 <h2>Nextcloud (Suite mit Kalender und Kontakten)</h2>
 <p>Nextcloud ist die umfassendste Option und wird häufig über offizielle Docker-Images oder über Distributionen wie Cloudron oder YunoHost installiert.</p>
 <pre><code>
-version: &quot;3&quot;
+version: "3"
 services:
   nextcloud:
     image: nextcloud:latest
     ports:
-      - &quot;8080:80&quot;
+      - "8080:80"
     volumes:
       - ./nextcloud-data:/var/www/html
       - ./nextcloud-db:/var/lib/mysql
@@ -107,12 +102,12 @@ services:
 <h2>Joplin (Notizen)</h2>
 <p>Joplin ist eine Notizanwendung mit Ende-zu-Ende-Verschlüsselung. Die Desktop- und Mobile-Anwendungen sind die primären Clients; der Sync kann über verschiedene Ziele erfolgen, darunter WebDAV, Nextcloud, Joplin Cloud oder S3-kompatible Speicher.</p>
 <pre><code>
-version: &quot;3&quot;
+version: "3"
 services:
   joplin:
     image: joplin/server:latest
     ports:
-      - &quot;22357:22357&quot;
+      - "22357:22357"
     volumes:
       - ./joplin-data:/home/joplin/data
     environment:
@@ -126,9 +121,9 @@ services:
 <h2>Android</h2>
 <p>Auf Android funktionieren CalDAV-Kalender und CardDAV-Kontakte mit verschiedenen Clients. Beliebte Kalender-Apps sind DAVx5 (für CalDAV/CardDAV-Daten) oder AnkiCal (oder ähnliche Clients). Für Kontakte eignen sich oft CardDAV-kompatible Kontakt-Synchronisationen. Der Sync läuft in der Regel über Polling – das Gerät fragt in Intervallen beim Server nach Änderungen. Ein echtes Push-Sync (also sofortige Aktualisierung ohne Polling-Intervall) ist mit selbst gehosteten CalDAV-Servern über CalDAV-Push schwieriger als bei großen Cloud-Anbietern; die einzelnen Clients und der Server müssen die unterstützte Methode unterstützen.</p>
 <h2>iOS</h2>
-<p>Auf iOS sind Kalender und Kontakte im System integriert und unterstützen CalDAV und CardDAV direkt. Unter „Einstellungen &gt; Kalender &gt; Konten&quot; oder „Einstellungen &gt; Kontakte &gt; Konten&quot; kann ein neuer CalDAV- bzw. CardDAV-Konto eingetragen werden. Das iCloud-eigenen Konten ist dabei nicht betroffen. Die Einrichtung erfordert die Server-URL, einen Benutzernamen und ein Passwort.</p>
+<p>Auf iOS sind Kalender und Kontakte im System integriert und unterstützen CalDAV und CardDAV direkt. Unter „Einstellungen &gt; Kalender &gt; Konten" oder „Einstellungen &gt; Kontakte &gt; Konten" kann ein neuer CalDAV- bzw. CardDAV-Konto eingetragen werden. Das iCloud-eigenen Konten ist dabei nicht betroffen. Die Einrichtung erfordert die Server-URL, einen Benutzernamen und ein Passwort.</p>
 <h2>Stolperfallen mit Zertifikaten</h2>
-<p>Bei HTTPS-Verbindungen mit selbst signierten oder ungültigen Zertifikaten verweigern viele mobile Clients den Verbindungsaufbau oder fragen mehrfach nach. Für den produktiven Betrieb ist ein von einer offiziellen CA signiertes Zertifikat (z. B. über Let&#x27;s Encrypt) deutlich einfacher. Zertifikatsfehler sind einer der häufigsten Gründe, warum CalDAV/CardDAV-Synchronisationen keine Termine oder Kontakte übertragen.</p>
+<p>Bei HTTPS-Verbindungen mit selbst signierten oder ungültigen Zertifikaten verweigern viele mobile Clients den Verbindungsaufbau oder fragen mehrfach nach. Für den produktiven Betrieb ist ein von einer offiziellen CA signiertes Zertifikat (z. B. über Let's Encrypt) deutlich einfacher. Zertifikatsfehler sind einer der häufigsten Gründe, warum CalDAV/CardDAV-Synchronisationen keine Termine oder Kontakte übertragen.</p>
 <h2>Push- statt Poll-Sync</h2>
 <p>Many Cloud-Anbieter bieten einen Push-Sync über Webhooks oder spezielle Kanäle an. Bei selbst gehosteten CalDAV-Servern ist Push-Sync nicht immer verfügbar oder nur eingeschränkt. Das bedeutet: Änderungen auf dem Server werden nicht sofort an das mobile Gerät übermittelt, sondern erst, wenn das Gerät den Server nach Änderungen fragt. Das Polling-Intervall kann in den Client-Einstellungen oft angepasst werden – kürzere Intervalle bedeuten häufigere Abfragen und mehr Datenverkehr.</p>
 <h2>Joplin als Notiz-Alternative</h2>
@@ -169,7 +164,7 @@ services:
 <p>HTTPS wird dringend empfohlen, weil Benutzername und Passwort über das Netzwerk gesendet werden. Ohne Verschlüsselung sind die Zugangsdaten im Klartext übertragen. Für mobile Clients ist HTTPS oft auch Voraussetzung für die Synchronisation, da viele Clients mit unbeencrypted Verbindungen nicht arbeiten.</p>
 <h2>Kann ich mehrere Kalender bei einem selbst gehosteten Server führen?</h2>
 <p>Ja, das ist einer der Vorteile von CalDAV. Ein Server kann mehrere Kalender (z. B. für verschiedene Personen, Projekte oder Bereiche) verwalten. Jeder Kalender wird über eine eigene URL adressiert, und Clients können mehrere Kalender abonnieren und synchronisieren.</p>
-<hr>
+<hr/>
 <h2>Interne Verlinkungen</h2>
 <ul>
 <li><strong><a href="/artikel/nextcloud-vs-cloud-dienste">Nextcloud vs. Cloud-Dienste: Was lohnt sich wirklich?</a></strong> – Vertiefung zur Entscheidung zwischen Cloud-Abo und eigener Suite, mit Kostenbetrachtung und Pflegeaufwand.</li>
@@ -183,14 +178,12 @@ services:
 <li><strong>YAML-Frontmatter</strong> vollständig und korrekt (title, slug, meta_description, focus_keyword, date, kategorie, tags, author, status).</li>
 <li><strong>Interne Verlinkungen</strong> auf existierende Artikel prüfen – Slugs und Ankertexte auf Übereinstimmung mit veröffentlichten Artikeln kontrollieren (insbesondere <code>nextcloud-vs-cloud-dienste</code> und <code>backup-strategie-selfhoster</code> sind bereits vorhanden).</li>
 <li><strong>Abkürzungsverzicht:</strong> Keine erfundenen Messwerte, Preise oder Links. Alle genannten Portnummern sind Standardwerte; für produktiven Betrieb HTTPS mit gültigen Zertifikaten erforderlich.</li>
-<li><strong>Tone-Check:</strong> Nuchtern und sachlich, keine Sponsoring-Elemente, keine subjektiven Aussagen über „besser&quot; oder „schlechter&quot;, sondern Fakten und Kompromisse.</li>
+<li><strong>Tone-Check:</strong> Nuchtern und sachlich, keine Sponsoring-Elemente, keine subjektiven Aussagen über „besser" oder „schlechter", sondern Fakten und Kompromisse.</li>
 <li><strong>Word-Count:</strong> Ziel 1200 bis 1500 Wörter. Bei Zu- oder Abweichung anpassen.</li>
 <li><strong>Meta-Description:</strong> Unter 160 Zeichen, enthält Fokus-Keyword.</li>
 <li><strong>Publish-Status:</strong> Vor dem Push auf <code>status: published</code> setzen und im Dispatch- und Schichtwechsel-Cron vermerken.</li>
 </ul>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

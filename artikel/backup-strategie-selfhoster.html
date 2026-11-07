@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Kein Backup ist sicher, bis es getestet ist: Die 3-2-1-Strategie für Self-Hoster</title>
-<meta name="description" content="Eine Kopie ist kein Backup. Dieser Ratgeber zeigt die 3-2-1-Regel für Proxmox und Docker-Container, Verschlüsselung mit Key-Management sowie monatliche Wiederherstellungstests – ohne Marketingfloskeln.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Eine Kopie ist kein Backup. Dieser Ratgeber zeigt die 3-2-1-Regel für Proxmox und Docker-Container, Verschlüsselung mit Key-Management sowie monatliche Wiederherstellungstests – ohne Marketingfloskeln." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Kein Backup ist sicher, bis es getestet ist: Die 3-2-1-Strategie für Self-Hoster</h1>
 <p>Neun von zehn Datenverlust-Katastrophen haben dieselbe Wurzel: Während der Sache lief, wurde etwas kopiert – ein Snapshot auf denselben Datenträger, ein synchrones Mirror in dieselbe Rack-Zone, ein <code>rsync</code>-Lauf, der ohne Prüfsumme lief. Das Ergebnis sieht aus wie ein Backup. Es ist es nicht.</p>
 <p>Eine Wiederherstellung aus einer Kopie, die noch nie angefasst wurde, ist wie ein Rettungsplan, den niemand bis zum Schiffbruch gelesen hat. In der Selbsthosting-Praxis wird dieser Unterschied täglich ignoriert – bis die Festplatte klickt, die VM-Umgebung beschädigt ist oder der Provider-Version-Upload die Datenbank korruptiert. Der Rest der Geschichte ist langweiliger und teurer als das, was man hätte tun können.</p>
@@ -128,9 +123,7 @@ vzdump &lt;vmid&gt; --compress zstd --storage backup-nas --encrypt-key /etc/vzdu
 <p>Was dabei varriert: ob der Kunde bereits eine Infrastruktur hat, ein völlig neuer Aufbau gewünscht wird, welchen Schutzgrad die Daten haben – private Cloud, kleine Firma, sensibler Betrieb. Der konkrete Ort für Fragen: homelab.brillianze.de.</p>
 <h2>Fazit: Was zählt, wird getestet</h2>
 <p>Die 3-2-1-Regel ist ein Minimalstandard, kein Luxus. Ohne sie läuft jeder Self-Host auf einem zweifelhaften Untergrund. Getestete Wiederherstellung ist der einzige Beweis, dass ein Backup existiert. Verschlüsselung + getrenntes Key-Management ist der Mindeststandard für externe Backups. Und der monatliche Test ist die Routine, die aus einer guten Absicht etwas macht, das funktioniert, wenn es zählt.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

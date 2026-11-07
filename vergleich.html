@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Hardware-Vergleich — Homelab, GPUs &amp; Server | Homelab Vergleich</title>
-<meta name="description" content="Interaktiver Vergleich von Mini-PCs, Grafikkarten für lokale KI, gebrauchten Servern und NAS-Systemen. Mit Preisen, Stromverbrauch und Benchmarks — Stand 2026.">
-<link rel="stylesheet" href="style.css">
+<meta content="Interaktiver Vergleich von Mini-PCs, Grafikkarten für lokale KI, gebrauchten Servern und NAS-Systemen. Mit Preisen, Stromverbrauch und Benchmarks — Stand 2026." name="description"/>
+<link href="style.css?v=journal2" rel="stylesheet"/>
 <style>
   .filters { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
   .filters button {
@@ -33,56 +34,41 @@
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap">
-    <a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-    <nav>
-      <a href="/#homelab">Homelab</a>
-      <a href="/#ki">Lokale KI</a>
-      <a href="vergleich.html">Hardware-Vergleich</a>
-    </nav>
-  </div>
-</header>
-
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="index.html"><img alt="Brillianze" src="assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="assets/bsn-ochsenkopf-c.png"/></a><nav><a href="index.html#bibliothek">Bibliothek</a><a href="vergleich.html">Hardware</a><a href="dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content" style="max-width:1100px;">
-    <h1>Hardware-Vergleich</h1>
-    <p class="lead" style="font-size:1rem;">Mini-PCs, Grafikkarten für lokale KI, gebrauchte Server und NAS-Systeme — mit Preisen, Idle-Verbrauch und Benchmarks. Klicke auf eine Spalte zum Sortieren.</p>
-
-    <div class="filters" id="filters"></div>
-
-    <div class="tbl-wrap">
-      <table id="tbl">
-        <thead>
-          <tr>
-            <th data-key="name">Produkt</th>
-            <th data-key="kategorie">Kategorie</th>
-            <th>Spezifikation</th>
-            <th data-key="vram_gb">VRAM</th>
-            <th data-key="ram_gb">RAM</th>
-            <th data-key="idle_watt">Idle (W)</th>
-            <th data-key="tdp_watt">TDP (W)</th>
-            <th data-key="preis_eur">Preis (€)</th>
-            <th>Benchmark</th>
-            <th>Einschätzung</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-    <p class="count" id="count"></p>
-
-    <p class="disclaimer">Preise sind Richtwerte (deutscher Markt, Stand September 2026) und können abweichen. Einige Links sind Affiliate-Links — beim Kauf darüber erhalten wir eine Provision, für dich ändert sich der Preis nicht. Stromverbrauch ist der typische Idle-Wert, gemessen je nach Konfiguration.</p>
-  </div>
+<div class="content" style="max-width:1100px;">
+<h1>Hardware-Vergleich</h1>
+<p class="lead" style="font-size:1rem;">Mini-PCs, Grafikkarten für lokale KI, gebrauchte Server und NAS-Systeme — mit Preisen, Idle-Verbrauch und Benchmarks. Klicke auf eine Spalte zum Sortieren.</p>
+<div class="filters" id="filters"></div>
+<div class="tbl-wrap">
+<table id="tbl">
+<thead>
+<tr>
+<th data-key="name">Produkt</th>
+<th data-key="kategorie">Kategorie</th>
+<th>Spezifikation</th>
+<th data-key="vram_gb">VRAM</th>
+<th data-key="ram_gb">RAM</th>
+<th data-key="idle_watt">Idle (W)</th>
+<th data-key="tdp_watt">TDP (W)</th>
+<th data-key="preis_eur">Preis (€)</th>
+<th>Benchmark</th>
+<th>Einschätzung</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+<p class="count" id="count"></p>
+<p class="disclaimer">Preise sind Richtwerte (deutscher Markt, Stand September 2026) und können abweichen. Einige Links sind Affiliate-Links — beim Kauf darüber erhalten wir eine Provision, für dich ändert sich der Preis nicht. Stromverbrauch ist der typische Idle-Wert, gemessen je nach Konfiguration.</p>
+</div>
 </main>
-
 <footer>
-  <div class="wrap">
-    <p>© 2026 Homelab Vergleich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></p>
-  </div>
+<div class="wrap">
+<p>© 2026 Homelab Vergleich · <a href="impressum.html">Impressum</a> · <a href="datenschutz.html">Datenschutz</a></p>
+</div>
 </footer>
-
 <script src="data.js"></script>
 <script>
 (function(){

@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Backups mit Restic, Borg und Kopia: lokale Snapshots, Offsite-Kopien und Wiederherstellung im Vergleich</title>
-<meta name="description" content="Restic, Borg und Kopia im Vergleich: Speicherprinzip, Aufbau, Offsite-Kopien, Restore-Praxis und Aufbewahrung. Praxisnah für Homelab und kleine Firmen ohne Cloud-Zwang.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Restic, Borg und Kopia im Vergleich: Speicherprinzip, Aufbau, Offsite-Kopien, Restore-Praxis und Aufbewahrung. Praxisnah für Homelab und kleine Firmen ohne Cloud-Zwang." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Backups mit Restic, Borg und Kopia: lokale Snapshots, Offsite-Kopien und Wiederherstellung im Vergleich</h1>
 <p>Restic, Borg und Kopia dominieren die datenschutzfreundliche Datensicherung auf eigenen Systemen. Alle drei erzeugen verschlüsselte, deduplizierte Snapshots und lassen sich ohne Cloud-Zwang betreiben - für ein kleines Homelab ebenso wie für eine Firma mit 10 bis 30 Mitarbeitern. Die Unterschiede liegen im Detail: Speicherformat, Aufbau, Offsite-Tauglichkeit und die Frage, wie weh ein verlorener Schlüssel tut. Dieser Artikel vergleicht die drei Kandidaten sachlich.</p>
 <h2>Warum ein Backup ohne Restore-Test kein Backup ist - typische Fehlannahmen</h2>
@@ -96,10 +91,10 @@
 <p>Ja. Restic und Kopia sprechen S3-kompatible Objektspeicher direkt an, Borg benötigt dafür ein Zusatzwerkzeug wie <code>rclone</code>. In allen Fällen werden die Daten clientseitig verschlüsselt, sodass der Speicheranbieter nur unlesbare Chunks sieht.</p>
 <h2>Interne Verlinkungen</h2>
 <ul>
-<li>Ankertext: &quot;3-2-1-Backup-Strategie&quot; -&gt; Zielslug: <code>backup-3-2-1</code></li>
-<li>Ankertext: &quot;Datenbank-Backups richtig planen&quot; -&gt; Zielslug: <code>datenbank-backups</code></li>
-<li>Ankertext: &quot;Proxmox Backups automatisieren&quot; -&gt; Zielslug: <code>proxmox-backups-automatisieren</code></li>
-<li>Ankertext: &quot;Proxmox Backup Server&quot; -&gt; Zielslug: <code>proxmox-backup-server</code></li>
+<li>Ankertext: "3-2-1-Backup-Strategie" -&gt; Zielslug: <code>backup-3-2-1</code></li>
+<li>Ankertext: "Datenbank-Backups richtig planen" -&gt; Zielslug: <code>datenbank-backups</code></li>
+<li>Ankertext: "Proxmox Backups automatisieren" -&gt; Zielslug: <code>proxmox-backups-automatisieren</code></li>
+<li>Ankertext: "Proxmox Backup Server" -&gt; Zielslug: <code>proxmox-backup-server</code></li>
 </ul>
 <h2>Veröffentlichungs-Hinweise</h2>
 <ul>
@@ -109,9 +104,7 @@
 <li>Keine Affiliate- oder Partner-Links enthalten. Preise sind als Preisrahmen formuliert und nicht als Zusage. Keine erfundenen Messwerte.</li>
 <li>Bitte beim Rendern darauf achten, dass die Vergleichstabelle als HTML-Tabelle übernommen wird und die FAQ-Fragen als <code>&lt;h3&gt;</code> erscheinen.</li>
 </ul>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

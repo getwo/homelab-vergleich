@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich — Homelab Vergleich</title>
-<meta name="description" content="Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich  Je mehr Dienste in deinem Homelab laufen – Nextcloud, Jellyfin, Pi-hole, Home Assistan">
-<link rel="stylesheet" href="../style.css">
+<meta content="Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich  Je mehr Dienste in deinem Homelab laufen – Nextcloud, Jellyfin, Pi-hole, Home Assistan" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Homelab Dashboard: Homarr vs Homepage vs Heimdall im Vergleich</h1>
 <p>Je mehr Dienste in deinem Homelab laufen – Nextcloud, Jellyfin, Pi-hole, Home Assistant, ein Dutzend Docker-Container – desto unübersichtlicher wird der Alltag. Wer merkt sich schon jede IP-Adresse und jeden Port? Genau hier setzt ein Homelab-Dashboard an: eine zentrale Startseite, die alle deine Dienste an einem Ort bündelt. Drei Tools dominieren die Szene: Homarr, Homepage und Heimdall. Dieser Artikel erklärt, was ein Dashboard kann, worin sich die drei unterscheiden und welches zu deinem Setup passt.</p>
 <h2>Was ist ein Homelab-Dashboard?</h2>
@@ -27,7 +28,7 @@ services:
   homarr:
     image: ghcr.io/homarr-labs/homarr:latest
     ports:
-      - &quot;7575:7575&quot;
+      - "7575:7575"
     volumes:
       - ./homarr:/app/data/configs
     restart: unless-stopped
@@ -35,7 +36,7 @@ services:
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
     ports:
-      - &quot;3000:3000&quot;
+      - "3000:3000"
     volumes:
       - ./homepage:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
@@ -44,7 +45,7 @@ services:
   heimdall:
     image: lscr.io/linuxserver/heimdall:latest
     ports:
-      - &quot;8080:80&quot;
+      - "8080:80"
     volumes:
       - ./heimdall:/config
     environment:
@@ -71,7 +72,7 @@ services:
 </ul>
 <h2>Fazit</h2>
 <p>Ein Homelab-Dashboard ist eine der sinnvollsten Ergänzungen für jedes Selfhosting-Setup – es bringt Ordnung in wachsende Dienstsammlungen und macht den Alltag spürbar bequemer. Heimdall überzeugt durch radikale Einfachheit, Homepage durch maximale Flexibilität und Homarr durch einen gelungenen Mittelweg aus Optik und Funktion. Welches Tool das richtige ist, hängt letztlich davon ab, wie viel Kontrolle und Pflegeaufwand du möchtest: von der wartungsarmen Link-Seite bis zur komplett code-definierten Zentrale ist für jeden etwas dabei.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>

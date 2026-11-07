@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Passwortmanager selbst hosten: Vaultwarden, KeePass und Bitwarden Cloud im Vergleich</title>
-<meta name="description" content="Vaultwarden, KeePass und Bitwarden Cloud im direkten Vergleich: Wo liegen die Daten, wie funktioniert Sync, 2FA und Wiederherstellung – und was ist der richtige Weg für kleine Firmen?">
-<link rel="stylesheet" href="../style.css">
+<meta content="Vaultwarden, KeePass und Bitwarden Cloud im direkten Vergleich: Wo liegen die Daten, wie funktioniert Sync, 2FA und Wiederherstellung – und was ist der richtige Weg für kleine Firmen?" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Passwortmanager selbst hosten: Vaultwarden, KeePass und Bitwarden Cloud im Vergleich</h1>
 <h2>Das Problem: Passwörter als Sammelrisiko</h2>
 <p>In kleinen Firmen, Vereinen und anderen Organisationen mit fünf bis 50 Mitarbeitern sammeln sich Passwörter auf unübersichtliche Weise. Ein gemeinsamer Mailkonto-Zugang schwebt in einer Exceldatei auf einem geteilten Laufwerk. Der Admin hat den Router-PIN auf einem Post-it. Beim Ausscheiden eines Mitarbeiters werden nicht alle Zugänge zurückgezogen, weil niemand weiß, welche Konten welche Person genutzt hat. Die Situation löst sich nicht von selbst – je größer die Organisation, desto unübersichtlicher wird es.</p>
@@ -38,7 +33,7 @@
 <p>Vaultwarden läuft in der Regel in Docker. Das folgende docker-compose-Grundgerüst zeigt den Einstieg mit SQLite (einfach, für kleine Umgebungen) und einem Hinweis, wie Postgres dazu kommt.</p>
 <h2>docker-compose.yml – Grundgerüst (SQLite)</h2>
 <pre><code>
-version: &quot;3.8&quot;
+version: "3.8"
 
 services:
   vaultwarden:
@@ -53,7 +48,7 @@ services:
     volumes:
       - ./data:/data
     ports:
-      - &quot;127.0.0.1:8000:80&quot;
+      - "127.0.0.1:8000:80"
 </code></pre>
 <p>Der Docker-Container speichert seine Daten unter <code>/data</code>. Bei SQLite liegt die Datenbank dort als <code>db.sqlite3</code>. Für den produktiven Einsatz sollte der <code>ADMIN_TOKEN</code> ein zufälliger, langer Wert sein und nicht im Code liegen – im echten Setup besser über eine Umgebungsdatei oder Docker-Secret.</p>
 <h2>Option mit Postgres statt SQLite</h2>
@@ -82,7 +77,7 @@ volumes:
 </code></pre>
 <p>Frühzeitig Entscheidung treffen: SQLite reicht für viele kleine Firmen; Postgres lohnt sich, wenn man bereits PostgreSQL pflegt, längere Backups oder Wiederherstellungstests plant. Der Wechsel nachträglich ist möglich, erfordert aber ein Datenbank-Migration-Skript – im Zweifel von Anfang an right decision fällen.</p>
 <h2>Caddy als Reverse Proxy für HTTPS</h2>
-<p>Ein eigenständiger Vaultwarden ohne TLS ist keine Option, wenn Zugänge über das Internet genutzt werden. Caddy erzeugt automatisch Let&#x27;s-Encrypt-Zertifikate und leitet die Verbindungen weiter. Eine einfache Caddyfile-Konfiguration:</p>
+<p>Ein eigenständiger Vaultwarden ohne TLS ist keine Option, wenn Zugänge über das Internet genutzt werden. Caddy erzeugt automatisch Let's-Encrypt-Zertifikate und leitet die Verbindungen weiter. Eine einfache Caddyfile-Konfiguration:</p>
 <pre><code>
 vaultwarden.brillianze.de {
     reverse_proxy localhost:8000
@@ -117,7 +112,7 @@ docker exec vaultwarden backup-db
 <p>4. <strong>Fehlender Master-Passwort-Weg.</strong> Wenn der Admin das Masterpasswort verliert oder keinRecovery-Option existiert, sind die Daten ohne Brute-Force nicht mehr zugänglich. Ein dokumentierter, sicherer Wiederherstellungsweg gehört zur Einrichtung.</p>
 <h2>Gegenmaßnahmen</h2>
 <ul>
-<li><strong>HTTPS zwingend</strong> (Caddy oder anderer Reverse Proxy mit Let&#x27;s Encrypt).</li>
+<li><strong>HTTPS zwingend</strong> (Caddy oder anderer Reverse Proxy mit Let's Encrypt).</li>
 <li><strong>2FA für alle administrativen Accounts</strong> aktivieren, idealerweise mit App oder Hardware-Key.</li>
 <li><strong>Backups verschlüsselt</strong> ablegen, z.B. mit GPG oder age, und separat vom Server aufbewahren.</li>
 <li><strong>Masterpasswort-Richtlinien</strong>: starke, einzigartige Passwörter für den Admin-Account; Recovery-Option dokumentiert, aber nicht unsicher abgelegt.</li>
@@ -129,14 +124,14 @@ docker exec vaultwarden backup-db
 <h2>Rollen und Rechte</h2>
 <p>Vaultwarden erlaubt die Unterscheidung von Administratoren und normalen Nutzern. Administratoren können Organisationen verwalten, Nutzer einladen und entfernen, einen Teil der Konfiguration sehen. Normale Nutzer haben Zugriff auf ihre eigenen Vault-Einträge. In der Praxis sollte der Admin-Zugang auf ein oder zwei Personen beschränkt sein, nicht auf alle IT-Berechtigten ohne Unterscheidung.</p>
 <h2>Löschpflichten und Aufbewahrung</h2>
-<p>Wenn ein Mitarbeiter ausscheidet, sollten seine Zugänge entfernt oder übertragen werden, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Das bedeutet: Admin entfernt den Nutzer aus Vaultwarden, überprüft, ob gemeinsame Organisationszugänge übernommen sind, und löscht die persönliche Datenbank des Ausgeschiedenen, wenn dies vereinbart ist. Eine Regel im Unternehmen hilft: &quot;Wer geht, dessen Zugänge werden innerhalb von zwei Werktagen überprüft und bereinigt.&quot;</p>
+<p>Wenn ein Mitarbeiter ausscheidet, sollten seine Zugänge entfernt oder übertragen werden, soweit keine gesetzlichen Aufbewahrungspflichten entgegenstehen. Das bedeutet: Admin entfernt den Nutzer aus Vaultwarden, überprüft, ob gemeinsame Organisationszugänge übernommen sind, und löscht die persönliche Datenbank des Ausgeschiedenen, wenn dies vereinbart ist. Eine Regel im Unternehmen hilft: "Wer geht, dessen Zugänge werden innerhalb von zwei Werktagen überprüft und bereinigt."</p>
 <p>Bei KeePass liegt die Verantwortung bei der Person oder dem Sync-Ziel, das die Datei hält – eine explizite Übergaberegel ist hier wichtiger als bei einem zentralen Server.</p>
 <h2>Dokumentation</h2>
 <p>Der Einsatz eines Passwortmanagers sollte dokumentiert sein: Welche Lösung, wer hat Admin-Zugang, wo sind die Backups, wie erfolgt die Wiederherstellung, welche Rollen gibt es. Diese Dokumentation gehört in eine interne Sicherheitsdokumentation, nicht notwendigerweise öffentlich.</p>
 <h2>Häufige Fehler – drei realistische Beispiele</h2>
-<p>1. <strong>&quot;Wir sichern die SQLite-Datei mit rsync.&quot;</strong> Die SQLite-Datei wird waehrend des Kopiervorgangs beschrieben; das Backup ist inkonsistent. Bei Wiederherstellung meldet Vaultwarden dann Fehler oder verliert Daten. Lösung: Vaultwarden-eigenes Backup oder ein Dump-Verfahren, nicht simples Dateikopieren unter Last.</p>
-<p>2. <strong>&quot;Der Admin-Token steht in der compose-Datei im Git-Repo.&quot;</strong> Der Admin-Token ist der Schlüssel zum Administrationsinterface. Wenn er in einem öffentlichen oder leicht zugänglichen Repository liegt, ist der Schutz wertlos. Lösung: Token in eine Umgebungsdatei, Docker-Secret oder ein Vault, und das Repository sauber halten.</p>
-<p>3. <strong>&quot;Wir nutzen KeePass und syncen über Nextcloud – funktioniert schon.&quot;</strong> Bis zwei Personen gleichzeitig die Datei bearbeiten und ein Konflikt entsteht, mit dem eine Eintrage verlorengehen. Ohne klare Nutzungsregel (&quot;nur eine Person gleichzeitig aktiv&quot;) entstehen Datenverluste, die in einem zentralen Server durch Serialisierung vermieden würden.</p>
+<p>1. <strong>"Wir sichern die SQLite-Datei mit rsync."</strong> Die SQLite-Datei wird waehrend des Kopiervorgangs beschrieben; das Backup ist inkonsistent. Bei Wiederherstellung meldet Vaultwarden dann Fehler oder verliert Daten. Lösung: Vaultwarden-eigenes Backup oder ein Dump-Verfahren, nicht simples Dateikopieren unter Last.</p>
+<p>2. <strong>"Der Admin-Token steht in der compose-Datei im Git-Repo."</strong> Der Admin-Token ist der Schlüssel zum Administrationsinterface. Wenn er in einem öffentlichen oder leicht zugänglichen Repository liegt, ist der Schutz wertlos. Lösung: Token in eine Umgebungsdatei, Docker-Secret oder ein Vault, und das Repository sauber halten.</p>
+<p>3. <strong>"Wir nutzen KeePass und syncen über Nextcloud – funktioniert schon."</strong> Bis zwei Personen gleichzeitig die Datei bearbeiten und ein Konflikt entsteht, mit dem eine Eintrage verlorengehen. Ohne klare Nutzungsregel ("nur eine Person gleichzeitig aktiv") entstehen Datenverluste, die in einem zentralen Server durch Serialisierung vermieden würden.</p>
 <h2>FAQ</h2>
 <p><strong>Kann ich Vaultwarden ohne Domain und ohne öffentliches Internet nutzen?</strong></p>
 <p>Ja, für rein lokale Umgebungen. Dann muss aber HTTPS anders gelöst werden (selbstsignierte Zertifikate oder lokales PKI wie im BsN-Homelab üblich). Die Clients müssen das Zertifikat vertrauen. Ohne TLS ist die Verbindung unverschlüsselt – für Passwortdaten nicht acceptable.</p>
@@ -165,9 +160,7 @@ docker exec vaultwarden backup-db
 </ul>
 <h2>Hinweis zum Status</h2>
 <p>Dieser Artikel liegt als <strong>Draft</strong> vor. Die Veröffentlichung erfolgt erst nach inhaltlicher Prüfung durch Benjamin. Insbesondere die konkreten Befehle (docker-compose, Caddy, Backup-Skripte) sind für eine veröffentlichte Version ggf. an die tatsächliche BsN- oder Kunden-Infrastruktur anzupassen und gegen aktuelle Vaultwarden- und Docker-Versionen zu verifizieren.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

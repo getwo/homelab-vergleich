@@ -1,27 +1,22 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Homelab für Anfänger: Die ersten 5 Schritte</title>
-<meta name="description" content="Ein Homelab steht und fällt mit der Planung. In fünf Schritten baust du deine erste private Infrastruktur auf – ohne überflüssige Hardware und verwirrende Redewendungen.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Ein Homelab steht und fällt mit der Planung. In fünf Schritten baust du deine erste private Infrastruktur auf – ohne überflüssige Hardware und verwirrende Redewendungen." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Homelab für Anfänger: Die ersten 5 Schritte</h1>
 <p>Ein Homelab klingt nach Serverraum und rackmontierten Chassis. In der Praxis fängt es klein an – oft genug mit einem alten Laptop, einer geklonten Virtualisierungsmaschine oder einem single-board Computer, den niemand mehr einsetzt. Der Sinn bleibt derselbe: eine private Umgebung, in der man Dienste ausprobieren, Sicherheit üben und verstehen kann, was im Netz eigentlich läuft. Der richtige Einstieg vermeidet Über-Engineering.</p>
 <h2>Schritt 1: Ziel vor Hardware definieren</h2>
 <p>Bevor die erste Maschine anläuft, hilft eine konkrete Liste. Möchte man eine eigene DNS-Auflösung, einen Medikations-Verteiler für die Familie, ein Backups-Ziel oder einfach nur Docker-Container zum Hovern lernen? Ein unklar definiertes Zutatkabinett wird schnell zu einem Servergrab.</p>
-<p>Die praktische Frage ist nicht „Welche Hardware sind ich zu kaufen?&quot;, sondern „Welches Problem löse ich?&quot;. Ein günstiger Mini-PC mit 8 GB RAM und einer SSD läuft Container, kleine VMs und eine lokales Repositorium geladen. Alles, was darüber hinausgeht, sollte begründet sein – sonst wird das Homelab zur Hardware-Auktion.</p>
+<p>Die praktische Frage ist nicht „Welche Hardware sind ich zu kaufen?", sondern „Welches Problem löse ich?". Ein günstiger Mini-PC mit 8 GB RAM und einer SSD läuft Container, kleine VMs und eine lokales Repositorium geladen. Alles, was darüber hinausgeht, sollte begründet sein – sonst wird das Homelab zur Hardware-Auktion.</p>
 <h2>Schritt 2: Waehle ein sinnvolles Virtualisierung-Grundgerüst</h2>
 <p>Roh physisch installierte Dienste sind für den Anfang mühsam: jedes Experiment braucht einen separaten Rechner oder zumindest eine dedizierte Partition. Virtualisierung entkoppelt Dienst von Hardware und lässt Fehler isoliert wiederherstellen.</p>
 <p>Beliebte Einsteigerwege sind Proxmox als host-Überbau (mit LXC-Containern für leichte Dienste und VMs für vollständige isolierte Systeme) oder Docker-Container über einen einzelnen Linux-Host. Proxmox bietet eine klare Trennung zwischen Host und Gast – nützlich, wenn man Netzwerke, Bridge-Konfigurationen und Storage-Quellen direkt sieht. Container hingegeben sind schneller aufgesetzt, aber weniger isoliert. Ein Anfang kann damit auskommen: einen Hypervisor, drei bis vier Container, kein Cluster.</p>
@@ -43,9 +38,7 @@
 <h2>Fazit</h2>
 <p>Ein Homelab für Anfänger braucht keine riesige Hardware-Liste oder ein komplexes Firmware-Design. Es braucht eine klare Absicht, eine Virtualisierungsschicht, ein überschaubares Netzwerk, eine minimale Sicherheitsgrundausstattung und die Perspektive, dass Überwachung und Backup zum Standard gehören – nicht als Nachttopf.</p>
 <p>Wer diese fünf Schritte in dieser Reihenfolge angeht, vermeidet die typischen Über-Engineering-Fallen und hat nach wenigen Wochen eine Umgebung, die Dinge tut, die man versteht – und die sich bei Bedarf auch repariert.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

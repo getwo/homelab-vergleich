@@ -1,22 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Proxmox VE für kleine Unternehmen – Warum der Wechsel von VMware/ESXi lohnt</title>
-<meta name="description" content="Ehrliche Analyse: VMware/ESXi auf Proxmox VE umstellen? Lizenzkosten, LXC vs. VM, Snapshot-Strategie, Storage-Design und Backup-Plan für kleine Firmen – ohne Ballast-Appliance-Zwang.">
-<link rel="stylesheet" href="../style.css">
+<meta content="Ehrliche Analyse: VMware/ESXi auf Proxmox VE umstellen? Lizenzkosten, LXC vs. VM, Snapshot-Strategie, Storage-Design und Backup-Plan für kleine Firmen – ohne Ballast-Appliance-Zwang." name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header>
-<div class="wrap">
-<a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a>
-<nav><a href="../vergleich.html">Hardware-Vergleich</a></nav>
-</div>
-</header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
 <article class="content" style="max-width:800px;">
-
 <h1>Proxmox VE für kleine Unternehmen – Warum der Wechsel von VMware/ESXi lohnt</h1>
 <p>Kleine Firmen stehen seit der Broadcom-Aufnahme von VMware vor einem Problem: Die Lizenzkosten sind in kürzer Zeit nicht mehr vorhersehbar, und die Appliance-Vorgabe (vSphere als zwingende Einheitsumgebung) zwingt auch zu komplexen Deployment-Modellen, wenn man nur einen oder zwei physische Host hat. Proxmox VE ist eine Linux-native Alternative, die aus einer anderen Annahme kommt: die Infrastruktur ist kein abgekapseltes Produkt, sondern ein verwalterbarer Bestandteil des Systems.</p>
 <p>Dieser Artikel geht nicht davon aus, dass Proxmox <em>besser</em> ist – sondern dass es an einigen Stellen die passendere Wahl sein kann, wenn man die Kompromisse kennt.</p>
@@ -77,7 +72,7 @@ pct create 100 local:vztmpl/debian-12-standard_12.5-1_amd64.tar.xz \
   --net0 name=eth0,ip=192.168.3.100/24,gw=192.168.3.1 \
   --storage local-lvm \
   --rootfs local-lvm:20 \
-  --ssh-key &quot;ssh-ed25519 AAAA…&quot;
+  --ssh-key "ssh-ed25519 AAAA…"
 </code></pre>
 <p>Danach SSH-Zugriff und Nameserver setzen:</p>
 <pre><code>
@@ -148,9 +143,7 @@ vzdump --mode snapshot --compress zstd \
 <p>3. Snapshots sind kein Backup. Ein Backup mit <code>vzdump</code> (oder Backup-Schedule im UI) mit klarer Retention ist Pflicht.</p>
 <p>4. Storage: LVM-Thin für Einfachheit, ZFS für Features (Compression, Snapshots), Ceph nur bei Cluster mit 3+ Knoten und entsprechendem Netzwerk.</p>
 <p>5. Proxmox lohnt sich besonders für mehrere Dienste auf wenigen Linux-betriebenen Rechnern – nicht für reine Windows-Infrastruktur oder Single-VM-Setup ohne Mehrwert.</p>
-
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-
 </article>
 </main>
 <footer>

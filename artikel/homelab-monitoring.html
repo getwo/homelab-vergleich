@@ -1,16 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Homelab-Monitoring: Uptime-Kuma & Grafana selbst gehostet — Homelab Vergleich</title>
-<meta name="description" content="Homelab-Monitoring: Uptime-Kuma & Grafana selbst gehostet  Wer ein Homelab betreibt, kennt das Gefühl: Man bemerkt erst Tage später, dass ein Dienst a">
-<link rel="stylesheet" href="../style.css">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Homelab-Monitoring: Uptime-Kuma &amp; Grafana selbst gehostet — Homelab Vergleich</title>
+<meta content="Homelab-Monitoring: Uptime-Kuma &amp; Grafana selbst gehostet  Wer ein Homelab betreibt, kennt das Gefühl: Man bemerkt erst Tage später, dass ein Dienst a" name="description"/>
+<link href="../style.css?v=journal2" rel="stylesheet"/>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="/">⚡ Homelab<span>Vergleich</span></a></div></header>
+<header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-  <div class="content">
+<div class="content">
 <h1>Homelab-Monitoring: Uptime-Kuma &amp; Grafana selbst gehostet</h1>
 <p>Wer ein Homelab betreibt, kennt das Gefühl: Man bemerkt erst Tage später, dass ein Dienst ausgefallen ist – weil der Pi-Hole-Werbeblocker stillsteht oder das NAS-Update die Platte an ihre Grenze bringt. Genau hier setzt Monitoring an. Es macht aus deinem Heim-Server eine beobachtbare Infrastruktur: Du siehst auf einen Blick, ob alle Dienste laufen, wie ausgelastet die Hardware ist und ob sich ein Problem anbahnt, bevor es dich wirklich trifft. Zwei Tools haben sich dabei als Standard etabliert: <strong>Uptime-Kuma</strong> für die Erreichbarkeit und <strong>Grafana mit Prometheus</strong> für Metriken und Dashboards.</p>
 <h2>Warum Monitoring im Homelab?</h2>
@@ -33,7 +34,7 @@
 <li><strong>Zertifikate:</strong> Uptime-Kuma überwacht auch SSL-Zertifikate und warnt vor dem Ablauf.</li>
 </ul>
 <h2>Grafana + Prometheus: Metriken und Dashboards</h2>
-<p>Uptime-Kuma beantwortet die Frage „läuft es oder nicht?&quot;. <strong>Prometheus</strong> und <strong>Grafana</strong> beantworten „wie gut läuft es?&quot;. Das Duo sammelt Zahlenwerte – Metriken – und stellt sie als ansprechende Diagramme dar.</p>
+<p>Uptime-Kuma beantwortet die Frage „läuft es oder nicht?". <strong>Prometheus</strong> und <strong>Grafana</strong> beantworten „wie gut läuft es?". Das Duo sammelt Zahlenwerte – Metriken – und stellt sie als ansprechende Diagramme dar.</p>
 <ul>
 <li><strong>Prometheus</strong> ist die Datenbank: Sie fragt in festen Intervallen definierte Ziele ab (Scraping) und speichert die Messwerte als Zeitreihen.</li>
 <li><strong>Grafana</strong> ist die Anzeige: Es liest die Daten aus Prometheus und baut daraus Dashboards mit Graphen, Balken und Alarm-Schwellwerten.</li>
@@ -46,7 +47,7 @@ services:
   uptime-kuma:
     image: louislam/uptime-kuma:latest
     ports:
-      - &quot;3001:3001&quot;
+      - "3001:3001"
     volumes:
       - uptime-kuma-data:/app/data
     restart: unless-stopped
@@ -54,7 +55,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - &quot;9090:9090&quot;
+      - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -63,7 +64,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - &quot;3000:3000&quot;
+      - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=geheim
     volumes:
@@ -92,7 +93,7 @@ volumes:
 <p>Ein Tipp: Konfiguriere Benachrichtigungen von Anfang an mit. Ein Monitoring, das niemanden informiert, verfehlt seinen Zweck – und eine Testbenachrichtigung beim Einrichten zeigt dir sofort, ob der Kanal funktioniert.</p>
 <h2>Fazit</h2>
 <p>Monitoring macht dein Homelab zuverlässiger, ohne dass es kompliziert sein muss: Uptime-Kuma überwacht die Erreichbarkeit deiner Dienste, Prometheus und Grafana liefern tiefe Einblicke in Auslastung und Trends – und beides läuft in wenigen Minuten als Docker-Container. Wer Benachrichtigungen per Telegram oder E-Mail von Anfang an einrichtet, erfährt von Problemen künftig früher als seine Nutzer. Damit gehört das Monitoring zur kleinen Investition mit großer Wirkung in jedem ernsthaften Homelab.</p>
-  </div>
+</div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
 </body>
