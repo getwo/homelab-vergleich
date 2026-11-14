@@ -8,10 +8,10 @@
 <meta content="Home Assistant, MQTT und Mosquitto sauber verbinden: Brokerwahl, Anmeldung, Discovery, Nachrichtenprüfung und Sicherheitsgrenzen verständlich erklärt." name="description"/>
 <link href="https://homelab.brillianze.de/artikel/home-assistant-mqtt-mosquitto.html" rel="canonical"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<link href="../polish.css?v=20261114" rel="stylesheet"/><link href="../features2.css?v=1" rel="stylesheet"/></head>
 <body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
-<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Broker-App oder eigener Dienst?</a><a href="#abschnitt-2">Anmeldung, Themen und Discovery</a><a href="#abschnitt-3">Prüfschritte vom Transport bis zur Entität</a><a href="#abschnitt-4">Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a></div>
+<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Broker-App oder eigener Dienst?</a><a href="#abschnitt-2">Anmeldung, Themen und Discovery</a><a href="#abschnitt-3">Prüfschritte vom Transport bis zur Entität</a><a href="#abschnitt-4">Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a><button aria-pressed="false" class="night-toggle" type="button">Nachtmodus</button><span class="storage-warning" hidden="" role="status"></span></div>
 <h1>Home Assistant, MQTT und Mosquitto: Zuständigkeiten klären</h1>
 <p>Ein MQTT-Gerät spricht nicht direkt mit dem Home-Assistant-Dashboard. Es veröffentlicht Nachrichten bei einem Broker; Home Assistant verbindet sich über seine MQTT-Integration mit diesem Broker und wertet passende Themen aus. Die Integrationsdokumentation unterscheidet ausdrücklich zwischen Broker-Einrichtung und MQTT-Konfiguration in Home Assistant.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> Mosquitto ist eine mögliche Broker-Implementierung. Dieser Artikel behandelt die Verbindung und ihre Fehlerbilder, nicht die allgemeine Smart-Home-Installation.</p>
 <h2 id="abschnitt-1">Broker-App oder eigener Dienst?</h2>
@@ -23,12 +23,12 @@
 <h2 id="abschnitt-3">Prüfschritte vom Transport bis zur Entität</h2>
 <p>Prüfe zuerst Broker-Log und Status, dann die Verbindung der MQTT-Integration einschließlich Hostname und Benutzer. Nutze anschließend die in der Home-Assistant-Dokumentation beschriebene Möglichkeit, auf ein Thema zu lauschen, und beobachte beim Auslösen eines Geräts die tatsächlich eintreffende Nachricht.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> Bleibt sie aus, prüfe Geräteverbindung und Topic-Berechtigung; kommt sie an, aber keine Entität reagiert, prüfe Discovery-Nachricht beziehungsweise manuelle Entitätskonfiguration.</p>
 <p>Für einen Broker außerhalb des geschützten lokalen Segments sind TLS und passende Zertifikatsprüfung wichtig: Home Assistant beschreibt die Validierung des Broker-Zertifikats und die Möglichkeit, eine eigene CA einzubinden.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> Deaktiviere Zertifikatsprüfung nicht bloß, um eine Fehlermeldung zu umgehen. Teste nach einem geplanten Broker-Neustart, ob Geräte sich erneut verbinden und ob Availability und Zustände sinnvoll erscheinen. Prüfe dabei auch, ob die ersten Nachrichten nach dem Wiederverbinden aktuelle Werte enthalten oder nur einen zuvor gespeicherten Zustand wiedergeben. Ein sichtbares Gerät im Dashboard allein belegt noch keine stabile Nachrichtenkette.</p>
-<section aria-label="Quellen"><h2 id="abschnitt-4">Quellen</h2><ol>
+<section aria-label="Quellen"><section aria-label="Quellen zum Artikel" class="source-panel"><h2 id="abschnitt-4">Quellen</h2><ol>
 <li id="quelle-1"><a href="https://www.home-assistant.io/integrations/mqtt/" rel="noopener noreferrer">Home Assistant: MQTT-Integration</a></li>
 <li id="quelle-2"><a href="https://raw.githubusercontent.com/home-assistant/apps/master/mosquitto/DOCS.md" rel="noopener noreferrer">Home Assistant: Mosquitto-Broker-App</a></li>
 <li id="quelle-3"><a href="https://mosquitto.org/man/mosquitto-conf-5.html" rel="noopener noreferrer">Eclipse Mosquitto: Konfigurationsreferenz</a></li>
-</ol></section>
+</ol></section></section>
 </article></div></main>
 <footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
-<script defer="" src="../reading.js?v=20261114"></script></body>
+<script defer="" src="../reading.js?v=20261114"></script><script defer="" src="../reader-theme.js?v=1"></script></body>
 </html>

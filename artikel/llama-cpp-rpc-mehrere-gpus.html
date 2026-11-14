@@ -8,10 +8,10 @@
 <meta content="llama.cpp RPC verbindet GPUs über Hosts. So unterscheiden sich RPC und lokales Multi-GPU, und diese Risiken und Prüfschritte gelten für das Homelab." name="description"/>
 <link href="https://homelab.brillianze.de/artikel/llama-cpp-rpc-mehrere-gpus.html" rel="canonical"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<link href="../polish.css?v=20261114" rel="stylesheet"/><link href="../features2.css?v=1" rel="stylesheet"/></head>
 <body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
-<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Wann RPC überhaupt sinnvoll sein kann</a><a href="#abschnitt-2">Sicherheitsgrenze ist keine Nebensache</a><a href="#abschnitt-3">Prüfschritte vor jeder Bewertung</a><a href="#abschnitt-4">Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#ki">Bibliothek / Lokale KI</a></div>
+<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Wann RPC überhaupt sinnvoll sein kann</a><a href="#abschnitt-2">Sicherheitsgrenze ist keine Nebensache</a><a href="#abschnitt-3">Prüfschritte vor jeder Bewertung</a><a href="#abschnitt-4">Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#ki">Bibliothek / Lokale KI</a><button aria-pressed="false" class="night-toggle" type="button">Nachtmodus</button><span class="storage-warning" hidden="" role="status"></span></div>
 <h1>llama.cpp RPC: mehrere GPUs auf mehreren Hosts</h1>
 <p>Zwei Grafikkarten im selben Rechner und zwei Rechner mit je einer Grafikkarte sind unterschiedliche Probleme. Für lokale Mehrkarten-Systeme dokumentiert llama.cpp mehrere Split-Modi; <code>layer</code> ist dort die voreingestellte Verteilung auf zusammenhängende Schichten.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> Über Rechnergrenzen hinweg gibt es stattdessen das RPC-Backend: Ein Hauptprozess verbindet sich mit <code>ggml-rpc-server</code> auf entfernten Hosts.<a aria-label="Quelle 2" href="#quelle-2">[2]</a> Das ist eine experimentelle technische Option, keine pauschale Empfehlung für jedes Heimnetz.</p>
 <h2 id="abschnitt-1">Wann RPC überhaupt sinnvoll sein kann</h2>
@@ -23,11 +23,11 @@
 <h2 id="abschnitt-3">Prüfschritte vor jeder Bewertung</h2>
 <p>Inventarisiere zuerst die auf jedem Host tatsächlich erkannten Geräte und den freien Speicher. Vergleiche danach einen Einzelhost-Lauf mit einem isolierten RPC-Test bei identischem Modell, Kontext und Aufgaben. Halte Modell-Ladephase und eigentliche Antwortphase getrennt fest. Laut RPC-Dokumentation kann ein lokaler Cache große Tensoren vorhalten und Netzübertragungen beim wiederholten Laden verringern; das ändert jedoch nichts an der grundsätzlichen RPC-Sicherheitswarnung.<a aria-label="Quelle 2" href="#quelle-2">[2]</a></p>
 <p>Wenn der entfernte Host ausfällt, prüfe, ob die Anwendung einen klaren Fehler meldet und ob sich der Einzelhost-Betrieb wiederherstellen lässt. Miss Netzwerkbelastung und Ausgabekorrektheit selbst, statt Benchmarkzahlen Dritter zu übernehmen. Die Entscheidungsfrage bleibt: Ist die zusätzliche Komplexität für dein konkretes Modell notwendig, oder löst bereits eine lokale Schichtverteilung das Speicherproblem? Ein Test im isolierten Labor kann diese Frage beantworten; eine ungeschützte Dauerinstallation nicht.</p>
-<section aria-label="Quellen"><h2 id="abschnitt-4">Quellen</h2><ol>
+<section aria-label="Quellen"><section aria-label="Quellen zum Artikel" class="source-panel"><h2 id="abschnitt-4">Quellen</h2><ol>
 <li id="quelle-1"><a href="https://raw.githubusercontent.com/ggml-org/llama.cpp/master/docs/multi-gpu.md" rel="noopener noreferrer">llama.cpp: lokale Multi-GPU-Modi</a></li>
 <li id="quelle-2"><a href="https://raw.githubusercontent.com/ggml-org/llama.cpp/master/tools/rpc/README.md" rel="noopener noreferrer">llama.cpp: RPC-Backend und Sicherheitswarnung</a></li>
-</ol></section>
+</ol></section></section>
 </article></div></main>
 <footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
-<script defer="" src="../reading.js?v=20261114"></script></body>
+<script defer="" src="../reading.js?v=20261114"></script><script defer="" src="../reader-theme.js?v=1"></script></body>
 </html>

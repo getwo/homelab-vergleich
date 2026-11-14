@@ -8,10 +8,10 @@
 <meta content="Was DNSSEC im Homelab schützt, was nicht und wie du Pi-hole mit einem validierenden Resolver prüfst. Entscheidungsfragen und Fehlersuche ohne Scheinversprechen." name="description"/>
 <link href="https://homelab.brillianze.de/artikel/dnssec-im-homelab.html" rel="canonical"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<link href="../polish.css?v=20261114" rel="stylesheet"/><link href="../features2.css?v=1" rel="stylesheet"/></head>
 <body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
-<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was die Prüfung leistet – und was nicht</a><a href="#abschnitt-2">Pi-hole und Unbound sinnvoll trennen</a><a href="#abschnitt-3">Prüfschritte und Fehlersuche</a><a href="#abschnitt-4">Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#netz">Bibliothek / Netzwerk &amp; Sicherheit</a></div>
+<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was die Prüfung leistet – und was nicht</a><a href="#abschnitt-2">Pi-hole und Unbound sinnvoll trennen</a><a href="#abschnitt-3">Prüfschritte und Fehlersuche</a><a href="#abschnitt-4">Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#netz">Bibliothek / Netzwerk &amp; Sicherheit</a><button aria-pressed="false" class="night-toggle" type="button">Nachtmodus</button><span class="storage-warning" hidden="" role="status"></span></div>
 <h1>DNSSEC im Homelab: Integrität statt Verschlüsselung</h1>
 <p>Ein lokaler DNS-Filter beantwortet Anfragen schnell und blockiert unerwünschte Domains. Das sagt aber noch nichts darüber aus, ob eine erhaltene Antwort authentisch ist. DNSSEC ergänzt DNS um signierte Daten, deren Vertrauenskette ein validierender Resolver prüfen kann. Pi-hole führt dafür eine eigene Option <code>dns.dnssec</code>; in der dokumentierten Standardkonfiguration ist sie ausgeschaltet.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> Der Artikel konzentriert sich auf die Entscheidung, <em>wo</em> du validierst, nicht auf eine weitere allgemeine Pi-hole-Installation.</p>
 <h2 id="abschnitt-1">Was die Prüfung leistet – und was nicht</h2>
@@ -23,11 +23,11 @@
 <h2 id="abschnitt-3">Prüfschritte und Fehlersuche</h2>
 <p>Beginne <strong>direkt am validierenden Resolver</strong>, nicht in der Browser-Adressleiste. Die offizielle Unbound-Anleitung beschreibt einen negativen und einen positiven DNSSEC-Test: Eine absichtlich ungültig signierte Antwort soll <code>SERVFAIL</code> liefern, die gültige <code>NOERROR</code> mit Adresse und gesetztem <code>ad</code>-Flag.<a aria-label="Quelle 2" href="#quelle-2">[2]</a> Übernimm die dort genannten Testnamen und Abfragen nur in deiner tatsächlichen Resolver-Topologie. Wiederhole anschließend die Prüfung über Pi-hole und vergleiche beide Ergebnisse; so grenzt du einen falschen Upstream von einem Resolver-Problem ab.</p>
 <p>Falls selbst gewöhnliche öffentliche Namen ausfallen, prüfe zuerst Erreichbarkeit und Upstream-Wahl. Falls nur signierte Namen scheitern, prüfe die Resolver-Logs und die Systemzeit, bevor du die Validierung deaktivierst. Halte fest, welcher Resolver antwortet und welche Antwort du erwartet hast. Ein positives Testergebnis für eine signierte Zone beweist nicht, dass jeder Client im Heimnetz tatsächlich Pi-hole nutzt; prüfe deshalb auch die DNS-Zuweisung am betreffenden Client. Die sinnvolle Entscheidung lautet: Validierung dort aktivieren, wo du sie beobachten und bei Störungen nachvollziehen kannst.</p>
-<section aria-label="Quellen"><h2 id="abschnitt-4">Quellen</h2><ol>
+<section aria-label="Quellen"><section aria-label="Quellen zum Artikel" class="source-panel"><h2 id="abschnitt-4">Quellen</h2><ol>
 <li id="quelle-1"><a href="https://docs.pi-hole.net/ftldns/configfile/" rel="noopener noreferrer">Pi-hole: FTLDNS-Konfiguration</a></li>
 <li id="quelle-2"><a href="https://docs.pi-hole.net/guides/dns/unbound/" rel="noopener noreferrer">Pi-hole: Unbound als rekursiver Resolver</a></li>
-</ol></section>
+</ol></section></section>
 </article></div></main>
 <footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
-<script defer="" src="../reading.js?v=20261114"></script></body>
+<script defer="" src="../reading.js?v=20261114"></script><script defer="" src="../reader-theme.js?v=1"></script></body>
 </html>

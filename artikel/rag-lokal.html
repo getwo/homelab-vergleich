@@ -7,11 +7,11 @@
 <title>RAG lokal: Eigene Dokumente mit LLMs durchsuchen</title>
 <meta content="Ein Sprachmodell wie Llama, Mistral oder Qwen beantwortet Fragen aus seinem Training heraus — aber es kennt deine eigenen Dokumente nicht." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/rag-lokal.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<link href="https://homelab.brillianze.de/artikel/rag-lokal.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/><link href="../features2.css?v=1" rel="stylesheet"/></head>
 <body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ist Retrieval-Augmented Generation?</a><a href="#abschnitt-2">Vektor-Datenbanken: das Gedächtnis</a><a href="#abschnitt-3">Lokale Tools für RAG</a><a href="#abschnitt-4">Einrichtung mit Ollama</a><a href="#abschnitt-5">Anwendungsfälle</a><a href="#abschnitt-6">Fazit</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#ki">Bibliothek / Lokale KI</a></div>
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ist Retrieval-Augmented Generation?</a><a href="#abschnitt-2">Vektor-Datenbanken: das Gedächtnis</a><a href="#abschnitt-3">Lokale Tools für RAG</a><a href="#abschnitt-4">Einrichtung mit Ollama</a><a href="#abschnitt-5">Anwendungsfälle</a><a href="#abschnitt-6">Fazit</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#ki">Bibliothek / Lokale KI</a><button aria-pressed="false" class="night-toggle" type="button">Nachtmodus</button><span class="storage-warning" hidden="" role="status"></span></div>
 <h1>RAG lokal: Eigene Dokumente mit LLMs durchsuchen</h1>
 <p>Ein Sprachmodell wie Llama, Mistral oder Qwen beantwortet Fragen aus seinem Training heraus — aber es kennt deine eigenen Dokumente nicht. Genau diese Lücke schließt <strong>RAG</strong> (Retrieval-Augmented Generation). Statt das Modell neu zu trainieren, holt RAG zum Zeitpunkt der Frage die passenden Textstellen aus deinen Dateien und gibt sie dem Modell als Kontext mit. Das Ergebnis: Antworten, die auf deinen tatsächlichen Unterlagen basieren — und zwar komplett lokal, ohne dass ein einziges Dokument in die Cloud wandert.</p>
 <h2 id="abschnitt-1">Was ist Retrieval-Augmented Generation?</h2>
@@ -48,5 +48,5 @@ retriever = store.as_retriever()
 <footer>
 <div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
 </footer>
-<script defer="" src="../reading.js?v=20261114"></script></body>
+<script defer="" src="../reading.js?v=20261114"></script><script defer="" src="../reader-theme.js?v=1"></script></body>
 </html>

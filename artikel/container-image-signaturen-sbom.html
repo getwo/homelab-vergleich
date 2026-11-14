@@ -8,10 +8,10 @@
 <meta content="Container-Images im Homelab besser einordnen: Signaturprüfung, Herausgeberidentität, SBOM und die Grenzen dieser Nachweise vor dem Update." name="description"/>
 <link href="https://homelab.brillianze.de/artikel/container-image-signaturen-sbom.html" rel="canonical"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<link href="../polish.css?v=20261114" rel="stylesheet"/><link href="../features2.css?v=1" rel="stylesheet"/></head>
 <body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
-<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was eine Signatur belegt</a><a href="#abschnitt-2">Was eine SBOM hinzufügt</a><a href="#abschnitt-3">Prüfablauf vor dem Deployment</a><a href="#abschnitt-4">Grenzen in den Betrieb übernehmen</a><a href="#quellen">Offizielle Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#virtualisierung">Bibliothek / Proxmox &amp; Virtualisierung</a></div>
+<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was eine Signatur belegt</a><a href="#abschnitt-2">Was eine SBOM hinzufügt</a><a href="#abschnitt-3">Prüfablauf vor dem Deployment</a><a href="#abschnitt-4">Grenzen in den Betrieb übernehmen</a><a href="#quellen">Offizielle Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#virtualisierung">Bibliothek / Proxmox &amp; Virtualisierung</a><button aria-pressed="false" class="night-toggle" type="button">Nachtmodus</button><span class="storage-warning" hidden="" role="status"></span></div>
 <h1>Container-Image-Signaturen und SBOMs verstehen</h1>
 <p>Ein neuer Container ist schnell heruntergeladen. Ob das Image tatsächlich vom erwarteten Herausgeber kommt und welche Software darin steckt, sind zwei andere Fragen. Eine Signatur und eine Software Bill of Materials, kurz SBOM, beantworten unterschiedliche Teile davon. Beide können eine Freigabeentscheidung verbessern, ersetzen aber weder Wartung noch eine Prüfung der konkreten Anwendung.</p>
 <h2 id="abschnitt-1">Was eine Signatur belegt</h2>
@@ -25,8 +25,8 @@
 <p>Wenn ein Projekt keine dieser Nachweise anbietet, erfinde keinen Vertrauensbeweis. Halte die Unsicherheit fest und entscheide anhand der Wichtigkeit des Dienstes, ob du ein alternatives Image oder einen enger begrenzten Testbetrieb bevorzugst. Für einen produktiven Passwortdienst ist eine strengere Auswahl sinnvoll als für ein wegwerfbares Experiment.</p>
 <h2 id="abschnitt-4">Grenzen in den Betrieb übernehmen</h2>
 <p>Bewahre Prüfergebnis, Quelllink, erwartete Identität und Image-Digest beim Stack auf. Wiederhole die Verifikation bei jedem Imagewechsel; die Prüfung eines alten Digests gilt nicht für ein neues Image. Kontrolliere außerdem Laufzeitrechte, Netzwerkzugriff, Updateweg und Wiederherstellung der Daten. Signatur und SBOM sind Bausteine einer Lieferkettenprüfung, nicht ihre Abkürzung: Herkunft, Bestandteile und tatsächliches Verhalten bleiben drei getrennte Fragen.</p>
-<section aria-labelledby="quellen"><h2 id="quellen">Offizielle Quellen</h2><ol><li id="quelle-1"><a href="https://docs.sigstore.dev/cosign/verifying/verify/">Sigstore: Signaturen mit Cosign prüfen</a></li>
-<li id="quelle-2"><a href="https://docs.sigstore.dev/cosign/signing/other_types/">Sigstore: SBOMs und andere Artefakte signieren</a></li></ol></section>
+<section aria-labelledby="quellen"><section aria-label="Quellen zum Artikel" class="source-panel"><h2 id="quellen">Offizielle Quellen</h2><ol><li id="quelle-1"><a href="https://docs.sigstore.dev/cosign/verifying/verify/">Sigstore: Signaturen mit Cosign prüfen</a></li>
+<li id="quelle-2"><a href="https://docs.sigstore.dev/cosign/signing/other_types/">Sigstore: SBOMs und andere Artefakte signieren</a></li></ol></section></section>
 </article></div></main>
 <footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
-<script defer="" src="../reading.js?v=20261114"></script></body></html>
+<script defer="" src="../reading.js?v=20261114"></script><script defer="" src="../reader-theme.js?v=1"></script></body></html>

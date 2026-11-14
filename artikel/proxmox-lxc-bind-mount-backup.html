@@ -8,10 +8,10 @@
 <meta content="Bind-Mounts in Proxmox-LXC-Containern sind praktisch, aber ihre Inhalte gehören nicht automatisch ins Container-Backup. So prüfst du Sicherung und Restore." name="description"/>
 <link href="https://homelab.brillianze.de/artikel/proxmox-lxc-bind-mount-backup.html" rel="canonical"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<link href="../polish.css?v=20261114" rel="stylesheet"/><link href="../features2.css?v=1" rel="stylesheet"/></head>
 <body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
-<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ist im Archiv, was liegt außerhalb?</a><a href="#abschnitt-2">Nutzen und Grenzen des getrennten Datenpfads</a><a href="#abschnitt-3">Prüfschritte für einen echten Restore</a><a href="#abschnitt-4">Offizielle Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#virtualisierung">Bibliothek / Proxmox &amp; Virtualisierung</a></div>
+<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ist im Archiv, was liegt außerhalb?</a><a href="#abschnitt-2">Nutzen und Grenzen des getrennten Datenpfads</a><a href="#abschnitt-3">Prüfschritte für einen echten Restore</a><a href="#abschnitt-4">Offizielle Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#virtualisierung">Bibliothek / Proxmox &amp; Virtualisierung</a><button aria-pressed="false" class="night-toggle" type="button">Nachtmodus</button><span class="storage-warning" hidden="" role="status"></span></div>
 <h1>Proxmox LXC: Bind-Mounts und Backups trennen</h1>
 <p>Ein Container soll Medien auf dem Host lesen oder einen gemeinsamen Datenordner nutzen. Ein Bind-Mount macht einen bestehenden Hostpfad im LXC-Container sichtbar, ohne die Daten in dessen Root-Dateisystem zu verschieben. Das spart Kopien und lässt Verwaltung und Daten getrennt organisieren. Genau diese Trennung ist beim Backup aber eine Falle: Laut Proxmox werden Inhalte von Bind-Mounts nicht durch das normale Container-Backup mitgesichert. Ein erfolgreiches Sicherungsprotokoll beweist also nicht, dass die eingebundenen Daten enthalten sind. <a href="#quelle-1">[1]</a></p>
 <h2 id="abschnitt-1">Was ist im Archiv, was liegt außerhalb?</h2>
@@ -23,8 +23,8 @@
 <h2 id="abschnitt-3">Prüfschritte für einen echten Restore</h2>
 <p>Inventarisiere zuerst jeden Mount-Point mit Quellpfad, Zielpfad im Container, Datentyp und verantwortlichem Sicherungsjob. Kontrolliere anschließend das Proxmox-Backup-Protokoll und das separate Backup des Quellpfads. Stelle dann einen Container in einer isolierten Testumgebung wieder her, ohne den produktiven Hostordner unbemerkt einzubinden. Bereite den gesicherten Hostpfad am Testziel vor und prüfe Rechte, erwartete Dateien sowie die Funktion der Anwendung. Ein Test mit einer bewusst angelegten, harmlosen Beispieldatei macht fehlende Daten sofort sichtbar. Dokumentiere schließlich die Reihenfolge: erst Quellbestand bereitstellen, dann Mount-Zuordnung kontrollieren und den Dienst starten. <a href="#quelle-1">[1]</a></p>
 <p>Der eigentliche Maßstab ist nicht ein grüner Backup-Job, sondern ein wiederherstellbarer Dienst mit seinen Daten. Das gilt auch dann, wenn Proxmox den Container selbst fehlerfrei restauriert. <a href="#quelle-2">[2]</a></p>
-<h2 id="abschnitt-4">Offizielle Quellen</h2>
+<section aria-label="Quellen zum Artikel" class="source-panel"><h2 id="abschnitt-4">Offizielle Quellen</h2>
 <ul><li id="quelle-1"><a href="https://pve.proxmox.com/pve-docs/chapter-pct.html">[1] Proxmox VE: Container Toolkit und Mount-Points</a></li><li id="quelle-2"><a href="https://pve.proxmox.com/pve-docs/chapter-vzdump.html">[2] Proxmox VE: Backup and Restore</a></li></ul>
-</article></div></main>
+</section></article></div></main>
 <footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
-<script defer="" src="../reading.js?v=20261114"></script></body></html>
+<script defer="" src="../reading.js?v=20261114"></script><script defer="" src="../reader-theme.js?v=1"></script></body></html>
