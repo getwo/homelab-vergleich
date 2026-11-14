@@ -7,14 +7,14 @@
 <title>Photoprism vs Immich: Welches Foto-Tool fürs Homelab?</title>
 <meta content="Photoprism vs Immich: Welches Foto-Tool fürs Homelab?  Deine Fotos liegen über mehrere Handys, Festplatten und Cloud-Dienste verstreut – und irgendwan" name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/photoprism-vs-immich.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/photoprism-vs-immich.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<div class="content">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was Photoprism und Immich gemeinsam können</a><a href="#abschnitt-2">Der entscheidende Unterschied: Google-Photos-Ersatz oder Foto-Archiv?</a><a href="#abschnitt-3">Installation mit Docker</a><a href="#abschnitt-4">Ressourcenbedarf im Vergleich</a><a href="#abschnitt-5">Empfehlung je Anwendungsfall</a><a href="#abschnitt-6">Fazit</a></aside><div class="content"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a></div>
 <h1>Photoprism vs Immich: Welches Foto-Tool fürs Homelab?</h1>
 <p>Deine Fotos liegen über mehrere Handys, Festplatten und Cloud-Dienste verstreut – und irgendwann findest du das Urlaubsfoto von vor drei Jahren einfach nicht mehr. Genau hier setzen Photoprism und Immich an: Beide verwalten deine Bildersammlung auf eigener Hardware, sortieren sie automatisch und durchsuchen sie per Gesichtserkennung. Doch die beiden Tools verfolgen unterschiedliche Ziele. Dieser Artikel zeigt, was sie können, worin sie sich unterscheiden und welches zu deinem Homelab passt.</p>
-<h2>Was Photoprism und Immich gemeinsam können</h2>
+<h2 id="abschnitt-1">Was Photoprism und Immich gemeinsam können</h2>
 <p>Auf den ersten Blick decken beide ähnliche Grundfunktionen ab:</p>
 <ul>
 <li><strong>Foto-Verwaltung:</strong> Beide importieren Fotos aus Ordnern, lesen EXIF-Daten und Metadaten aus und zeigen die Bilder in einer modernen Weboberfläche an.</li>
@@ -23,10 +23,10 @@
 <li><strong>Suche:</strong> Neben dem Datum suchen beide nach Orten, Kameramodellen, Labels und Objekten – bei Photoprism zusätzlich nach Farben und Bildinhalten.</li>
 </ul>
 <p>Technisch basieren beide auf Go beziehungsweise TypeScript und laufen als Container im Docker-Setup. Die Oberflächen sind responsive und funktionieren am Handy wie am Desktop.</p>
-<h2>Der entscheidende Unterschied: Google-Photos-Ersatz oder Foto-Archiv?</h2>
+<h2 id="abschnitt-2">Der entscheidende Unterschied: Google-Photos-Ersatz oder Foto-Archiv?</h2>
 <p>Hier trennen sich die Wege. <strong>Immich</strong> ist als direkte Alternative zu Google Photos gedacht: Es synchronisiert Fotos automatisch vom Handy per App, sichert sie in die eigene Bibliothek und bietet ein vertrautes, modernes Nutzererlebnis – inklusive Zeitleiste, Suche und Teilen. Wer von Google Photos oder iCloud weg will, fühlt sich bei Immich sofort zu Hause.</p>
 <p><strong>Photoprism</strong> versteht sich dagegen als Foto-Archiv und Organisationstool. Es legt den Fokus auf saubere, strukturierte Verwaltung, mächtige Suche und die langfristige Archivierung großer Bestände. Die Bilder bleiben dort, wo du sie ablegst – Photoprism indexiert und organisiert sie, ohne sie in eine eigene Struktur zu verschieben. Eine automatische Handy-Synchronisation gehört nicht zum Kern, dafür ist die Metadaten- und Suchfunktion tiefer.</p>
-<h2>Installation mit Docker</h2>
+<h2 id="abschnitt-3">Installation mit Docker</h2>
 <p>Beide starten am einfachsten über Docker Compose. Ein Beispiel für Immich mit Datenbank und Server:</p>
 <pre><code>
 services:
@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
 </code></pre>
 <p>Für beide gilt: Ein Reverse Proxy wie Traefik oder Caddy macht den Zugriff von unterwegs sicher, und ein Backup des Datenordners gehört zur Grundausstattung.</p>
-<h2>Ressourcenbedarf im Vergleich</h2>
+<h2 id="abschnitt-4">Ressourcenbedarf im Vergleich</h2>
 <p>Beide benötigen Rechenleistung für die Indexierung und die KI-Erkennung – besonders beim ersten Scan großer Bibliotheken.</p>
 <p>| Kriterium | Photoprism | Immich |</p>
 <p>|---|---|---|</p>
@@ -80,7 +80,7 @@ services:
 <p>| Handy-Sync | über Dritt-Tools | native App (iOS/Android) |</p>
 <p>| Stabilität | sehr ausgereift | schnell entwickelt, häufige Updates |</p>
 <p>Immich bringt mehr Komponenten mit und braucht spürbar mehr Ressourcen – dafür übernimmt es den kompletten Sync-Workflow. Photoprism läuft auch auf einem Raspberry Pi noch brauchbar, sofern du beim Indexieren Geduld mitbringst.</p>
-<h2>Empfehlung je Anwendungsfall</h2>
+<h2 id="abschnitt-5">Empfehlung je Anwendungsfall</h2>
 <ul>
 <li><strong>Google Photos ersetzen:</strong> Wähle <strong>Immich</strong>. Die App synchronisiert Fotos automatisch, und das Gesamterlebnis kommt dem gewohnten Cloud-Komfort sehr nahe.</li>
 <li><strong>Bestehendes Archiv organisieren:</strong> Wähle <strong>Photoprism</strong>. Es bringt Ordnung in große, bestehende Bestände, ohne sie umzuziehen, und überzeugt mit mächtiger Suche.</li>
@@ -88,10 +88,10 @@ services:
 <li><strong>Mehrere Familienmitglieder:</strong> Wähle <strong>Immich</strong> mit seinen nativen Apps und dem einfachen Teilen.</li>
 <li><strong>Beides kombinieren:</strong> Viele Homelab-Betreiber nutzen Immich fürs automatische Einsammeln und Photoprism fürs langfristige Archiv – möglich, aber mehr Pflegeaufwand.</li>
 </ul>
-<h2>Fazit</h2>
+<h2 id="abschnitt-6">Fazit</h2>
 <p>Photoprism und Immich sind keine echten Konkurrenten, sondern zwei Werkzeuge mit unterschiedlichem Schwerpunkt. Immich ist die moderne Google-Photos-Alternative mit Handy-Sync und vertrautem Look, Photoprism das solide Foto-Archiv mit tiefer Suche und geringem Ressourcenbedarf. Wer den Cloud-Komfort ersetzen will, greift zu Immich; wer eine bestehende Sammlung sauber strukturieren möchte, fährt mit Photoprism am besten. In einem gut ausgebauten Homelab haben im Zweifel beide ihren Platz.</p>
-</div>
+</div></div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

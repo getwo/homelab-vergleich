@@ -7,14 +7,14 @@
 <title>DKIM, SPF und DMARC</title>
 <meta content="DKIM, SPF und DMARC sind die drei Säulen, auf denen eine vertrauenswürdige Absenderidentität ruht." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/email-authentifizierung-dkim-spf-dmarc.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/email-authentifizierung-dkim-spf-dmarc.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<article class="content" style="max-width:800px;">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Warum E-Mail-Authentifizierung notwendig ist</a><a href="#abschnitt-2">SPF-Record: Praktische Einrichtung mit Mailcow und Postfix</a><a href="#abschnitt-3">Syntax und Grundstruktur</a><a href="#abschnitt-4">Beispiele für häufige Konfigurationen</a><a href="#abschnitt-5">Typische Fehler bei SPF</a><a href="#abschnitt-6">DKIM: Schlüssel erzeugen, veröffentlichen und rotieren</a><a href="#abschnitt-7">Schlüssel mit OpenDKIM generieren</a><a href="#abschnitt-8">DNS-Eintrag veröffentlichen</a><a href="#abschnitt-9">Rotation des DKIM-Schlüssels</a><a href="#abschnitt-10">DMARC: Richtlinien setzen und Auswertungsberichte nutzen</a><a href="#abschnitt-11">DMARC-Policy-Verfahren im Überblick</a><a href="#abschnitt-12">Beispiel für einen DMARC-Record</a><a href="#abschnitt-13">Auswertung der DMARC-Berichte</a><a href="#abschnitt-14">Häufige Fehler und wie Sie sie vermeiden</a><a href="#abschnitt-15">1. Nicht-Array-fähige DNS-Records</a><a href="#abschnitt-16">2. Subdomain-Authentifizierung vergessen</a><a href="#abschnitt-17">3. DMARC-Alignment (ausrichtung) falsch verstanden</a><a href="#abschnitt-18">4. 10-Lookup-Limit bei SPF</a><a href="#abschnitt-19">Checkliste: Korrekte Einrichtung von DKIM, SPF und DMARC</a><a href="#abschnitt-20">Troubleshooting-Tabelle</a><a href="#abschnitt-21">Fazit</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a></div>
 <h1>DKIM, SPF und DMARC: E-Mail-Authentifizierung richtig einrichten</h1>
 <p>E-Mail ist das Rückgrat der Kommunikation im eigenen Homelab — aber ohne Authentifizierung landen Ihre Nachrichten schnell im Spam-Filter oder werden ganz blockiert. DKIM, SPF und DMARC sind die drei Säulen, auf denen eine vertrauenswürdige Absenderidentität ruht. Dieser Artikel zeigt, wie Sie sie Schritt für Schritt einrichten und worauf Sie bei der Konfiguration achten müssen.</p>
-<h2>Warum E-Mail-Authentifizierung notwendig ist</h2>
+<h2 id="abschnitt-1">Warum E-Mail-Authentifizierung notwendig ist</h2>
 <p>Die E-Mail-Technik entstand, als das Internet noch klein war und niemand dachte, dass Absenderadressen vorgefälscht werden könnten. Das Ergebnis: Jeder kann im <code>From</code>-Feld beliebige E-Mails vortäuschen. Speisen Sie Ihre Nachrichten ohne Authentifizierung in die Welt, dann behandeln viele Provider (Gmail, Outlook, GMX) Ihre Mails als verdächtig — oder lehnen sie gar nicht erst an.</p>
 <p>Drei Mechanismen lösen dieses Problem gemeinsam:</p>
 <ul>
@@ -23,9 +23,9 @@
 <li><strong>DMARC (Domain-based Message Authentication, Reporting and Conformance)</strong> sagt den Empfängern, was sie mit Nachrichten tun sollen, die SPF oder DKIM nicht bestehen — und liefert Berichte zurück an Sie.</li>
 </ul>
 <p>Ohne diese drei Mechanismen sehen große Postfachanbieter Ihre Domain als riskant an. Die Folge: gelieferte Nachrichten landen im Spam-Ordner, schlechtere Zuverlässigkeit und im schlimmsten Fall eine komplette Ablehnung durch empfangende Server.</p>
-<h2>SPF-Record: Praktische Einrichtung mit Mailcow und Postfix</h2>
+<h2 id="abschnitt-2">SPF-Record: Praktische Einrichtung mit Mailcow und Postfix</h2>
 <p>Ein SPF-Record ist ein TXT-Eintrag in Ihrer DNS-Zone. Er listet alle autorisierten Mailserver auf und definiert, wie streng der Empfänger bei Verstößen vorgehen soll.</p>
-<h2>Syntax und Grundstruktur</h2>
+<h2 id="abschnitt-3">Syntax und Grundstruktur</h2>
 <pre><code>
 v=spf1 include:_spf.mailcow.email -all
 </code></pre>
@@ -36,7 +36,7 @@ v=spf1 include:_spf.mailcow.email -all
 <li><code>-all</code> bedeutet "hard fail": E-Mails von nicht aufgelisteten Servern werden abgelehnt.</li>
 <li>Alternativ <code>~all</code> (SoftFail) für die Testphase, wenn Sie noch nicht sicher sind.</li>
 </ul>
-<h2>Beispiele für häufige Konfigurationen</h2>
+<h2 id="abschnitt-4">Beispiele für häufige Konfigurationen</h2>
 <p><strong>Nur eigener Server (Postfix direkt):</strong></p>
 <pre><code>
 v=spf1 mx ~all
@@ -47,14 +47,14 @@ v=spf1 mx ~all
 v=spf1 include:_spf.mailcow.email include:spf.protection.outlook.com -all
 </code></pre>
 <p>Mailcow setzt eigene SPF-Templates bereit. Prüfen Sie unter <code>Site-Admin → Mail-Settings → MX/SMTP</code>, ob Ihr DNS bereits korrekt konfiguriert ist.</p>
-<h2>Typische Fehler bei SPF</h2>
+<h2 id="abschnitt-5">Typische Fehler bei SPF</h2>
 <p>1. <strong>Zu viele DNS-Lookups:</strong> SPF erlaubt maximal 10 DNS-Abfragen (Mechaniken wie <code>include</code>, <code>a</code>, <code>mx</code>, <code>ptr</code>). Überschreiten Sie diese Grenze, gilt der Record als <code>permerror</code> und wird nicht ausgewertet.</p>
 <p>   Vermeiden Sie verschachtelte <code>include:</code>-Ketten. Prüfen Sie die Lookup-Anzahl mit einem Tool wie <code>dig</code> oder online mit einem SPF-Checker.</p>
 <p>2. <strong>Falsche oder doppelte <code>include</code>-Einträge:</strong> Ein lbs. <code>include:</code> verweist auf einen externen SPF-Record, der selbst wieder <code>include:</code>-Mechanismen haben kann. Jede Stufe kostet einen Lookup.</p>
 <p>3. <strong>Widersprüchliche Qualifier:</strong> Wenn Sie sowohl <code>~all</code> als auch <code>-all</code> in verschiedenen Records definieren, ist das Ergebnis unspezifisch. Nutzen Sie einen einzigen konsistenten Eintrag.</p>
-<h2>DKIM: Schlüssel erzeugen, veröffentlichen und rotieren</h2>
+<h2 id="abschnitt-6">DKIM: Schlüssel erzeugen, veröffentlichen und rotieren</h2>
 <p>DKIM funktioniert über ein Public/Private-Key-Verfahren. Der Private Key signiert E-Mails beim Versand; der Public Key widerholt im DNS und ermöglicht dem Empfänger die Verifikation.</p>
-<h2>Schlüssel mit OpenDKIM generieren</h2>
+<h2 id="abschnitt-7">Schlüssel mit OpenDKIM generieren</h2>
 <p>Die gebräuchlichste Methode ist <code>opendkim-genkey</code>:</p>
 <pre><code>
 mkdir -p /etc/opendkim/keys/brillianze.de
@@ -66,7 +66,7 @@ chown opendkim:opendkim /etc/opendkim/keys/brillianze.de/mail.*
 <li><code>-b 2048</code> erzeugt einen 2048-Bit-RSA-Schlüssel (empfohlen; 1024 Bit gilt als zu schwach).</li>
 <li><code>-s mail</code> definiert den Selektor (bestimmt den DNS-Subdomänen-Namen).</li>
 </ul>
-<h2>DNS-Eintrag veröffentlichen</h2>
+<h2 id="abschnitt-8">DNS-Eintrag veröffentlichen</h2>
 <p>Der generierte <code>mail.txt</code>-Inhalt enthält den Public-Key als TXT-Record. Diesen tragen Sie unter folgender Adresse ein:</p>
 <pre><code>
 mail._domainkey.brillianze.de. IN TXT "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC..."
@@ -76,7 +76,7 @@ mail._domainkey.brillianze.de. IN TXT "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQU
 <li>Der Selektor (hier <code>mail</code>) im DNS-Eintrag und in der DKIM-Konfiguration übereinstimmt.</li>
 <li>Der Schlüssel intakt ist — kein Zeilenumbruch im <code>p=</code>-Wert, kein fehlendes <code>"</code> oder Leerzeichen.</li>
 </ul>
-<h2>Rotation des DKIM-Schlüssels</h2>
+<h2 id="abschnitt-9">Rotation des DKIM-Schlüssels</h2>
 <p>Schlüssel sollten regelmäßig (alle 6–12 Monate) ausgetauscht werden:</p>
 <p>1. Neuen Schlüssel mit neuem Selektor generieren (z. B. <code>mail2</code>).</p>
 <p>2. DNS-Record für <code>mail2._domainkey</code> hinzufügen.</p>
@@ -84,15 +84,15 @@ mail._domainkey.brillianze.de. IN TXT "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQU
 <p>4. Mailserver neustarten.</p>
 <p>5. Alten Schlüssel nach einer Übergangsfrist (z. B. 2 Wochen) aus DNS und OpenDKIM entfernen.</p>
 <p><strong>Wichtig:</strong> Während der Übergangszeit müssen beide Selektoren aktiv sein, damit luktierende E-Mails noch verifiziert werden können.</p>
-<h2>DMARC: Richtlinien setzen und Auswertungsberichte nutzen</h2>
+<h2 id="abschnitt-10">DMARC: Richtlinien setzen und Auswertungsberichte nutzen</h2>
 <p>DMARC bündelt SPF- und DKIM-Ergebnisse und entscheidet anhand einer definierten Policy (<code>p=</code>), was bei einem Fehlschlag passiert. Zusätzlich können Berichte an eine bestimmte Adresse (<code>rua=</code>) gesendet werden.</p>
-<h2>DMARC-Policy-Verfahren im Überblick</h2>
+<h2 id="abschnitt-11">DMARC-Policy-Verfahren im Überblick</h2>
 <p>| Policy | Bedeutung | Empfehlung |</p>
 <p>|--------|-----------|------------|</p>
 <p>| <code>p=none</code> | Keine Aktion; nur Berichterstattung | Ideal zum Starten — keine Risiken für legitime Nachrichten. |</p>
 <p>| <code>p=quarantine</code> | Nachrichten in Spam/Quarantäne verschieben | Schrittweise Verschärfung nach erfolgreicher Überwachungsphase. |</p>
 <p>| <code>p=reject</code> | Nachrichten komplett ablehnen | Abschlussziel — nur setzen, wenn SPF + DKIM zuverlässig funktionieren. |</p>
-<h2>Beispiel für einen DMARC-Record</h2>
+<h2 id="abschnitt-12">Beispiel für einen DMARC-Record</h2>
 <pre><code>
 _dmarc.brillianze.de. IN TXT "v=DMARC1; p=none; rua=mailto:dmarc@brillianze.de; ruf=mailto:dmarc-forensics@brillianze.de; fo=1; pct=100"
 </code></pre>
@@ -102,7 +102,7 @@ _dmarc.brillianze.de. IN TXT "v=DMARC1; p=none; rua=mailto:dmarc@brillianze.de; 
 <li><code>fo=1</code>: Berichte auch dann, wenn SPF und DKIM gemeinsam fehlschlagen (nicht nur wenn eines versagt).</li>
 <li><code>pct=100</code>: gilt für 100% der Nachrichten (kann reduziert werden, um eine schrittweise Einführung zu testen).</li>
 </ul>
-<h2>Auswertung der DMARC-Berichte</h2>
+<h2 id="abschnitt-13">Auswertung der DMARC-Berichte</h2>
 <p>Die aggregierten Berichte (<code>rua</code>) sind XML-Dateien. Um sie lesbar zu machen, nutzen Sie:</p>
 <ul>
 <li><strong>Selbst gehostete Tools:</strong> z. B. DMARC-Explorer, Postmark DMARC Analyzer oder eigenständige Parser wie <code>parsedmarc</code>.</li>
@@ -114,24 +114,24 @@ _dmarc.brillianze.de. IN TXT "v=DMARC1; p=none; rua=mailto:dmarc@brillianze.de; 
 <li><strong>Quelle der Nachrichten:</strong> Welche IPs oder Domains senden als Ihre Domain und bestehen keine Authentifizierung?</li>
 <li><strong>Aligner-Probleme:</strong> Manchmal bestehen SPF/DKIM technisch, aber die Domain im Header stimmt nicht mit der authentifizierten Domain überein (Alignment-Problem).</li>
 </ul>
-<h2>Häufige Fehler und wie Sie sie vermeiden</h2>
-<h2>1. Nicht-Array-fähige DNS-Records</h2>
+<h2 id="abschnitt-14">Häufige Fehler und wie Sie sie vermeiden</h2>
+<h2 id="abschnitt-15">1. Nicht-Array-fähige DNS-Records</h2>
 <p>Manche Provider erlauben nur einen TXT-Record pro Name. DKIM und DMARC erfordern aber genuine TXT-Einträge — kein CNAME-Fallback, der den Record überschreibt. Prüfen Sie, ob Ihr DNS-Anbieter TXT-Records mehrfach erlaubt oder ob Sie einen Array-Eintrag nutzen müssen.</p>
-<h2>2. Subdomain-Authentifizierung vergessen</h2>
+<h2 id="abschnitt-16">2. Subdomain-Authentifizierung vergessen</h2>
 <p>SPF gilt standardmäßig nur für die Hauptdomain. Wenn Sie auch E-Mails von <code>newsletter.brillianze.de</code> versenden, benötigen Sie einen eigenen SPF-Record für die Subdomain:</p>
 <pre><code>
 newsletter.brillianze.de. IN TXT "v=spf1 include:_spf.mailcow.email ~all"
 </code></pre>
-<h2>3. DMARC-Alignment (ausrichtung) falsch verstanden</h2>
+<h2 id="abschnitt-17">3. DMARC-Alignment (ausrichtung) falsch verstanden</h2>
 <p>DMARC erwartet, dass der <code>From</code>-Header mit dem authentifizierten Domain übereinstimmt (relaxed oder strict).</p>
 <ul>
 <li><strong>Relaxed Alignment (Standard):</strong> Die organisatorische Domain muss übereinstimmen, Subdomains sind akzeptiert.</li>
 <li><strong>Strict Alignment:</strong> Exakte Übereinstimmung erforderlich.</li>
 </ul>
 <p>Die meisten Konfigurationen nutzen relaxed alignment. Wenn Sie beispielsweise von <code>info@mail.brillianze.de</code> senden, aber SPF für <code>brillianze.de</code> bestanden hat, akzeptiert relaxed DMARC das. Strict würde es verwerfen.</p>
-<h2>4. 10-Lookup-Limit bei SPF</h2>
+<h2 id="abschnitt-18">4. 10-Lookup-Limit bei SPF</h2>
 <p>SPF definiert maximal 10 DNS-Lookups. Wenn Sie viele <code>include:</code>-Einträge haben, kann die Grenze schnell erreicht sein. Nutzen Sie Tools wie <code>spfquery</code> oder Online-Spfl-Checker, um die Lookup-Zahl zu messen. Vereinfachen Sie die Policy, wenn nötig — bündeln Sie includes oder nutzen Sie mechanisch weniger aufwendige Alternativen (z. B. direkte IP-Einträge statt includes, wenn möglich).</p>
-<h2>Checkliste: Korrekte Einrichtung von DKIM, SPF und DMARC</h2>
+<h2 id="abschnitt-19">Checkliste: Korrekte Einrichtung von DKIM, SPF und DMARC</h2>
 <ul>
 <li>[ ] <strong>SPF:</strong> TXT-Record in DNS mit <code>v=spf1</code> vorhanden.</li>
 <li>[ ] <strong>SPF:</strong> Alle autorisierten Mailserver aufgelistet (eigener Server, Mailcow, ggf. Drittanbieter).</li>
@@ -147,7 +147,7 @@ newsletter.brillianze.de. IN TXT "v=spf1 include:_spf.mailcow.email ~all"
 <li>[ ] <strong>Subdomains:</strong> Eigene SPF-/DKIM-/DMARC-Einträge für genutzte Subdomains angelegt, wenn E-Mails von dort verschickt werden.</li>
 <li>[ ] <strong>Test:</strong> Eigene Test-E-Mails an Gmail/Outlook gesendet und Header auf SPF/DKIM/DMARC-Status geprüft.</li>
 </ul>
-<h2>Troubleshooting-Tabelle</h2>
+<h2 id="abschnitt-20">Troubleshooting-Tabelle</h2>
 <p>| Symptom | Mögliche Ursache | Gegenmaßnahme |</p>
 <p>|---------|-----------------|----------------|</p>
 <p>| E-Mail landet im Spam trotz DKIM/SPF | DMARC-Policy noch auf <code>none</code>, aber Reputation-Probleme | DMARC-Berichte prüfen, E-Mail-Reputation überprüfen, Content-Anpassungen erwägen. |</p>
@@ -156,15 +156,15 @@ newsletter.brillianze.de. IN TXT "v=spf1 include:_spf.mailcow.email ~all"
 <p>| DMARC <code>fail</code> obwohl SPF und DKIM <code>pass</code> zeigen | Alignment-Problem (Domain im From-Header != authentifizierte Domain) | Alignment-Modus prüfen (relaxed/stred), <code>From</code>-Header prüfen, DKIM-Signatur-Domain abgleichen. |</p>
 <p>| Keine DMARC-Berichte erhalten | <code>rua</code> falsch, Port 25 geblockt, oder <code>pct=0</code> | <code>rua</code>-Adresse prüfen, Firewall-Regeln für eingehende SMTP prüfen, <code>pct</code>-Wert korrigieren. |</p>
 <p>| Nach Schlüsselrotation werden alte Mails nicht verifiziert | Alter Selektor aus DNS entfernt, zu schnelle Rotation | Übergangsfrist einhalten, beide Selektoren parallel aktiv halten, bis alle offenen Nachrichten verarbeitet sind. |</p>
-<h2>Fazit</h2>
+<h2 id="abschnitt-21">Fazit</h2>
 <p>Eine fundierte E-Mail-Authentifizierung basiert auf drei Bausteinen: SPF definiert die autorisierten Sender, DKIM signiert die Inhalte kryptografisch und DMARC steuert das Verhalten bei Fehlern sowie die Berichterstattung. Beginnen Sie mit <code>p=none</code>, sammeln Sie DMARC-Berichte, korrigieren Sie Auffälligkeiten und steigern Sie nach und nach zu <code>quarantine</code> und schließlich <code>reject</code>.</p>
 <p>Vor jeder Änderung testen Sie Ihre Konfiguration mit Tools wie MXToolbox, einem DMARC-Berichts-Parser oder einem eigenen Test-Mail-Kreislauf. Dieser Aufwand zahlt sich aus: Ihre Nachrichten erreichen die Empfänger, und Ihre Domain bleibt vor unbefugtem Gebrauch geschützt.</p>
 <p>Für weiterführende Informationen zu Mailservern im Homelab siehe auch C:\\00hermes\\unternehmen\\artikel-neu\\drafts\\mailserver-selbst-hosten.md, zur allgemeinen DNS-Konfiguration mit Caddy: C:\\00hermes\\unternehmen\\artikel-neu\\drafts\\caddy-reverse-proxy-https.md, und eine Übersicht zu Reverse-Proxies und Transport-Sicherheit: C:\\00hermes\\unternehmen\\artikel-neu\\drafts\\reverse-proxy-vergleich.md.</p>
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-</article>
+</article></div>
 </main>
 <footer>
 <div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
 </footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

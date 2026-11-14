@@ -7,14 +7,14 @@
 <title>Docker-Compose Best Practices fürs Homelab</title>
 <meta content="Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets  Ein Homelab wächst schnell: Irgendwann laufen Pihole, Home Assistant, Jel" name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/docker-compose-best-practices.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/docker-compose-best-practices.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<div class="content">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Sprechende Namen: Container und Services klar benennen</a><a href="#abschnitt-2">Volumes: Daten außerhalb des Containers ablegen</a><a href="#abschnitt-3">Netzwerke: Dienste gezielt verbinden</a><a href="#abschnitt-4">Umgebungsvariablen und .env: Secrets nie ins Repo</a><a href="#abschnitt-5">Healthchecks: Ausfall automatisch erkennen</a><a href="#abschnitt-6">Restart-Policies: Dienste automatisch wiederbeleben</a><a href="#abschnitt-7">Ordnerstruktur: Ein Stack, ein Verzeichnis</a><a href="#abschnitt-8">Vollständiges Beispiel: alles zusammen</a><a href="#abschnitt-9">Fazit</a></aside><div class="content"><div class="reading-crumb"><a href="../index.html#virtualisierung">Bibliothek / Proxmox &amp; Virtualisierung</a></div>
 <h1>Docker-Compose Best Practices fürs Homelab: Saubere Stacks, sichere Secrets</h1>
 <p>Ein Homelab wächst schnell: Irgendwann laufen Pihole, Home Assistant, Jellyfin, Nextcloud und ein Dutzend weitere Dienste parallel – und jeder davon braucht eine eigene Konfiguration. Genau hier entscheidet sich, ob dein Setup wartbar bleibt oder zum undurchschaubaren Flickenteppich wird. Der Schlüssel liegt in sauberen <code>docker-compose.yml</code>-Dateien. Dieser Guide zeigt die wichtigsten Best Practices, mit denen deine Stacks übersichtlich, sicher und nachvollziehbar bleiben.</p>
-<h2>Sprechende Namen: Container und Services klar benennen</h2>
+<h2 id="abschnitt-1">Sprechende Namen: Container und Services klar benennen</h2>
 <p>Der erste Schritt zu einem wartbaren Stack sind eindeutige Namen. Docker vergibt sonst automatisch Namen wie <code>eager_banach</code> – die helfen niemandem. Setze daher immer einen sprechenden Servicenamen und einen Container-Namen:</p>
 <pre><code>
 services:
@@ -23,7 +23,7 @@ services:
     image: pihole/pihole:latest
 </code></pre>
 <p>Faustregel: Der Service-Name ist zugleich die Rolle im Stack, der <code>container_name</code> macht den Container in <code>docker ps</code> und im Portainer sofort identifizierbar. Vermeide Sonderzeichen und Großbuchstaben – Kleinbuchstaben mit Bindestrichen sind der gängige Standard.</p>
-<h2>Volumes: Daten außerhalb des Containers ablegen</h2>
+<h2 id="abschnitt-2">Volumes: Daten außerhalb des Containers ablegen</h2>
 <p>Der wichtigste Grundsatz überhaupt: <strong>Ein Container ist vergänglich, seine Daten nicht.</strong> Alles, was nach einem Update erhalten bleiben soll, gehört in ein Volume oder ein gebundenes Verzeichnis – niemals in das Container-Dateisystem.</p>
 <pre><code>
 volumes:
@@ -31,7 +31,7 @@ volumes:
   - ./config/pihole:/etc/dnsmasq.d
 </code></pre>
 <p>Benannte Volumes wie <code>pihole_data</code> verwaltet Docker selbst und eignen sich für Datenbanken und interne Zustände. Gebundene Verzeichnisse (<code>./config/...</code>) nutzt du, wenn du Konfigurationsdateien direkt im Dateisystem bearbeiten willst. Beide Varianten überstehen <code>docker compose down</code> und Image-Updates unbeschadet.</p>
-<h2>Netzwerke: Dienste gezielt verbinden</h2>
+<h2 id="abschnitt-3">Netzwerke: Dienste gezielt verbinden</h2>
 <p>Ein eigenes Netzwerk pro Stack isoliert deine Dienste sauber vom Rest und verhindert, dass alles unkontrolliert im Standard-Netzwerk hängt. Compose legt pro Datei automatisch ein Netzwerk an – explizit definiert wird es übersichtlicher:</p>
 <pre><code>
 networks:
@@ -40,7 +40,7 @@ networks:
   internal:
 </code></pre>
 <p>Ein externes Netzwerk <code>proxy</code> teilst du mit deinem Reverse-Proxy (etwa Traefik oder Nginx Proxy Manager), damit er auf deine Dienste zugreifen kann. Das interne Netzwerk <code>internal</code> bleibt für Dienste wie eine Datenbank reserviert, die von außen gar nicht erreichbar sein müssen. So verkleinerst du die Angriffsfläche erheblich.</p>
-<h2>Umgebungsvariablen und .env: Secrets nie ins Repo</h2>
+<h2 id="abschnitt-4">Umgebungsvariablen und .env: Secrets nie ins Repo</h2>
 <p>Passwörter, API-Keys und Zugangsdaten gehören <strong>nicht</strong> in die <code>docker-compose.yml</code> – schon gar nicht, wenn du sie mit Git versionierst. Lagere sie stattdessen in einer <code>.env</code>-Datei im selben Verzeichnis:</p>
 <pre><code>
 # .env
@@ -60,7 +60,7 @@ services:
       - .env
 </code></pre>
 <p>Die <code>.env</code> selbst nimmst du in die <code>.gitignore</code> auf und legst zusätzlich eine <code>.env.example</code> mit Platzhaltern ins Repo – so wissen auch andere, welche Variablen nötig sind.</p>
-<h2>Healthchecks: Ausfall automatisch erkennen</h2>
+<h2 id="abschnitt-5">Healthchecks: Ausfall automatisch erkennen</h2>
 <p>Ein Healthcheck prüft in festen Abständen, ob ein Dienst tatsächlich funktioniert – nicht nur, ob der Prozess läuft. Besonders wertvoll ist das bei Diensten, die erst nach einer Weile bereit sind, etwa Datenbanken:</p>
 <pre><code>
 services:
@@ -74,13 +74,13 @@ services:
       start_period: 30s
 </code></pre>
 <p>Der <code>start_period</code> gibt dem Container Zeit zum Hochfahren, bevor der Check greift. Ein fehlgeschlagener Healthcheck markiert den Container als <code>unhealthy</code> – und in Kombination mit einem Monitoring wie Uptime-Kuma bekommst du den Ausfall sofort gemeldet. Vor allem für abhängige Dienste kannst du mit <code>depends_on</code> und <code>condition: service_healthy</code> erzwingen, dass ein Service erst startet, wenn der andere bereit ist.</p>
-<h2>Restart-Policies: Dienste automatisch wiederbeleben</h2>
+<h2 id="abschnitt-6">Restart-Policies: Dienste automatisch wiederbeleben</h2>
 <p>Die Restart-Policy legt fest, was nach einem Absturz oder Neustart des Hosts passiert. Für fast alle Homelab-Dienste ist <code>unless-stopped</code> die richtige Wahl:</p>
 <pre><code>
 restart: unless-stopped
 </code></pre>
 <p>Damit startet der Container bei jedem Neustart des Servers automatisch – außer du hast ihn bewusst gestoppt. Die Alternative <code>always</code> ignoriert sogar ein manuelles <code>docker stop</code> und startet den Container beim nächsten Daemon-Start erneut. Für temporäre oder einmalige Dienste genügt <code>no</code>, die Vorgabe.</p>
-<h2>Ordnerstruktur: Ein Stack, ein Verzeichnis</h2>
+<h2 id="abschnitt-7">Ordnerstruktur: Ein Stack, ein Verzeichnis</h2>
 <p>Eine klare Struktur macht dein Homelab durchsuchbar und backuppbar. Bewährt hat sich pro Dienst ein eigenes Verzeichnis mit allem, was dazugehört:</p>
 <pre><code>
 docker/
@@ -97,7 +97,7 @@ docker/
     └── config/
 </code></pre>
 <p>Jeder Stack besitzt seine eigene <code>docker-compose.yml</code>, seine <code>.env</code> und einen <code>config/</code>-Ordner für gebundene Dateien. So lässt sich ein Dienst einzeln starten, sichern oder umziehen – und das gesamte Verzeichnis <code>docker/</code> versionierst du als Ganzes mit Git. Das ist zugleich dein Backup für die Konfiguration.</p>
-<h2>Vollständiges Beispiel: alles zusammen</h2>
+<h2 id="abschnitt-8">Vollständiges Beispiel: alles zusammen</h2>
 <p>Die Best Practices in einem kompakten Stack, der eine Webanwendung mit Datenbank verbindet:</p>
 <pre><code>
 services:
@@ -147,10 +147,10 @@ docker compose ps         # Status anzeigen
 docker compose down       # Stack stoppen
 docker compose pull       # Images aktualisieren
 </code></pre>
-<h2>Fazit</h2>
+<h2 id="abschnitt-9">Fazit</h2>
 <p>Saubere Docker-Compose-Dateien sind keine Kosmetik, sondern die Grundlage eines wartbaren Homelabs: Sprechende Namen, persistente Volumes, klar getrennte Netzwerke und ausgelagerte Secrets machen jeden Stack verständlich und sicher. Healthchecks und Restart-Policies sorgen dafür, dass deine Dienste Ausfälle selbst überstehen – und eine konsequente Ordnerstruktur macht das gesamte Setup reproduzierbar und einfach zu sichern. Wer diese Best Practices von Anfang an beherzigt, spart sich später Stunden an Fehlersuche.</p>
-</div>
+</div></div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

@@ -7,22 +7,22 @@
 <title>Monitoring ohne Cloud: Was läuft auf dem Server?</title>
 <meta content="Monitoring ohne Cloud: Uptime Kuma, Prometheus, Node Exporter, Loki lokal. Vergleichstabelle, zwei Anleitungen, Alarm-Regeln, Aufbewahrung, häufige Fehler." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/monitoring-ohne-cloud.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/monitoring-ohne-cloud.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<article class="content" style="max-width:800px;">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Die drei Ebenen, die man nicht vermischen darf</a><a href="#abschnitt-2">Vergleichstabelle: Uptime Kuma, Prometheus-Stack, vollständige Lösung</a><a href="#abschnitt-3">Datenschutz und Datenmenge: was lokal bleibt und was geschätzt werden darf</a><a href="#abschnitt-4">Zwei realistische Anleitungen</a><a href="#abschnitt-5">Anleitung 1: Reines Uptime Kuma – Verfügbarkeit von außen messen, Alarm per E-Mail und Push</a><a href="#abschnitt-6">Anleitung 2: Prometheus + Node Exporter + Alertmanager + Grafana – Ressourcen und Metriken im Host</a><a href="#abschnitt-7">Häufige Fehler, die man vorher merkt</a><a href="#abschnitt-8">FAQ</a><a href="#abschnitt-9">Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</a><a href="#abschnitt-10">Bildvorschläge</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#betrieb">Bibliothek / Betrieb &amp; Monitoring</a></div>
 <h1>Monitoring ohne Cloud: Was läuft auf dem Server?</h1>
 <p>Du betreibst einen oder mehrere Server, macht das seit Monaten ganz gut, und dann – plötzlich – ist ein Dienst weg. Nicht weil jemand etwas kaputt gemacht hat, sondern weil ein Container abstürzte, die Platte voll läuft, oder die CPU seit Stunden auf 100 Prozent läuft, ohne dass du es mitgekriegt hast. Monitoring ist genau die Antwort auf diese Lücke: es sagt dir, was passiert ist, bevor der Nächste es dir erzählt.</p>
 <p>Der eine wesentliche Grund für Monitoring ist nicht, dass es schön aussieht. Es ist, dass ein Server ohne Monitoring im Ernstfall blind ist. Du merkst eine Ausfallstunde oft erst, wenn jemand anderes fragt. Das ist der Moment, in dem Monitoring von „Nice-to-have" zu „wird sonst teuer" wird.</p>
 <p>Dieser Artikel geht davon aus, dass du einen Linux-Host hast (Debian, Ubuntu, ähnlich), der Docker oder ähnliches nutzt, und dass du etwas wissen willst, ohne eine Cloud-Abonnementschnittstelle einzubauen. Es gibt hier keine versprochenen Magic Numbers – nur Komponenten, die wirklich existieren, und Konfigurationen, die funktionieren.</p>
-<h2>Die drei Ebenen, die man nicht vermischen darf</h2>
+<h2 id="abschnitt-1">Die drei Ebenen, die man nicht vermischen darf</h2>
 <p>Monitoring besteht aus drei Ebenen, die man sauber trennen sollte. Wenn man sie vermischt, endet man schnell mit einer Lösung, die alles halbzweiundhalb macht und nichts ordentlich.</p>
 <p><strong>Ebene 1 – Verfügbarkeit von außen.</strong> Das ist die einfachste Frage: Ist der Dienst erreichbar? Antwort kommt von außen, nicht von innen. Wenn dein Webserver läuft, aber sein Port nicht mehr auf der IP hört, sagt dir ein Check von außen Bescheid. Das ist die Ebene, auf der Uptime Kuma angesiedelt ist.</p>
 <p><strong>Ebene 2 – Ressourcen und Metriken im Host.</strong> Das ist die Ebene, auf der du wissen willst, wie viel CPU, RAM, Plattenplatz, I/O und Netzwerk gerade genutzt wird. Das ist Host-intern. Prometheus mit Node Exporter ist hier die gängige Wahl – Node Exporter ist der Komponente, die systemd-ähnliche Metriken aus dem Host holt und auf einem HTTP-Port ausliefert, den Prometheus abfragt.</p>
 <p><strong>Ebene 3 – Logs zentral sammeln und durchsuchen.</strong> Metriken sagen dir „CPU ist auf 100 Prozent". Logs sagen dir „warum". Wenn ein Container abstürzt, zeigt die Metrik den abstürzenden Container, aber der Log sagt dir den Stacktrace. Loki ist hier die Komponente, die Logs sammelt und speichert, und Grafana kann sie anzeigen. Vector ist optional als Sammler davor – er holt Logs von verschiedenen Quellen ein und reicht sie an Loki weiter. Loki allein reicht auch, wenn die Log-Quellen einfach sind.</p>
 <p>Die drei Ebenen sind komplementär. Verfügbarkeitschecks allein sagen dir nicht, warum etwas ausgefallen ist. Metriken allein sagen dir nicht, was im Log passiert ist. Logs allein sagen dir nicht, dass etwas gerade nicht erreichbar ist. Alles drei zusammen ist der sinnvolle Minimum-Betrieb.</p>
-<h2>Vergleichstabelle: Uptime Kuma, Prometheus-Stack, vollständige Lösung</h2>
+<h2 id="abschnitt-2">Vergleichstabelle: Uptime Kuma, Prometheus-Stack, vollständige Lösung</h2>
 <p>Die folgende Tabelle vergleicht die drei Ebenen einzeln und gemeinsam nach Kriterien, die für Homelab- und kleine-Firmen-Betrachtungen relevant sind.</p>
 <p>| Kriterium | Uptime Kuma (Ebene 1 nur) | Prometheus + Node Exporter (Ebene 2 nur) | Uptime Kuma + Prometheus + Loki gemeinsam |</p>
 <p>|---|---|---|---|</p>
@@ -35,15 +35,15 @@
 <p>| <strong>Lizenzkosten</strong> | Open Source (AGPL); keine Lizenzkosten | Prometheus, Node Exporter, Alertmanager, Grafana Open Source und kostenfrei (Grafana unter AGPL; kommerzielle Editionen existieren, aber die Open-Source-Version deckt den normalen Betrieb) | Summe der Einzelkomponenten; keine direkten Lizenzkosten für die Open-Source-Komponenten; Cloud-Infrastruktur entfällt, dafür eignet sich lokaler Speicher und Wartung |</p>
 <p>| <strong>Passend für</strong> | Einzelne Dienste, einfache Verfügbarkeitsüberwachung, kleine Homelabs mit wenig Zeit | Server mit Ressourcenbeobachtung, Alarmierungs-Bedarf auf Metriken, mehrere Hosts | Volles Monitoring mit Alarmierung, Logsuche und Dashboard; Firmen mit echtem Betriebsbedarf, Homelaber mit Zeit und Lust zum Konfigurieren |</p>
 <p>Kurz gesagt: Wenn du nur wissen willst, ob dein Webserver gerade da ist, reicht Uptime Kuma. Wenn du wissen willst, warum er aus dem Rutsch ist, fehlt dir die Ursache. Wenn du sowohl wissen willst, ob er da ist, als auch, was gerade auf dem Server passiert, brauchst du mehr als eine Komponente.</p>
-<h2>Datenschutz und Datenmenge: was lokal bleibt und was geschätzt werden darf</h2>
+<h2 id="abschnitt-3">Datenschutz und Datenmenge: was lokal bleibt und was geschätzt werden darf</h2>
 <p>Monitoring erzeugt Daten. Die Frage ist nicht, ob du Daten erzeugst – die Frage ist, welche Daten du lokal behältst, wie lange, und was du daraus machen darfst.</p>
 <p><strong>Was du lokal behalten solltest.</strong> Metriken auf dem Host selbst gehören lokal. CPU, RAM, Plattenplatz, Netzwerk – das sind Infrastrukturmetriken, die nichts über deine Kunden oder Inhalte aussagen, und die du ohne Remote-Übermittlung lokal auswerten kannst. Auch Verfügbarkeits-Check-Ergebnisse von außen – ob ein Dienst erreichbar war – sind operational und meist unproblematisch lokal.</p>
 <p><strong>Was du lokal behalten sollte, aber mit Harding.</strong> Logs enthalten potenziell sensitive Inhalte – Zugriffslogs auf Webseiten können URL-Pfade, Query-Parameter, Tokens in URLs enthalten. Wenn Logs aus Anwendungen stammen, die Benutzerdaten verarbeiten, solltest du prüfen, ob die Log-Pipeline sensible Felder nicht ungefiltert weitergibt. Das betrifft besonders: Authentifizierungslogs mit erfolgreichen Login-Vorgängen, Access-Logs mit Session-IDs in URLs, Anwendungslager mit personenbezogenen Request-Parametern.</p>
 <p><strong>Aufbewahrungsdauern, die sich lohnen.</strong> Für Metriken: 30 Tage ist ein sinnvoller Standard für den täglichen Bedienwert. mehr als 90 Tage auf lokaler Platte sind selten nützlich für tägliches Monitoring und kosten spürbar Speicher. Für Logs: 7–14 Tage auf schnellen Storage für aktuelle Suche, dann Archive auf günstigerer Platte, falls du Compliance-Gründe hast. Wenn du keine Compliance-Anforderungen hast (z.B. Branchenvorschriften), ist 14–30 Tage auf lokalem Storage für die meisten Homelab-Setups ausreichend.</p>
 <p><strong>Wann Metriken geschätzt werden dürfen.</strong> Du darfst Metriken schätzen und aggregieren, wenn die ursprüngliche Granularität für den Zweck nicht nötig ist. Prometheus selbst speichert Rohzeitreihen und erlaubt Aggregation in Abfragen. Du kannst Stundenwerte aus Minutenwerten berechnen lassen, ohne die Minutenwerte dauerhaft zu speichern. Das ist kein Datenschutzverstoß, sondern eine Speicheroptimierung. Wichtig: nicht alle Echtzeitwerte zu speichern, wenn du nur trends willst, ist legitim und praktisch.</p>
 <p><strong>Wann du auf externe Speicherung ausweichen solltest.</strong> Wenn der lokale Storage zu klein wird, um Metriken mit sinnvoller Aufbewahrung zu halten, ist ein lokaler Object-Storage (z.B. MinIO als S3-kompatibler Storage) eine Option, bevor du nach außen gehen musst. Nur wenn der gesamte lokale Weg nicht mehr ausreicht und die Daten nicht sensitiv sind, ist ein kostenloser oder günstiger zentraler Speicher in Frage.</p>
-<h2>Zwei realistische Anleitungen</h2>
-<h2>Anleitung 1: Reines Uptime Kuma – Verfügbarkeit von außen messen, Alarm per E-Mail und Push</h2>
+<h2 id="abschnitt-4">Zwei realistische Anleitungen</h2>
+<h2 id="abschnitt-5">Anleitung 1: Reines Uptime Kuma – Verfügbarkeit von außen messen, Alarm per E-Mail und Push</h2>
 <p>Dies ist der Einstieg für den Fall, dass du nur wissen willst, ob deine Dienste erreichbar sind – ohne Metriken, ohne Logs.</p>
 <p><strong>Voraussetzungen:</strong></p>
 <ul>
@@ -83,7 +83,7 @@ docker run -d \
 <p><strong>Schritt 5: Erreichbarkeit prüfen</strong></p>
 <p>Ein schneller Test: Neue Monitor für <code>https://brillianze.de</code> oder einen eigenen öffentlichen Dienst, Alarmierung auf den eigenen Kanal, und beobachte, ob der Alarm kommt, wenn du den Dienst temporär runternimmst. Das ist der einzige Weg, zu verifizieren, dass die Alarmierung funktioniert – nicht durch Konfigurieren, sondern durch Auslösen.</p>
 <p><strong>Was Uptime Kuma nicht macht.</strong> Uptime Kuma sagt dir nicht, warum ein Dienst ausgefallen ist. Es sagt nicht, wie voll die Platte ist. Es sagt nicht, ob ein Container abstürzte. Für das brauchst du Ebene 2 und 3.</p>
-<h2>Anleitung 2: Prometheus + Node Exporter + Alertmanager + Grafana – Ressourcen und Metriken im Host</h2>
+<h2 id="abschnitt-6">Anleitung 2: Prometheus + Node Exporter + Alertmanager + Grafana – Ressourcen und Metriken im Host</h2>
 <p>Dies ist die Ebene für Metriken – CPU, RAM, Plattenplatz, Container-Abstürze, und Alarmierung darauf.</p>
 <p><strong>Voraussetzungen:</strong></p>
 <ul>
@@ -223,7 +223,7 @@ docker run -d \
 <p>Nach dem Start trägst du Prometheus als Data Source ein (Host: <code>http://prometheus:9090</code> oder die IP des Prometheus-Hosts), und importierst oder erstellst Dashboards.</p>
 <p>Ein Standard-Node-Exporter-Dashboard zeigt unter anderem: CPU-Auslastung je Core, RAM-Nutzung, Plattenplatz je Mount, Netzwerk-I/O, Systemlast. Du erstellst zusätzliche Panels für spezifische Metriken nach Bedarf.</p>
 <p><strong>Authentifizierung auf Grafana:</strong> Grafana hat einen administrativen Benutzer bei der ersten Anmeldung. Du solltest das Dashboard nicht ohne Authentifizierung öffnen – das ist einer der häufigsten Fehler (siehe unten). Für Remote-Zugriff setzt du entweder einen authentifizierten Zugang, oder ein VPN/Tunnel davor.</p>
-<h2>Häufige Fehler, die man vorher merkt</h2>
+<h2 id="abschnitt-7">Häufige Fehler, die man vorher merkt</h2>
 <p><strong>Alarm-Pattern, das niemand beachtet.</strong> Der häufigste Fehler: Alarmierung steht, aber niemand schaut sie an. E-Mail-Alarme landen in einem Postfach, das niemand liest, oder in einem Kanal, der zu laut ist und ignoriert wird. Lösung: Alarmierung auf einen Kanal setzen, der tatsächlich beobachtet wird, und regelmäßig prüfen, ob Alarms den erwarteten Menschen erreichen. Ein Test-Alarm beim Einrichten ist Pflicht.</p>
 <p><strong>Zu knapp gewählte Schwellen.</strong> Eine Platte, die bei 90% voll alarmiert, ist zu spät, wenn die Anwendung erst bei 95% Schreibvorgänge ablehnt. Eine CPU-Regel, die bei 80% für 30 Sekunden alarmiert, produziert False Positives und wird ignoriert. Schwellen Werte sind gewählte Kompromiss-Werte – sie sollten auf der tatsächlichen Betriebskritikalität basieren, nicht auf einem willkürlichen Wert. Für Festplatten ist 80–85% eine sinnvolle Warn-Schwelle, für RAM bei 85–90% verfügbar, für CPU bei längerfristig über 90% als Warnung, wenn es als kritisch gilt.</p>
 <p><strong>Monitoring ohne Alarmierung.</strong> Das ist der häufigste Fall in Homelabs: Dashboards sind schön, man schaut hin und wieder, aber es gibt keine Alarmierung. Wenn du nach einem Ausfall auf das Dashboard schaust, ist es zu spät. Monitoring ohne Alarmierung ist kein Monitoring – es ist einHistorie-Anzeiger. Mindestens ein Kanal für kritische Zustände ist der minimale Betrieb.</p>
@@ -231,7 +231,7 @@ docker run -d \
 <p><strong>Tote Dienste nach Monaten.</strong> Ein Uptime-Kuma-Monitor, der einen Dienst über Monate überwacht, ohne dass jemand den Monitor ernsthaft prüft, kann Fake-Sicherheit erzeugen. Wenn der Monitor nicht mehr funktioniert, weil der Uptime-Kuma-Service selbst nicht mehr läuft, oder der SMTP-Server nicht mehr erreichbar ist, erhältst du auch keine Alarmierung. Ein regelmäßiger Check der Alarmierung selber gehört zum Betrieb.</p>
 <p><strong>Zugriff auf das Dashboard ohne Authentifizierung.</strong> Grafana- oder Prometheus-HTTP-Ports, die ohne Authentifizierung im Netzwerk liegen, sind für jeden erreichbar, der das Netzwerk kennt. Das ist in lokalen Netzwerken mit Vertrauensbasis oft enthalten, aber nicht in allen. Für Firmenumgebungen ist eine Authentifizierung Pflicht. Für Homelabs ist es eine bewusste Entscheidung – aber eine Entscheidung, die man trifft, nicht überrascend.</p>
 <p><strong>Host voll, ohne dass ein einzelner Container auffällt.</strong> Das passiert: Metriken zeigen, dass RAM oder CPU hoch ist, aber kein einzelner Container ist der Grund. Das kann sein durch Sammeleffekte (viele Container, die zusammen viel nehmen), durch Host-Prozesse die nicht in Containern laufen, oder durch Kernel-Speicher. In diesem Fall helfen Metriken auf dem Host, aber nicht Container-Metriken. Node Exporter zeigt Host-Level-Metriken; Container-Metriken kommen aus einem separaten Exporter (cAdvisor, Docker-Plugin). Wenn du nur Node Exporter hast, siehst du das Problem, aber nicht die Container, die es verursachen – und musst manuell nachsehen.</p>
-<h2>FAQ</h2>
+<h2 id="abschnitt-8">FAQ</h2>
 <p><strong>Wie überwache ich Backup und Restore automatisch?</strong></p>
 <p>Automatische Überwachung von Backups hat zwei Aspekte: ob das Backup erfolgt ist (Status des Backup-Jobs), und ob das Backup wiederherstellbar ist (integritätsprüfung). Für den Statusaspekt kannst du einen Uptime-Kuma-Check oder einen Prometheus-Export des Backup-Job-Status einrichten – z.B. einen Cron-Job, der nach jedem Backup eine Metrik oder einen Statuswert in eine Datei schreibt, die Node Exporter oder ein eigener Agent ausliest. Für die Wiederherstellbarkeit ist ein reguläres Restore-Test-Verfahren üblich – nicht durch Monitoring, sondern durch geplanten Test. Monitoring kann dir sagen, dass das Backup-Modul nicht mehr läuft, aber nicht, dass das Backup selbst korrupt ist. Das ist der Unterschied zwischen Prozess-Monitoring und Integrity-Testing.</p>
 <p><strong>Ich habe nur einen Host. Womit fange ich an?</strong></p>
@@ -244,7 +244,7 @@ docker run -d \
 <p>Das ist abhängig von der Konfiguration. Uptime Kuma verbraucht im Betrieb wenige Hundert MB RAM, je nach Monitore-Anzahl. Prometheus mit 30 Tagen Aufbewahrung und einigen dutzend Metriken pro Host kann 500 MB bis mehrere GB RAM beanspruchen – abhängig von der Anzahl der Zeitreihen. Node Exporter ist sehr leichtgewichtig – ein Bruchteil einer CPU und wenige Dutzend MB RAM. Loki mit lokaler Platte und moderaten Log-Mengen ist mittleren RAM-Verbrauchs; ohne Object-Storage-Backend und bei großer Log-Menge kann der Speicher erheblich werden. Die Werte sind keine bekannten Benchmarks; sie hängen von konkreter Konfiguration, Host-Größe und Metrik-Anzahl ab.</p>
 <p><strong>Kann ich Loki und Vector vermeiden, wenn ich nur Metriken will?</strong></p>
 <p>Ja. Loki und Vector sind für die Logs-Ebene. Wenn du nur Metriken (Ebene 2) und Verfügbarkeitschecks (Ebene 1) brauchst, kannst du beide weglassen. Das ist ein legitimer Betrieb – viele Setups laufen nur mit Uptime Kuma und Prometheus.</p>
-<h2>Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
+<h2 id="abschnitt-9">Interne Verlinkungsvorschläge zu vorhandenen BsN-Artikeln</h2>
 <ul>
 <li><a href="proxmox-kleine-unternehmen.html">Proxmox VE für kleine Unternehmen</a> – wenn du Proxmox als Hypervisor nutzt und Node Exporter in VMs oder Containern betreiben willst</li>
 <li><a href="docker-vs-vm.html">Docker vs. VM</a> – für die Entscheidung, ob Container-Metriksammler (cAdvisor) oder Node Exporter als Hauptquelle für Container-Metriken</li>
@@ -252,7 +252,7 @@ docker run -d \
 <li><a href="backup-strategie-selfhoster.html">Backup-Strategie für Selfhoster</a> – Backups und Monitoring sind zusammengehörige Themen; dieses Dokument ergänzt die Backup-Dokumentation</li>
 <li><a href="datenbank-backups.html">Datenbank-Backups</a> – für Firmenumgebungen, in denen Datenbank-Status und -Backups im Monitoring sichtbar sein sollen</li>
 </ul>
-<h2>Bildvorschläge</h2>
+<h2 id="abschnitt-10">Bildvorschläge</h2>
 <p><strong>Bild 1</strong></p>
 <ul>
 <li>Typ: Screenshot eines Grafana-Dashboards im Browser, mit Node-Exporter-Panels (CPU, RAM, Plattenplatz) sichtbar</li>
@@ -278,10 +278,10 @@ docker run -d \
 <li>Alt-Text: Architektur des Prometheus-Monitoring-Systems – Node Exporter auf Hosts, Prometheus als Sammler, Alertmanager für Alarmierung, Grafana für Dashboards</li>
 </ul>
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-</article>
+</article></div>
 </main>
 <footer>
 <div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
 </footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

@@ -7,17 +7,17 @@
 <title>Audiobookshelf</title>
 <meta content="Audiobookshelf: Hörbücher selbst hosten – die Audible-Alternative fürs Homelab  Audible kostet dich Monat für Monat Geld für Hörbücher, die dir nicht " name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/audiobookshelf.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/audiobookshelf.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<div class="content">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ist Audiobookshelf?</a><a href="#abschnitt-2">Warum Hörbücher selbst hosten?</a><a href="#abschnitt-3">Installation mit Docker</a><a href="#abschnitt-4">Hörbuch-Bibliothek einrichten</a><a href="#abschnitt-5">Client-Apps für Android und iOS</a><a href="#abschnitt-6">Podcast-Funktion</a><a href="#abschnitt-7">Audiobookshelf vs. Audible</a><a href="#abschnitt-8">Fazit</a></aside><div class="content"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a></div>
 <h1>Audiobookshelf: Hörbücher selbst hosten – die Audible-Alternative fürs Homelab</h1>
 <p>Audible kostet dich Monat für Monat Geld für Hörbücher, die dir nicht wirklich gehören – gekauft, aber an eine Plattform gebunden. Audiobookshelf ist die Self-Hosted-Alternative: ein quelloffener Server, der deine Hörbücher und Podcasts zentral speichert und auf alle Geräte streamt. In diesem Artikel erfährst du, was Audiobookshelf kann, wie du ihn per Docker installierst und warum er für viele die bessere Audible-Alternative ist.</p>
-<h2>Was ist Audiobookshelf?</h2>
+<h2 id="abschnitt-1">Was ist Audiobookshelf?</h2>
 <p>Audiobookshelf ist ein Hörbuch- und Podcast-Server für die eigene Hardware. Er scannt deine Hörbuch-Ordner, liest Titel, Autor, Cover und Kapitel aus den Metadaten und stellt die Bibliothek über eine moderne Web-Oberfläche bereit. Dazu kommt eine vollwertige Podcast-Funktion, die RSS-Feeds abonniert und Episoden automatisch herunterlädt.</p>
 <p>Technisch ist Audiobookshelf eine Node.js-Anwendung mit eingebauter SQLite-Datenbank. Sie läuft problemlos auf einem Raspberry Pi, einem Mini-PC oder in deinem bestehenden Docker-Setup und benötigt nur wenig Ressourcen.</p>
-<h2>Warum Hörbücher selbst hosten?</h2>
+<h2 id="abschnitt-2">Warum Hörbücher selbst hosten?</h2>
 <p>Die drei Hauptgründe für einen eigenen Hörbuch-Server:</p>
 <ul>
 <li><strong>Zentrale Bibliothek:</strong> Alle Hörbücher liegen an einem Ort, sortiert nach Autor, Serie und Genre – statt verstreut über mehrere Geräte und Apps.</li>
@@ -25,7 +25,7 @@
 <li><strong>Keine Cloud, keine Abhängigkeit:</strong> Deine Dateien bleiben auf deiner Hardware. Kein Abo, kein Tracking, und kein Titel verschwindet, weil ein Anbieter sein Angebot ändert.</li>
 </ul>
 <p>Wer bereits ein [Homelab betreibt](homelab-einrichten-guide.md) und [Docker verstanden hat](docker-einsteiger.md), hat den Server in wenigen Minuten eingerichtet.</p>
-<h2>Installation mit Docker</h2>
+<h2 id="abschnitt-3">Installation mit Docker</h2>
 <p>Am einfachsten startest du Audiobookshelf über Docker Compose. Speichere folgende Datei als <code>docker-compose.yml</code>:</p>
 <pre><code>
 services:
@@ -46,19 +46,19 @@ services:
 docker compose up -d
 </code></pre>
 <p>Danach erreichst du die Weboberfläche unter <code>http://dein-server:13378</code>. Beim ersten Aufruf legst du ein Admin-Konto an und richtest anschließend die Bibliotheksordner ein.</p>
-<h2>Hörbuch-Bibliothek einrichten</h2>
+<h2 id="abschnitt-4">Hörbuch-Bibliothek einrichten</h2>
 <p>Audiobookshelf zeigt nur, was in den gemounteten Ordnern liegt. Kopiere deine Hörbücher daher nach <code>./audiobooks</code>. Eine saubere Struktur hilft beim Erkennen: <code>Autor/Serie/Titel</code> mit den einzelnen Kapitel-Dateien als MP3 oder M4B. Unterstützt werden gängige Formate inklusive verlustfreier Dateien; M4B-Dateien mit eingebetteten Kapitelmarken erkennt der Server automatisch.</p>
 <p>In der Weboberfläche legst du eine neue Bibliothek an und wählst den Ordner aus. Der erste Scan dauert je nach Sammlung einige Minuten – danach stehen Titel, Cover, Beschreibung und Kapitel vollständig bereit.</p>
-<h2>Client-Apps für Android und iOS</h2>
+<h2 id="abschnitt-5">Client-Apps für Android und iOS</h2>
 <p>Audiobookshelf bringt eigene, offizielle Apps mit, die sich direkt mit deinem Server verbinden:</p>
 <ul>
 <li><strong>Android:</strong> Die App gibt es im Google Play Store und auf F-Droid.</li>
 <li><strong>iOS:</strong> Die App ist im App Store sowie über TestFlight erhältlich.</li>
 </ul>
 <p>Nach der Anmeldung synchronisiert sich dein Hörfortschritt automatisch über alle Geräte – du startest auf dem Handy und hörst später auf dem Tablet an derselben Stelle weiter. Praktische Funktionen wie Schlaf-Timer, Wiedergabegeschwindigkeit und Offline-Download sind integriert. Für unterwegs empfiehlt sich ein VPN wie [WireGuard](wireguard-homelab.md), statt den Server ungeschützt ins Internet zu stellen.</p>
-<h2>Podcast-Funktion</h2>
+<h2 id="abschnitt-6">Podcast-Funktion</h2>
 <p>Neben Hörbüchern beherrscht Audiobookshelf auch Podcasts. Du abonnierst einfach den RSS-Feed eines Podcasts, und der Server lädt neue Episoden automatisch herunter – vergleichbar mit einem eigenen Podcatcher. Episoden lassen sich wie Hörbücher mit Hörfortschritt, Geschwindigkeit und Offline-Funktion abspielen. So bündelst du Hörbücher und Podcasts in einer einzigen App.</p>
-<h2>Audiobookshelf vs. Audible</h2>
+<h2 id="abschnitt-7">Audiobookshelf vs. Audible</h2>
 <p>| Kriterium | Audiobookshelf | Audible |</p>
 <p>|---|---|---|</p>
 <p>| Kosten | kostenlos (Open Source) | Abo-Gebühr, Hörbücher einzeln käuflich |</p>
@@ -68,10 +68,10 @@ docker compose up -d
 <p>| Datenschutz | keine Registrierung, kein Tracking | Nutzungsdaten werden erhoben |</p>
 <p>| Aufwand | einmalige Einrichtung | keiner, sofort nutzbar |</p>
 <p>Der wichtigste Unterschied ist die Eigentumsfrage: Audible verkauft dir Zugang zu einem Katalog, den du nicht besitzt. Audiobookshelf spielt genau die Dateien ab, die dir gehören – dauerhaft und ohne Abo. Dafür musst du deine Hörbücher selbst besitzen und den Server einmal einrichten und pflegen.</p>
-<h2>Fazit</h2>
+<h2 id="abschnitt-8">Fazit</h2>
 <p>Audiobookshelf ist die überzeugendste Audible-Alternative für alle, die ihre Hörbücher und Podcasts selbst in der Hand behalten wollen. Die Docker-Installation dauert Minuten, die offiziellen Apps für Android und iOS synchronisieren den Hörfortschritt, und die Podcast-Funktion macht den Server zum zentralen Ort für alles, was man hört. Wer bereits ein Homelab betreibt, gewinnt damit digitale Souveränität – ganz ohne Abo und ohne Cloud-Zwang.</p>
-</div>
+</div></div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

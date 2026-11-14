@@ -7,21 +7,17 @@
 <title>Homelab absichern: Der komplette Sicherheits-Guide 2026</title>
 <meta content="Anschließend deaktivierst du die Passwort-Anmeldung in der /etc/ssh/sshd_config :" name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/homelab-sicherheit-guide.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/homelab-sicherheit-guide.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<div class="content">
-
-
-
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Warum dein Homelab ein Ziel ist</a><a href="#abschnitt-2">Firewall: Die erste Verteidigungslinie</a><a href="#abschnitt-3">SSH-Schlüssel statt Passwort</a><a href="#abschnitt-4">Kein offener Port nach außen</a><a href="#abschnitt-5">VPN und WireGuard: Zugriff von unterwegs</a><a href="#abschnitt-6">Fail2ban: Automatische Sperre für Angreifer</a><a href="#abschnitt-7">Reverse-Proxy mit HTTPS</a><a href="#abschnitt-8">Updates automatisieren</a><a href="#abschnitt-9">Typische Einsteiger-Fehler</a><a href="#abschnitt-10">Fazit</a></aside><div class="content"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a></div>
 <p>keywords: [Homelab absichern, Homelab Sicherheit, SSH Schlüssel, WireGuard, Fail2ban, Reverse Proxy HTTPS, Firewall Homelab]</p>
-
 <h1>Homelab absichern: Der komplette Sicherheits-Guide 2026</h1>
 <p>Ein eigenes Homelab ist die beste Spielwiese, um Server, Virtualisierung und lokale KI zu lernen. Doch sobald ein Dienst aus dem Heimnetz erreichbar ist, wird dein Rechenzentrum im Wohnzimmer auch für andere interessant. Dieser Guide zeigt Schritt für Schritt, wie du dein Homelab absicherst – vom ersten Firewall-Regelwerk bis zum automatisierten Update.</p>
-<h2>Warum dein Homelab ein Ziel ist</h2>
+<h2 id="abschnitt-1">Warum dein Homelab ein Ziel ist</h2>
 <p>Viele Einsteiger unterschätzen, wie schnell ein ungesicherter Dienst entdeckt wird. Automatisierte Bots scannen das Internet kontinuierlich nach offenen Ports, Standard-Passwörtern und bekannten Schwachstellen. Schon Minuten nachdem du einen Port nach außen freigibst, verzeichnen Logdateien erste Login-Versuche. Ein Homelab abzusichern ist deshalb keine optionale Feinarbeit, sondern die Grundvoraussetzung, bevor du überhaupt einen Dienst veröffentlichst.</p>
-<h2>Firewall: Die erste Verteidigungslinie</h2>
+<h2 id="abschnitt-2">Firewall: Die erste Verteidigungslinie</h2>
 <p>Eine Firewall entscheidet, welcher Datenverkehr dein Netz überhaupt erreichen darf. Auf Router-Ebene gilt die wichtigste Regel: <strong>Alles blockieren, was nicht ausdrücklich erlaubt ist.</strong> Auf den einzelnen Servern lohnt sich zusätzlich eine Host-Firewall wie UFW (Uncomplicated Firewall) unter Debian oder Ubuntu:</p>
 <pre><code>
 sudo ufw default deny incoming
@@ -30,7 +26,7 @@ sudo ufw allow ssh
 sudo ufw enable
 </code></pre>
 <p>Diese drei Zeilen blockieren sämtliche eingehenden Verbindungen und erlauben nur, was du gezielt freigibst. Für SSH solltest du den Port zudem nur aus deinem internen Netz erlauben – nicht aus dem Internet.</p>
-<h2>SSH-Schlüssel statt Passwort</h2>
+<h2 id="abschnitt-3">SSH-Schlüssel statt Passwort</h2>
 <p>Passwörter für SSH sind das häufigste Einfallstor. Ein starker SSH-Schlüssel macht Brute-Force-Angriffe praktisch aussichtslos. Erstelle auf deinem Arbeitsrechner ein Schlüsselpaar und hinterlege den öffentlichen Schlüssel auf dem Server:</p>
 <pre><code>
 ssh-keygen -t ed25519
@@ -42,29 +38,29 @@ PasswordAuthentication no
 PermitRootLogin no
 </code></pre>
 <p>Nach einem Neustart des SSH-Dienstes ist die Anmeldung nur noch mit Schlüssel möglich. Für zusätzliche Sicherheit kannst du die Anmeldung als Root komplett verbieten.</p>
-<h2>Kein offener Port nach außen</h2>
+<h2 id="abschnitt-4">Kein offener Port nach außen</h2>
 <p>Die sicherste Portweiterleitung ist die, die es nicht gibt. Jeder nach außen geöffnete Port vergrößert die Angriffsfläche. Prüfe regelmäßig, welche Dienste wirklich aus dem Internet erreichbar sein müssen – die meisten brauchen das nicht. Dienste wie Proxmox, TrueNAS oder die Admin-Oberfläche deines Routers gehören <strong>niemals</strong> direkt ins Internet. Wer von unterwegs zugreifen möchte, nutzt stattdessen ein VPN.</p>
-<h2>VPN und WireGuard: Zugriff von unterwegs</h2>
+<h2 id="abschnitt-5">VPN und WireGuard: Zugriff von unterwegs</h2>
 <p>Statt einzelne Dienste zu exponieren, öffnest du mit einem VPN nur einen einzigen, gut abgesicherten Zugang. WireGuard hat sich dabei als Standard etabliert: schlank, schnell und mit moderner Kryptografie. Nach der Einrichtung auf dem Server erreichst du dein gesamtes Homelab von unterwegs, als wärst du im heimischen WLAN – ohne dass interne Dienste öffentlich sichtbar sind.</p>
 <p>Die Konfiguration ist denkbar einfach: Auf dem Server legst du ein Interface mit privatem Schlüssel an, auf jedem Client einen passenden Peer. Tools wie PiVPN oder die WireGuard-Oberfläche von pfSense und OPNsense reduzieren die Einrichtung auf wenige Minuten.</p>
-<h2>Fail2ban: Automatische Sperre für Angreifer</h2>
+<h2 id="abschnitt-6">Fail2ban: Automatische Sperre für Angreifer</h2>
 <p>Auch mit SSH-Schlüssel bleibt dein Server erreichbar – und wird angegriffen. Fail2ban überwacht Logdateien und sperrt IP-Adressen, die wiederholt fehlschlagen. Das schützt nicht nur SSH, sondern auch Webserver und Reverse-Proxys vor Brute-Force-Versuchen:</p>
 <pre><code>
 sudo apt install fail2ban
 sudo systemctl enable --now fail2ban
 </code></pre>
 <p>Standardmäßig richtet Fail2ban eine Jail für SSH ein. Nach einer konfigurierbaren Anzahl fehlgeschlagener Versuche wird die Quelle für eine bestimmte Zeit gesperrt. Das bremst automatisierte Angriffe zuverlässig aus.</p>
-<h2>Reverse-Proxy mit HTTPS</h2>
+<h2 id="abschnitt-7">Reverse-Proxy mit HTTPS</h2>
 <p>Sollen Webdienste doch öffentlich erreichbar sein, gehören sie hinter einen Reverse-Proxy. Nginx Proxy Manager, Traefik oder Caddy nehmen Anfragen entgegen, leiten sie an den richtigen Dienst weiter und bündeln die Verschlüsselung an einer Stelle. Damit verschlüsselst du den gesamten Datenverkehr mit HTTPS und versteckst die tatsächliche Infrastruktur dahinter.</p>
 <p>Für gültige Zertifikate sorgt Let's Encrypt, das die meisten Proxys automatisch anbinden und verlängern. Besonders bei der lokalen KI spielt HTTPS eine doppelte Rolle: Viele Browser-APIs funktionieren nur über eine sichere Verbindung – und sensible Daten bleiben verschlüsselt.</p>
-<h2>Updates automatisieren</h2>
+<h2 id="abschnitt-8">Updates automatisieren</h2>
 <p>Die meisten erfolgreichen Angriffe nutzen bekannte, längst gepatchte Lücken. Automatische Updates schließen diese Lücke, ohne dass du daran denken musst. Unter Debian und Ubuntu übernimmt das unbeaufsichtigte Sicherheitsupdates:</p>
 <pre><code>
 sudo apt install unattended-upgrades
 sudo dpkg-reconfigure unattended-upgrades
 </code></pre>
 <p>Für Container und Apps gilt dasselbe Prinzip: Watchtower aktualisiert Docker-Container automatisch, Proxmox meldet verfügbare Updates in der Oberfläche. Plane zudem regelmäßige Zeitfenster für Neustarts ein, damit Kernel-Updates tatsächlich wirksam werden.</p>
-<h2>Typische Einsteiger-Fehler</h2>
+<h2 id="abschnitt-9">Typische Einsteiger-Fehler</h2>
 <p>Die meisten Sicherheitsprobleme im Homelab entstehen durch dieselben Fehler. Die häufigsten im Überblick:</p>
 <ul>
 <li><strong>Standard-Passwörter behalten:</strong> Admin-Oberflächen und Dienste werden mit Werkspasswörtern ausgeliefert – ändere sie sofort.</li>
@@ -73,10 +69,10 @@ sudo dpkg-reconfigure unattended-upgrades
 <li><strong>Nur die Einrichtung sichern:</strong> Sicherheit ist kein einmaliger Schritt, sondern ein laufender Prozess aus Updates und Kontrolle.</li>
 <li><strong>Backups vernachlässigen:</strong> Sicherung ist Teil der Sicherheit – ohne Backup hilft auch die beste Firewall nicht, wenn Daten verloren gehen.</li>
 </ul>
-<h2>Fazit</h2>
+<h2 id="abschnitt-10">Fazit</h2>
 <p>Ein Homelab abzusichern ist keine Raketenwissenschaft, sondern die Summe einfacher, konsequenter Maßnahmen: Firewall aktivieren, SSH auf Schlüssel umstellen, keine unnötigen Ports öffnen, Zugriff per WireGuard, Angriffe mit Fail2ban bremsen und Updates automatisieren. Wer diese Grundlagen umsetzt, kann sein Heim-Rechenzentrum guten Gewissens betreiben – und sich wieder dem widmen, worum es eigentlich geht: dem Experimentieren mit Servern, Virtualisierung und lokaler KI.</p>
-</div>
+</div></div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

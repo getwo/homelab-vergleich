@@ -7,15 +7,15 @@
 <title>Nextcloud vs. Cloud-Dienste: Was lohnt sich wirklich?</title>
 <meta content="Der objektive Vergleich: Kontrolle über Daten, echte Kosten über die Nutzungsdauer und technischer Pflegeaufwand — sowie wann jede Option sinnvoll ist." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/nextcloud-vs-cloud-dienste.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/nextcloud-vs-cloud-dienste.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<article class="content" style="max-width:800px;">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Die drei echten Entscheidungskriterien</a><a href="#abschnitt-2">1. Kontrolle über die Daten</a><a href="#abschnitt-3">2. Tatsächliche Kosten über die Nutzungsdauer</a><a href="#abschnitt-4">3. Technischer Pflegeaufwand</a><a href="#abschnitt-5">Was Nextcloud kann — und was nicht</a><a href="#abschnitt-6">Kann Nextcloud</a><a href="#abschnitt-7">Was Nextcloud NICHT kann (ohne komplexe Zusätze)</a><a href="#abschnitt-8">Ehrliche Entscheidungsmatrix: Lohnt sich eine eigene Cloud?</a><a href="#abschnitt-9">Typische Irrtümer</a><a href="#abschnitt-10">Irrtum 1: „Backup ist das Gleiche wie Synchronisierung"</a><a href="#abschnitt-11">Irrtum 2: „Ein Raspberry Pi reicht als Server"</a><a href="#abschnitt-12">Irrtum 3: „Verschlüsselung läuft automatisch"</a><a href="#abschnitt-13">Welche Szenarien sprechen klar für einen Cloud-Abo-Dienst?</a><a href="#abschnitt-14">Was BsN (Benjamin Nickl) anbietet</a><a href="#abschnitt-15">FAQ</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a></div>
 <h1>Nextcloud vs. Cloud-Dienste: Was lohnt sich wirklich?</h1>
 <p>Wer zwischen einem Abo-Clouddienst (Google Drive, Microsoft OneDrive, Dropbox etc.) und einer eigenen Haus- oder Bürocloud schwankt, stößt schnell auf denselben Rat: <em>„Bei Nextcloud hast du die Kontrolle über deine Daten"</em>. Das ist nicht falsch — aber es ist auch nicht die ganze Wahrheit. Diese Entscheidung hat weniger mit Technik-Trends zu tun als mit drei harten Fakten, die die meisten Ratschläge ausblenden. Hier sind sie.</p>
-<h2>Die drei echten Entscheidungskriterien</h2>
-<h2>1. Kontrolle über die Daten</h2>
+<h2 id="abschnitt-1">Die drei echten Entscheidungskriterien</h2>
+<h2 id="abschnitt-2">1. Kontrolle über die Daten</h2>
 <p>Bei einem Abo-Clouddienst liegen deine Dateien auf Serveren, die jemand anderes betreibt. Das bedeutet konkret:</p>
 <ul>
 <li>Der Anbieter entscheidet über die Speicherort-Logik (welches Rechenzentrum, welche Rechtslage).</li>
@@ -24,7 +24,7 @@
 </ul>
 <p>Bei einer eigenen Nextcloud hast du diese Kontrolle: Du bestimmst, wo die Daten liegen (dein Server, dein Rechenzentrum oder dein Home-Server). Du bestimmst die Verschlüsselung und die Zugriffsrichtlinien. Du bestimmst, wie lange Daten gehalten werden und wie sie gelöscht werden.</p>
 <p>Das ist mächtig — aber Kontrolle bedeutet auch, dass <em>du</em> für die Einrichtung, Wartung und Sicherheit verantwortlich bist. Das ist kein Bug, das ist die Definition von Kontrolle.</p>
-<h2>2. Tatsächliche Kosten über die Nutzungsdauer</h2>
+<h2 id="abschnitt-3">2. Tatsächliche Kosten über die Nutzungsdauer</h2>
 <p>Abo-Clouddienste: 2–12 €/Monat für 50 GB–2 TB (Preise variieren stark zwischen Anbietern und Tarifs). Das ist Geld, das du für immer zahlst — auch wenn der Anbieter die Preise erhöht oder mehr Speicher erwartet, als du brauchst.</p>
 <p>Eigene Nextcloud: Hier sind die Kosten anders:</p>
 <ul>
@@ -34,7 +34,7 @@
 </ul>
 <p>Eine grobe Einschätzung: Für ein kleines Büro (5–20 Personen, 1–5 TB nutzbar) liegt die Hardware-Kostenbasis zwischen 300 € (gebrachter Mini-PC) und 1.500 € (kleiner Server mit RAID). Die Wartung — selbst ohne Dienstleister — kostet Zeit, die nicht nichts ist. Ein Rechenzentrum mit kostenlosem Hosting (z.B. eigene VPS bei 3–8 €/Monat für Storage + Transfer) ist eine Alternative zu Haus-Servern, reduziert aber die Datensouveränität.</p>
 <p>Der entscheidende Punkt: Bei einem Abo zahlst du während der gesamten Nutzungsdauer. Bei einer eigenen Cloud zahlst du einmalig (Hardware/Gebühren) + läuft unterbrechungsfrei, wenn du nicht wachsen musst. Bei langer Nutzungsdauer (&gt;5 Jahre) und kleiner bis mittlerer Datenmenge kann die eigene Cloud günstiger sein — aber nicht immer, und nicht für alle.</p>
-<h2>3. Technischer Pflegeaufwand</h2>
+<h2 id="abschnitt-4">3. Technischer Pflegeaufwand</h2>
 <p>Nextcloud ist keine „Set-and-Forget"-Lösung. Die Pflege umfasst:</p>
 <ul>
 <li>Systemupdates (Server-OS, PHP, Datenbank, Nextcloud-Core + Apps).</li>
@@ -44,8 +44,8 @@
 <li>Nutzerverwaltung, Berechtigungen, Gruppen, externe Freigaben.</li>
 </ul>
 <p>Je mehr Nutzer und je komplexer die Freigaben, desto mehr Pflege entsteht. Ein einzelner Nutzer mit Nextcloud auf einem Mini-PC hat wenig Pflegeaufwand — aber auch wenig Mehrwert gegenüber einem Abo. Ein 50-Personen-Büro mit Nextcloud hat strukturell andersartigen Aufwand, der geplant sein muss.</p>
-<h2>Was Nextcloud kann — und was nicht</h2>
-<h2>Kann Nextcloud</h2>
+<h2 id="abschnitt-5">Was Nextcloud kann — und was nicht</h2>
+<h2 id="abschnitt-6">Kann Nextcloud</h2>
 <ul>
 <li>Dateispeicher mit Versionshistorie und Wiederherstellung einzelner Dateien.</li>
 <li>Synchronisation zwischen mehreren Geräten (Client-Apps für Windows, macOS, Linux, Android, iOS).</li>
@@ -55,7 +55,7 @@
 <li>Externe Freigaben mit Zugriffsrechten, Ablaufdaten, PIN-Schutz.</li>
 <li>Plugins: Mastodon-Integration, Cloud-Nachrichten, Passwortspeicher, Auditing, DLP-Ansätze (je nach Konfiguration).</li>
 </ul>
-<h2>Was Nextcloud NICHT kann (ohne komplexe Zusätze)</h2>
+<h2 id="abschnitt-7">Was Nextcloud NICHT kann (ohne komplexe Zusätze)</h2>
 <ul>
 <li>Automatische clientseitige Verschlüsselung aller Daten ohne zusätzliche Tools — die Standard-Verschlüsselung bei Nextcloud liegt serverseitig vor, nicht end-to-end.</li>
 <li>Echtzeit-Kollaboration auf dem Niveau von Google Docs (nur mit Collabora/OnlyOffice-Server — das ist zusätzliche Komponente mit eigener Wartung).</li>
@@ -63,7 +63,7 @@
 <li>Hochverfügbarkeit ohne aktive Hochverfügbarkeitsarchitektur (Clustering, redundante Speicherung, Load Balancer) — das ist aufwändiger als ein Single-Server-Setup.</li>
 <li>Rechtzeitige Wiederherstellung nach Datenverlust ohne ein geplantes Backup-Konzept — Nextcloud selbst ist kein Backup-Ersatz.</li>
 </ul>
-<h2>Ehrliche Entscheidungsmatrix: Lohnt sich eine eigene Cloud?</h2>
+<h2 id="abschnitt-8">Ehrliche Entscheidungsmatrix: Lohnt sich eine eigene Cloud?</h2>
 <p>| Szenario | Nutzernzahl | Datenmenge | Compliance-Anforderungen | Eigene Cloud? | Warum / Warum nicht |</p>
 <p>|---|---|---|---|---|---|</p>
 <p>| Privat, 1–2 Personen, Fotos + Dokumente, &lt; 100 GB | 1–2 | Niedrig | Keine | <strong>Nein — Abo reicht</strong> | Wartungsaufwand überwiegt, Abo kostet wenig, Nextcloud bringt hier wenig Mehrwert. |</p>
@@ -72,10 +72,10 @@
 <p>| Größeres Büro, 20+ Personen, komplexe Freigaben, Compliance (DSGVO, Branchenauflagen) | 20+ | Variabel | DSGVO, ggf. Branchenregeln | <strong>Möglich — aber mit Dienstleistung oder professionellem Aufbau</strong> | Komplexität ist hoch; Einrichtung und Pflege brauchen Planung. BsN und Co. bieten Einrichtung an. |</p>
 <p>| Startup / Agentur mit gestreiften Budgets, Daten wichtig aber kein Compliance-Druck | 1–15 | Variabel | Gering | <strong>Überlegenswert — Hybrid oft klug</strong> | Kritische Daten lokal/Nextcloud, Rest bei günstigem Abo. Hybrid ist realistisch. |</p>
 <p>| Jeder Szenario mit höchster Verfügbarkeitsanforderung (Betriebsunterbrechung = Umsatzausfall) | Variabel | Variabel | Hohe Verfügbarkeit | <strong>Abo oder professionelles Rechenzentrum — nicht Single-Server</strong> | Single-Server Nextcloud ist kein HA-Setup. Für kritische Verfügbarkeit brauchst du Konzept, das über einen Server hinausgeht. |</p>
-<h2>Typische Irrtümer</h2>
-<h2>Irrtum 1: „Backup ist das Gleiche wie Synchronisierung"</h2>
+<h2 id="abschnitt-9">Typische Irrtümer</h2>
+<h2 id="abschnitt-10">Irrtum 1: „Backup ist das Gleiche wie Synchronisierung"</h2>
 <p>Synchronisierung (Nextcloud, Dropbox, OneDrive) bedeutet: Wenn du eine Datei löschst, wird sie auch auf allen anderen Geräten gelöscht — synchron. Das ist kein Backup. Ein Backup ist eine <em>zeitlich getrennte Kopie</em> der Daten, die nicht durch Löschungen oder Fehler am Original kompromittiert wird. Nextcloud bietet Datei-Versionshistorie und Papierkorb, aber das ist kein Backup-Ersatz für ein Konzept, das regelmäßige, externe Snapshots enthält.</p>
-<h2>Irrtum 2: „Ein Raspberry Pi reicht als Server"</h2>
+<h2 id="abschnitt-11">Irrtum 2: „Ein Raspberry Pi reicht als Server"</h2>
 <p>Ein Raspberry Pi mit 4–8 GB RAM und einem oder zwei USB-Laufwerken kann Nextcloud <em>laufen lassen</em>. Das bedeutet nicht, dass es für produktiven Einsatz geeignet ist. Einschränkungen:</p>
 <ul>
 <li>Schreibgeschwindigkeit auf USB-Speicher ist begrenzt — bei größeren Synchronisationen oder gleichzeitigen Nutzerzugriff spürbar.</li>
@@ -83,7 +83,7 @@
 <li>Kein strikließlich getrennter Storage vom OS — bei Kompromittierung des Systems sind Daten und System gemeinsam betroffen.</li>
 </ul>
 <p>Für ein privat-pädagogisches Setup mit einem Nutzer funktioniert ein Raspberry Pi <em>ock</em>. Für Büro-Einsatz ist er in der Regel zu schwach.</p>
-<h2>Irrtum 3: „Verschlüsselung läuft automatisch"</h2>
+<h2 id="abschnitt-12">Irrtum 3: „Verschlüsselung läuft automatisch"</h2>
 <p>Nextcloud verschlüsselt Daten serverseit — das bedeutet, das Daten auf dem Server verschlüsselt gespeichert werden können. Aber:</p>
 <ul>
 <li>Ohne Konfiguration ist die Standard-Verschlüsselung auf dem Server aktiv — das schützt vor physischem Zugriff auf die Laufwerke, aber nicht vor einem Angreifer, der Nextcloud administriert oder Zugriff auf die Server-Software hat.</li>
@@ -91,14 +91,14 @@
 <li>Automatische Transportsicherheit (HTTPS) ist Standard — aber sie schützt nur die Übertragung, nicht die Speicherung.</li>
 </ul>
 <p>Verschlüsselung ist kein Ein-Klick-Thema — sie erfordert Konfiguration, Verständnis und planvolle Nutzung.</p>
-<h2>Welche Szenarien sprechen klar für einen Cloud-Abo-Dienst?</h2>
+<h2 id="abschnitt-13">Welche Szenarien sprechen klar für einen Cloud-Abo-Dienst?</h2>
 <ul>
 <li><strong>Privat, wenig Zeit für Wartung</strong>: Ein Abo kostet wenig Aufwand, bietet zuverlässigen Zugriff und Cross-Device-Synchronisation ohne selbst gehostete Komponente.</li>
 <li><strong>Büro ohne IT-Personal und ohne Budget für externe Wartung</strong>: Ohne jemanden, der Nextcloud pflegt, wird sie irgendwann unsicher oder unbenutzbar. Ein Abo übernimmt Verantwortung, die ohne IT-Personal nicht getragen werden kann.</li>
 <li><strong>Hohe Verfügbarkeit ohne eigene HA-Infrastruktur</strong>: Single-Server-Nextcloud ist bei Hardware-Ausfall nicht verfügbar — bis der Server wieder da ist oder das Backup wiederhergestellt ist. Für kritische Workflows ohne eigenen HA-Plan ist ein professioneller Cloud-Dienst mit SLA eine rationalere Wahl.</li>
 <li><strong>Niemand, der die Datensouveränität als Compliance-Argument braucht</strong>: Wenn keine interne Richtlinie, kein DSGVO-Bedarf und keine Kontrolle über Datenort existiert, entfällt das Hauptargument für eigene Cloud.</li>
 </ul>
-<h2>Was BsN (Benjamin Nickl) anbietet</h2>
+<h2 id="abschnitt-14">Was BsN (Benjamin Nickl) anbietet</h2>
 <p>BsN setzt eigene Nextcloud-Umgebungen für Büros und Organisationen auf Basis von eigenen Servern (Home- oder Büro-Edge) oder auf vorgegebenen Rechenzentrum-Infrastruktur auf. Umfang:</p>
 <ul>
 <li>Planung: Hardware, Speicherarchitektur, Backup-Konzept, Netzwerktopologie.</li>
@@ -106,7 +106,7 @@
 <li>Betrieb: Optional mit Wartungsvertrag — Updates, Monitoring, Backup-Verifikation.</li>
 </ul>
 <p>Die Entscheidung ob eine eigene Cloud sinnvoll ist, wird im Detail besprochen — basierend auf Nutzerzahl, Datenvolumen, Compliance-Anforderungen und Wartungskapazität.</p>
-<h2>FAQ</h2>
+<h2 id="abschnitt-15">FAQ</h2>
 <p><strong>1. Ist Nextcloud sicherer als Google Drive oder Dropbox?</strong></p>
 <p>Sicherheit ist kein klarer Gewinner, sondern Kontext. Nextcloud gibt dir mehr Kontrolle über Datenort und Zugriff — aber nur, wenn du sie ordnungsgemäß konfigurierst und pflegst. Google Drive und Dropbox investieren sehr viel in Security-Operationen, die ein einzelner Admin nicht nachbauen kann. Für Personen, die die Server-Administration ernstnehmen, kann Nextcloud sicherer sein — für alle anderen ist das Gegenteil wahrscheinlich.</p>
 <p><strong>2. Wie viel kostet eine eigene Nextcloud wirklich?</strong></p>
@@ -118,10 +118,10 @@
 <p><strong>5. Was ist der grösste Vorteil von Nextcloud gegenüber einem Abo?</strong></p>
 <p>Kontrolle über Datenort und Zugriff — ausdrucklich für Büros mit internen Richtlinien, DSGVO oder ähnlichen Anforderungen. Für private Nutzer ohne solche Anforderungen ist der Vorteil weniger deutlich und der Pflegeaufwand oft überwiegt den Mehrwert.</p>
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-</article>
+</article></div>
 </main>
 <footer>
 <div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
 </footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

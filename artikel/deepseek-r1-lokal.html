@@ -7,32 +7,26 @@
 <title>DeepSeek R1 lokal laufen lassen</title>
 <meta content="Ein weiterer Grund für die Beliebtheit von GGUF ist die eingebaute Unterstützung für Quantisierung . Genau darum geht es im nächsten Abschnitt." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/deepseek-r1-lokal.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/deepseek-r1-lokal.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<div class="content">
-
-
-
-
-
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ist DeepSeek R1?</a><a href="#abschnitt-2">Was ist GGUF?</a><a href="#abschnitt-3">Was ist Quantisierung? Q4, Q8 und Co. erklärt</a><a href="#abschnitt-4">VRAM-Bedarf: 8B vs. 14B vs. 70B</a><a href="#abschnitt-5">Installation mit Ollama (Schritt für Schritt)</a><a href="#abschnitt-6">Hardware-Empfehlung im Überblick</a><a href="#abschnitt-7">Fazit</a></aside><div class="content"><div class="reading-crumb"><a href="../index.html#ki">Bibliothek / Lokale KI</a></div>
 <p>keywords:</p>
 <p>  - DeepSeek R1 lokal</p>
 <p>  - GGUF Quantisierung</p>
 <p>  - DeepSeek R1 VRAM</p>
 <p>  - Ollama DeepSeek</p>
 <p>  - lokale KI Reasoning</p>
-
 <h1>DeepSeek R1 lokal laufen lassen: GGUF, Quantisierung &amp; VRAM erklärt</h1>
 <p>DeepSeek R1 gehört zu den meistdiskutierten Open-Source-Sprachmodellen. Anders als klassische Chatbots „denkt" es vor jeder Antwort laut nach – ein sogenanntes <strong>Reasoning-Modell</strong>. Der Clou: Man kann es komplett <strong>lokal</strong> auf dem eigenen Rechner betreiben, ohne Cloud, ohne Abo und ohne Daten, die das Haus verlassen. In diesem Artikel erklären wir, was DeepSeek R1 ist, was die Begriffe <strong>GGUF</strong> und <strong>Quantisierung</strong> bedeuten, wie viel <strong>VRAM</strong> die einzelnen Modellgrößen brauchen und wie die Installation mit <strong>Ollama</strong> in wenigen Minuten gelingt.</p>
-<h2>Was ist DeepSeek R1?</h2>
+<h2 id="abschnitt-1">Was ist DeepSeek R1?</h2>
 <p>DeepSeek R1 wurde Anfang 2025 vom chinesischen Unternehmen DeepSeek veröffentlicht und sorgte vor allem deshalb für Aufsehen, weil es mit deutlich geringerem Trainingsaufwand an die Leistung etablierter Modelle heranreichte. Der entscheidende Unterschied zu herkömmlichen LLMs: R1 ist ein <strong>Reasoning-Modell</strong>. Es erzeugt vor der eigentlichen Antwort einen internen „Denkprozess" (Chain-of-Thought), in dem es das Problem Schritt für Schritt durchgeht. Das macht es besonders stark bei Mathematik, Logik, Programmierung und komplexen Aufgaben – dort, wo ein Modell mehrere Zwischenschritte braucht.</p>
 <p>Der Haken: Das vollständige Modell ist mit <strong>671 Milliarden Parametern</strong> riesig und für Heimanwender nicht realisierbar. Abhilfe schaffen die <strong>distillierten Versionen</strong>. Dabei wurde das Wissen von R1 in kleinere Modelle „destilliert", die auf normaler Hardware laufen: <strong>1,5B, 7B, 8B, 14B, 32B und 70B</strong>. Für den lokalen Einsatz sind vor allem die Größen 8B, 14B und 70B relevant.</p>
-<h2>Was ist GGUF?</h2>
+<h2 id="abschnitt-2">Was ist GGUF?</h2>
 <p><strong>GGUF</strong> (GPT-Generated Unified Format) ist das Standard-Dateiformat, um große Sprachmodelle lokal auszuführen. Es wurde für das Framework <strong>llama.cpp</strong> entwickelt und bündelt alle Gewichte, die Tokenizer-Daten und die Metadaten eines Modells in einer einzigen Datei. Der Vorteil: GGUF-Dateien lassen sich direkt mit Tools wie llama.cpp, LM Studio oder <strong>Ollama</strong> laden – ohne Python-Umgebung und ohne komplizierte Konvertierung.</p>
 <p>Ein weiterer Grund für die Beliebtheit von GGUF ist die eingebaute Unterstützung für <strong>Quantisierung</strong>. Genau darum geht es im nächsten Abschnitt.</p>
-<h2>Was ist Quantisierung? Q4, Q8 und Co. erklärt</h2>
+<h2 id="abschnitt-3">Was ist Quantisierung? Q4, Q8 und Co. erklärt</h2>
 <p>Beim Training speichern Modelle ihre Gewichte üblicherweise mit hoher Präzision (FP16, also 16 Bit pro Wert). Das ist genau, kostet aber viel Speicher. <strong>Quantisierung</strong> reduziert die Genauigkeit dieser Zahlen, um das Modell zu verkleinern und schneller zu machen – bei möglichst geringem Qualitätsverlust.</p>
 <p>Die gängigen Stufen werden mit einem „Q" und einer Zahl bezeichnet:</p>
 <ul>
@@ -41,7 +35,7 @@
 <li><strong>Q4 (4 Bit):</strong> Der Standard für lokale Nutzung. Deutlich kleiner und schneller, bei akzeptablem Qualitätsverlust – perfekt, um ein Modell überhaupt erst in den VRAM zu bekommen.</li>
 </ul>
 <p>Merksatz: Je kleiner die Zahl, desto kleiner die Datei und desto geringer der Speicherbedarf – aber auch desto mehr Genauigkeit geht verloren. Für den Alltag ist <strong>Q4_K_M</strong> der bewährte Standard; wer mehr Präzision braucht und genug VRAM hat, greift zu <strong>Q8</strong>.</p>
-<h2>VRAM-Bedarf: 8B vs. 14B vs. 70B</h2>
+<h2 id="abschnitt-4">VRAM-Bedarf: 8B vs. 14B vs. 70B</h2>
 <p>Wie viel Grafikspeicher (VRAM) ein Modell braucht, hängt von seiner Größe und der gewählten Quantisierung ab. Als Faustregel gilt: etwa <strong>1 GB VRAM pro 1 Milliarde Parameter bei Q4</strong>. Dazu kommen Reserven für den Kontext (die Fenstergröße).</p>
 <p>| Modell | Q4 (ca.) | Q8 (ca.) | Empfehlung |</p>
 <p>|---|---|---|---|</p>
@@ -54,7 +48,7 @@
 <li><strong>70B:</strong> Braucht rund <strong>40 GB VRAM</strong> bei Q4 – realistisch nur mit mehreren Grafikkarten oder einem Rechner mit sehr viel Arbeitsspeicher. Für die meisten Heimanwender zu groß.</li>
 </ul>
 <p>Wer keine starke GPU hat, kann größere Modelle trotzdem teilweise über die CPU laufen lassen – das kostet dann aber spürbar Geschwindigkeit.</p>
-<h2>Installation mit Ollama (Schritt für Schritt)</h2>
+<h2 id="abschnitt-5">Installation mit Ollama (Schritt für Schritt)</h2>
 <p>Der einfachste Weg zu DeepSeek R1 ist <strong>Ollama</strong>, ein Tool, das GGUF-Modelle mit einem einzigen Befehl herunterlädt und startet.</p>
 <p>1. <strong>Ollama installieren:</strong> Von [ollama.com](https://ollama.com) herunterladen (Windows, macOS, Linux) und installieren.</p>
 <p>2. <strong>Modell laden:</strong> Im Terminal den gewünschten Befehl ausführen:</p>
@@ -64,17 +58,17 @@
 <p>3. <strong>Loslegen:</strong> Nach dem Download startet direkt ein Chat. Ollama lädt automatisch eine passende Quantisierung (standardmäßig Q4).</p>
 <p>4. <strong>Optional:</strong> Mit <code>ollama run deepseek-r1:8b-q8_0</code> lässt sich gezielt eine höhere Quantisierung wählen.</p>
 <p>Danach lässt sich das Modell auch über eine Weboberfläche wie <strong>Open WebUI</strong> oder per OpenAI-kompatibler API ansprechen.</p>
-<h2>Hardware-Empfehlung im Überblick</h2>
+<h2 id="abschnitt-6">Hardware-Empfehlung im Überblick</h2>
 <ul>
 <li><strong>Nur ausprobieren:</strong> Jeder Rechner mit 8–16 GB RAM – DeepSeek R1 <strong>8B</strong> auf der CPU.</li>
 <li><strong>Sinnvoll für den Alltag:</strong> GPU mit <strong>12 GB VRAM</strong> (RTX 3060 12 GB oder RTX 4070) für das <strong>14B</strong>-Modell.</li>
 <li><strong>Maximal lokal:</strong> <strong>24 GB VRAM</strong> (RTX 3090 / 4090) reichen für das <strong>14B</strong>-Modell mit Q8 oder größere Modelle in niedriger Quantisierung.</li>
 <li><strong>70B:</strong> Nur sinnvoll mit mehreren GPUs oder einem dedizierten Server – für die meisten Anwender überdimensioniert.</li>
 </ul>
-<h2>Fazit</h2>
+<h2 id="abschnitt-7">Fazit</h2>
 <p>DeepSeek R1 lokal zu betreiben ist dank <strong>GGUF</strong>, <strong>Quantisierung</strong> und <strong>Ollama</strong> einfacher als viele denken. Für die meisten Nutzer ist das <strong>14B</strong>-Modell in Q4 auf einer GPU mit 12 GB VRAM der beste Kompromiss aus Qualität, Geschwindigkeit und Kosten – während das <strong>8B</strong>-Modell einen kostenlosen, datenschutzfreundlichen Einstieg bietet. Wer das volle Reasoning-Potenzial ohne Cloud-Abhängigkeit will, findet in DeepSeek R1 einen der stärksten Open-Source-Kandidaten.</p>
-</div>
+</div></div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

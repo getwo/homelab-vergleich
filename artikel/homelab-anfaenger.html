@@ -7,23 +7,23 @@
 <title>Homelab für Anfänger: Die ersten 5 Schritte</title>
 <meta content="In fünf Schritten baust du deine erste private Infrastruktur auf – ohne überflüssige Hardware und verwirrende Redewendungen." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/homelab-anfaenger.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/homelab-anfaenger.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<article class="content" style="max-width:800px;">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Schritt 1: Ziel vor Hardware definieren</a><a href="#abschnitt-2">Schritt 2: Waehle ein sinnvolles Virtualisierung-Grundgerüst</a><a href="#abschnitt-3">Schritt 3: Ein stabiles, kleines Netz aufbauen</a><a href="#abschnitt-4">Schritt 4: Sicherheitsgrundregeln vor dem ersten Dienst</a><a href="#abschnitt-5">Schritt 5: Überwachung und Backups – die unprätentiose Infrastruktur</a><a href="#abschnitt-6">Fazit</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#start">Bibliothek / Einstieg &amp; Planung</a></div>
 <h1>Homelab für Anfänger: Die ersten 5 Schritte</h1>
 <p>Ein Homelab klingt nach Serverraum und rackmontierten Chassis. In der Praxis fängt es klein an – oft genug mit einem alten Laptop, einer geklonten Virtualisierungsmaschine oder einem single-board Computer, den niemand mehr einsetzt. Der Sinn bleibt derselbe: eine private Umgebung, in der man Dienste ausprobieren, Sicherheit üben und verstehen kann, was im Netz eigentlich läuft. Der richtige Einstieg vermeidet Über-Engineering.</p>
-<h2>Schritt 1: Ziel vor Hardware definieren</h2>
+<h2 id="abschnitt-1">Schritt 1: Ziel vor Hardware definieren</h2>
 <p>Bevor die erste Maschine anläuft, hilft eine konkrete Liste. Möchte man eine eigene DNS-Auflösung, einen Medikations-Verteiler für die Familie, ein Backups-Ziel oder einfach nur Docker-Container zum Hovern lernen? Ein unklar definiertes Zutatkabinett wird schnell zu einem Servergrab.</p>
 <p>Die praktische Frage ist nicht „Welche Hardware sind ich zu kaufen?", sondern „Welches Problem löse ich?". Ein günstiger Mini-PC mit 8 GB RAM und einer SSD läuft Container, kleine VMs und eine lokales Repositorium geladen. Alles, was darüber hinausgeht, sollte begründet sein – sonst wird das Homelab zur Hardware-Auktion.</p>
-<h2>Schritt 2: Waehle ein sinnvolles Virtualisierung-Grundgerüst</h2>
+<h2 id="abschnitt-2">Schritt 2: Waehle ein sinnvolles Virtualisierung-Grundgerüst</h2>
 <p>Roh physisch installierte Dienste sind für den Anfang mühsam: jedes Experiment braucht einen separaten Rechner oder zumindest eine dedizierte Partition. Virtualisierung entkoppelt Dienst von Hardware und lässt Fehler isoliert wiederherstellen.</p>
 <p>Beliebte Einsteigerwege sind Proxmox als host-Überbau (mit LXC-Containern für leichte Dienste und VMs für vollständige isolierte Systeme) oder Docker-Container über einen einzelnen Linux-Host. Proxmox bietet eine klare Trennung zwischen Host und Gast – nützlich, wenn man Netzwerke, Bridge-Konfigurationen und Storage-Quellen direkt sieht. Container hingegeben sind schneller aufgesetzt, aber weniger isoliert. Ein Anfang kann damit auskommen: einen Hypervisor, drei bis vier Container, kein Cluster.</p>
-<h2>Schritt 3: Ein stabiles, kleines Netz aufbauen</h2>
+<h2 id="abschnitt-3">Schritt 3: Ein stabiles, kleines Netz aufbauen</h2>
 <p>Ein Homelab-Netz braucht keine komplexe VLAN-Struktur mit zwölf Subnetzen. Ein einheitlicher Switch, der die Zielgeräte verbindet, reicht oft. Die eigentliche Arbeit liegt in der Adressierung: ein fest zugewiesener Bereich für das Homelab (beispielsweise 192.168.100.0/24), feste IPs oder DHCP-Reservierungen für Server und eine klare Namespace-Politik.</p>
 <p>DNS gehört früh dazu. Ein interner DNS-Server, der lokale Domains auflöst, verhindert die verwirrende Mischung aus IP-Adressen in Notizen und Konfigurationsdateien. Auch einfache Namensgebung – <code>nas.lan</code>, <code>git.lan</code>, <code>monitoring.lan</code> – erspart Stunden der vertanen Suche.</p>
-<h2>Schritt 4: Sicherheitsgrundregeln vor dem ersten Dienst</h2>
+<h2 id="abschnitt-4">Schritt 4: Sicherheitsgrundregeln vor dem ersten Dienst</h2>
 <p>Sicherheit ist im Homelab kein aufgesetzter Zusatz, sondern das Fundament. Die wichtigsten Regeln sind simpel, aber wirksam:</p>
 <ul>
 <li>Kein offenes SSH für das Internet ohne wesentliche Absicherung (geschlossene Ports, SSH-Schlüssel statt Passwort, fail2ban oder gleichwertiger Schutz)</li>
@@ -32,17 +32,17 @@
 <li>Zugriff auf sensible Dienste (Dashboards, Datenbanken, Admin-Frontends) nur aus dem vertrauenswürdigen Netz oder über reverse Proxy mit Authentifizierung</li>
 </ul>
 <p>Die häufigste Anfänger-Falle ist die Exponiertheit: ein Dienst läuft, jemand kennt die IP, und plötzlich ist der experimentelle Server im Internet indexiert. Lokal bleiben, wo lokal sinnvoll ist.</p>
-<h2>Schritt 5: Überwachung und Backups – die unprätentiose Infrastruktur</h2>
+<h2 id="abschnitt-5">Schritt 5: Überwachung und Backups – die unprätentiose Infrastruktur</h2>
 <p>Überwachung ist nicht gleich eine große Metrics-Plattform. Für den Anfang reicht oft ein einfaches Dashboard, das anzeigt, ob der Host erreichbar ist, wie viel RAM genutzt wird und ob ein wesentlicher Dienst down ist. Die schwierige Frage ist nicht, wie man Metriken sammelt, sondern was man ignoriert: nicht jedes verfügbare Signal überwachen, sondern jene, deren Verlust eine sofortige Entscheidung erfordert.</p>
 <p>Backups gehören in dieselbe Kategorie – unscheinbar, aber kritisch. Ein Homelab ohne Backup-Strategie ist ein Homelab, das mit der nächsten fehlerhaften Konfigurationsänderung seine eigene Historie verliert. Die Basisstrategie muss drei Elemente enthalten: regelmäßige Sicherung der Konfigurationen (VM-Snapshots, Container-Konfigurationen, DNS-Einträge), ein offsite oder zumindest separates Speicherziel für die Daten und eine gelegentliche Prüfung, ob die Sicherung tatsächlich lesbar ist.</p>
-<h2>Fazit</h2>
+<h2 id="abschnitt-6">Fazit</h2>
 <p>Ein Homelab für Anfänger braucht keine riesige Hardware-Liste oder ein komplexes Firmware-Design. Es braucht eine klare Absicht, eine Virtualisierungsschicht, ein überschaubares Netzwerk, eine minimale Sicherheitsgrundausstattung und die Perspektive, dass Überwachung und Backup zum Standard gehören – nicht als Nachttopf.</p>
 <p>Wer diese fünf Schritte in dieser Reihenfolge angeht, vermeidet die typischen Über-Engineering-Fallen und hat nach wenigen Wochen eine Umgebung, die Dinge tut, die man versteht – und die sich bei Bedarf auch repariert.</p>
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-</article>
+</article></div>
 </main>
 <footer>
 <div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
 </footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

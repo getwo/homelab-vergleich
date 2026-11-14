@@ -8,26 +8,26 @@
 <meta content="Docker-Healthcheck und Restart-Policy im Homelab richtig unterscheiden: Bereitschaft, Neustart, Compose-Abhängigkeiten und Fehlersuche konkret prüfen." name="description"/>
 <link href="https://homelab.brillianze.de/artikel/docker-healthcheck-restart-policy.html" rel="canonical"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-</head>
-<body>
+<link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
-<main class="wrap"><article class="content">
+<main class="wrap"><div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ein Healthcheck tatsächlich meldet</a><a href="#abschnitt-2">Wofür die Restart-Policy zuständig ist</a><a href="#abschnitt-3">Bereitschaft und Abhängigkeiten in Compose</a><a href="#abschnitt-4">Kleiner Funktionstest</a><a href="#quellen">Offizielle Quellen</a></aside><article class="content"><div class="reading-crumb"><a href="../index.html#virtualisierung">Bibliothek / Proxmox &amp; Virtualisierung</a></div>
 <h1>Docker-Healthcheck und Restart-Policy: zwei Aufgaben</h1>
 <p>Ein Container ist gestartet, aber die Weboberfläche reagiert nicht. Oder ein Dienst beendet sich und bleibt nach einem Hostneustart aus. Beide Probleme sehen von außen ähnlich aus, erfordern aber verschiedene Mittel. Healthchecks beschreiben den beobachteten Zustand einer laufenden Anwendung; Restart-Policies regeln, ob Docker einen beendeten Container erneut startet. Wer beides verwechselt, baut eine Automatik, die den eigentlichen Fehler nicht behebt.</p>
-<h2>Was ein Healthcheck tatsächlich meldet</h2>
+<h2 id="abschnitt-1">Was ein Healthcheck tatsächlich meldet</h2>
 <p>Ein Healthcheck führt eine im Image oder Compose-Service definierte Prüfung in Intervallen aus. Die Compose-Referenz dokumentiert dafür Test, Intervall, Timeout, Wiederholungen und Startfrist.<a aria-label="Quelle 3" href="#quelle-3">[3]</a> Die Prüfung muss zur Anwendung passen: Bei einer Datenbank ist eine echte Bereitschaftsanfrage aussagekräftiger als die bloße Existenz eines Prozesses. Ein Check kann aber auch falsch-negativ werden, wenn sein Prüfwerkzeug im Container fehlt oder die Anwendung beim Start länger benötigt. Notiere daher, was als gesund gilt und ab welchem Zeitpunkt die Prüfung belastbar ist.</p>
 <p>Die Statusanzeige „unhealthy“ ist zunächst ein Diagnosehinweis, keine Reparatur. Plane eine Beobachtung, die diesen Status meldet, und suche im Ereignisfall in Dienstprotokollen und Abhängigkeiten nach der Ursache. Ein Check gegen den eigenen Port beweist außerdem nicht automatisch, dass ein externer Nutzer den Dienst über Proxy, DNS und Netzwerk erreicht.</p>
-<h2>Wofür die Restart-Policy zuständig ist</h2>
+<h2 id="abschnitt-2">Wofür die Restart-Policy zuständig ist</h2>
 <p>Docker beschreibt „no“, „on-failure“, „always“ und „unless-stopped“ mit unterschiedlichen Regeln für beendete Container und Daemon-Neustarts.<a aria-label="Quelle 1" href="#quelle-1">[1]</a> „on-failure“ reagiert auf einen fehlerhaften Exit-Code; „unless-stopped“ merkt sich einen bewussten Stopp auch über einen Daemon-Neustart hinweg. Wähle die Regel nach dem Betrieb: ein dauerhaft benötigter Dienst kann von einem automatischen Neustart profitieren, ein einmaliger Importprozess soll vielleicht gerade nicht dauerhaft wiederkehren.</p>
 <p>Eine Restart-Policy startet nicht allein deshalb neu, weil ein weiterhin laufender Container als „unhealthy“ gilt. Wer das erwartet, braucht eine gesondert geplante Reaktion und muss Endlosschleifen vermeiden. Auch wiederholte Abstürze sind kein Zeichen, dass „mehr Neustarts“ die richtige Lösung wären. Sichere vor Änderungen die relevanten Logs und prüfe den Exit-Grund.</p>
-<h2>Bereitschaft und Abhängigkeiten in Compose</h2>
+<h2 id="abschnitt-3">Bereitschaft und Abhängigkeiten in Compose</h2>
 <p>Compose startet Dienste in Abhängigkeitsreihenfolge, wartet standardmäßig aber nur auf den laufenden Container, nicht auf eine betriebsbereite Anwendung.<a aria-label="Quelle 2" href="#quelle-2">[2]</a> Für einen abhängigen Dienst kann „service_healthy“ an einen passenden Healthcheck des vorgelagerten Dienstes gekoppelt werden. Die Docker-Anleitung zeigt dieses Muster für eine Datenbank und eine Webanwendung.<a aria-label="Quelle 2" href="#quelle-2">[2]</a> Es löst den Startzeitpunkt, nicht automatisch jede spätere Störung im laufenden Betrieb.</p>
 <p>Prüfe vor dem Einsatz, ob deine Anwendung einen Verlust der Datenbankverbindung selbst übersteht und später neu verbindet. Sonst kann selbst eine korrekte Startreihenfolge einen Ausfall nach Stunden nicht auffangen. Die Option „restart“ innerhalb einer Compose-Abhängigkeit hat eine andere Bedeutung als die Restart-Policy des Service; lies die jeweilige Stelle in der offiziellen Anleitung, bevor du sie gleichsetzt.<a aria-label="Quelle 2" href="#quelle-2">[2]</a></p>
-<h2>Kleiner Funktionstest</h2>
+<h2 id="abschnitt-4">Kleiner Funktionstest</h2>
 <p>Teste drei Fälle getrennt: einen gesunden Start, einen absichtlich fehlschlagenden Healthcheck bei weiter laufendem Prozess und ein reguläres Beenden des Testcontainers. Beobachte jeweils Status, Logs und Neustartverhalten; wiederhole den Test nach einem kontrollierten Daemon-Neustart. Verwende dafür einen unwichtigen Testdienst statt einer Produktivdatenbank. Die Entscheidung ist gelungen, wenn ein Defekt sichtbar wird, ein beendeter Dienst gemäß der gewählten Regel reagiert und kein blindes Neustartkarussell entsteht.</p>
 <section aria-labelledby="quellen"><h2 id="quellen">Offizielle Quellen</h2><ol><li id="quelle-1"><a href="https://docs.docker.com/engine/containers/start-containers-automatically/">Docker: Container automatisch starten</a></li>
 <li id="quelle-2"><a href="https://docs.docker.com/compose/how-tos/startup-order/">Docker: Startreihenfolge in Compose</a></li>
 <li id="quelle-3"><a href="https://docs.docker.com/reference/compose-file/services/">Docker: Compose-Service-Referenz</a></li></ol></section>
-</article></main>
+</article></div></main>
 <footer><div class="wrap"><p>© 2026 Benjamin Nickl · Brillianze</p><p><a href="../index.html">Startseite</a> · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div></footer>
-</body></html>
+<script defer="" src="../reading.js?v=20261114"></script></body></html>

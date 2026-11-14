@@ -7,15 +7,15 @@
 <title>Kein Backup ist sicher, bis es getestet ist</title>
 <meta content="Eine Wiederherstellung aus einer Kopie, die noch nie angefasst wurde, ist wie ein Rettungsplan, den niemand bis zum Schiffbruch gelesen hat." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/backup-strategie-selfhoster.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/backup-strategie-selfhoster.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<article class="content" style="max-width:800px;">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Das Kernproblem: Eine Kopie ist kein Backup</a><a href="#abschnitt-2">Die 3-2-1-Regel: Definition und konkrete Umsetzung</a><a href="#abschnitt-3">Die 3-2-1-Regel im Detail – Konkrete Umsetzung auf Proxmox und in Containern</a><a href="#abschnitt-4">Auf Proxmox: vzdump, Storage-Regeln und External Targets</a><a href="#abschnitt-5">In Containern: Volumes, Datenbanken, Compose-Konfig</a><a href="#abschnitt-6">Getestete gegenüber ungetesteter Wiederherstellung</a><a href="#abschnitt-7">Verschlüsselung des Backups und Key-Management</a><a href="#abschnitt-8">Monatlicher Wiederherstellungstest als Routine</a><a href="#abschnitt-9">Typische Fehler von Self-Hostern</a><a href="#abschnitt-10">BsN: Backup-Konfigurationen als Dienstleistung</a><a href="#abschnitt-11">Fazit: Was zählt, wird getestet</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#speicher">Bibliothek / Speicher &amp; Backups</a></div>
 <h1>Kein Backup ist sicher, bis es getestet ist: Die 3-2-1-Strategie für Self-Hoster</h1>
 <p>Neun von zehn Datenverlust-Katastrophen haben dieselbe Wurzel: Während der Sache lief, wurde etwas kopiert – ein Snapshot auf denselben Datenträger, ein synchrones Mirror in dieselbe Rack-Zone, ein <code>rsync</code>-Lauf, der ohne Prüfsumme lief. Das Ergebnis sieht aus wie ein Backup. Es ist es nicht.</p>
 <p>Eine Wiederherstellung aus einer Kopie, die noch nie angefasst wurde, ist wie ein Rettungsplan, den niemand bis zum Schiffbruch gelesen hat. In der Selbsthosting-Praxis wird dieser Unterschied täglich ignoriert – bis die Festplatte klickt, die VM-Umgebung beschädigt ist oder der Provider-Version-Upload die Datenbank korruptiert. Der Rest der Geschichte ist langweiliger und teurer als das, was man hätte tun können.</p>
-<h2>Das Kernproblem: Eine Kopie ist kein Backup</h2>
+<h2 id="abschnitt-1">Das Kernproblem: Eine Kopie ist kein Backup</h2>
 <p>Eine Kopie erfüllt drei Bedingungen nicht automatisch:</p>
 <ul>
 <li>Sie liegt an einem anderen physischen Ort.</li>
@@ -24,7 +24,7 @@
 </ul>
 <p>Wenn ein <code>rsync</code>-Job dieselbe Festplatte auf einen anderen Pfad schreibt, gibt es technisch gesehen eine Kopie, aber keine Redundanz gegen den Plattencrash. Wenn ein Proxmox-Backup auf ein NAS schreibt, das denselben Rechner über dasselbe VLAN versorgt, hilft es nicht gegen einen Stromschlag am Rack. Wenn ein Docker-Volumes-Backup als tarball auf denselben Host schlägt, hilft es nicht gegen eine fehlerhafte Image-Aktualisierung, die das originale Volumen überschreibt.</p>
 <p>Backup heißt: unabhängig, versioniert, wiederherstellungstauglich, geprüft.</p>
-<h2>Die 3-2-1-Regel: Definition und konkrete Umsetzung</h2>
+<h2 id="abschnitt-2">Die 3-2-1-Regel: Definition und konkrete Umsetzung</h2>
 <p>Die 3-2-1-Regel ist alt und bleibt vollständig gültig: drei Kopien, zwei verschiedene Medien, eine Kopie extern. Für Self-Hoster bedeutet das:</p>
 <ul>
 <li><strong>Kopie 1 (Primär):</strong> Das aktive System – Proxmox-host mit VMs und Containern, Docker-Hosts mit Volumes und Konfiguration.</li>
@@ -49,7 +49,7 @@
 <li>Datenbanken konsistent sichern: Für PostgreSQL etwa <code>pg_dump</code>, für MySQL/MariaDB <code>mysqldump</code> – nicht nur das Volumen kopieren, wenn die Datenbank schreibt.</li>
 </ul>
 <p>Ein häufiger Amateurfehler ist, den Container einfach zu committen oder ein Volume zu kopieren, ohne die Konsistenz der laufenden Datenbank zu sichern. Das Ergebnis ist eine Kopie, die beim Wiederherstellungsversuch Fehler verbergen.</p>
-<h2>Die 3-2-1-Regel im Detail – Konkrete Umsetzung auf Proxmox und in Containern</h2>
+<h2 id="abschnitt-3">Die 3-2-1-Regel im Detail – Konkrete Umsetzung auf Proxmox und in Containern</h2>
 <p>Die 3-2-1-Regel klingt simpel, wird aber von fast allen Self-Hostern falsch umgesetzt. Zuerst die Regel rein: Drei Kopien der Daten, auf zwei verschiedenen Speichermedien, von denen eine extern liegt. Das klingt nach Mathematik, ist aber im Detail eine Logistics-Frage.</p>
 <p>Auf einem Proxmox-Host bedeutet das konkret: Die laufende VM ist Kopie eins. Eine lokale Backup-Partition auf einer zweiten Festplatte – besser noch ein anderes RAID-Level oder eine andere Controller-Schiene – ist Kopie zwei. Kopie drei muss physisch weg vom Rechner sein: ein zweiter Proxmox-Host im anderen Zimmer, ein NAS in der Wohnung des Elternhauses, ein VPS mit OwnBackups oder ein Objektspeicher mit clientseitiger Verschlüsselung. Was nicht funktioniert: Eine Kopie auf demselben Storage-Array, das dieselbe Stromversorgung teilt. Was auch nicht funktioniert: Ein Snapshot, der auf demselben Logical Volume liegt und nur einen anderen Dateisystem-Pfad hat.</p>
 <p>Proxmox bietet zwei relevante Wege: <code>vzdump</code> für ganze VMs und Container, und die Storage-Backup-Strategie für rein containerisierte Umgebungen. <code>vzdump</code> erstellt konsistente Snapshots, kann Kompression und Verschlüsselung anwenden und werdenüber Cron geplant. Ein typischer Cron-Eintrag in <code>/etc/cron.d/pve-backup</code>:</p>
@@ -58,14 +58,14 @@
 </code></pre>
 <p>Das reicht nicht. Der Storage <code>backup-nas</code> darf nicht derselbe Pfade sein wie die VM-Disks. Besser: ein separater NFS-Mount aus einem anderen Rechner, oder ein lokaler Backup-Pool auf einer physisch anderen Platte. Und: Backups müssenEncrypted sein, bevor sie ins Netz gehen.</p>
 <p>In Docker-Umgebungen ist die Lage subtler. Ein Volume-Backup mit <code>docker run --rm -v meindb-data:/data -v $(pwd):/backup alpine tar czf /backup/meindb-data-$(date +%F).tar.gz -C /data .</code> ist eine Kopie – aber nur, wenn sie an einen anderen Ort geht. Ebenfalls wichtig: Datenbanken müssen konsistent gesichert werden. Ein gewöhnliches Volume-Snapshot einer laufenden Datenbank ist mit hoher Wahrscheinlichkeit korrupt, wenn es während des Schreibens genommen wurde. Für PostgreSQL ist <code>pg_dump</code> der richtige Weg, für MySQL/MariaDB <code>mysqldump</code>. Container-Konfigurationen – <code>docker-compose.yml</code>, <code>.env</code>, Secrets – müssen als Dateien ebenfalls in den Backup-Kreislauf.</p>
-<h2>Auf Proxmox: vzdump, Storage-Regeln und External Targets</h2>
+<h2 id="abschnitt-4">Auf Proxmox: vzdump, Storage-Regeln und External Targets</h2>
 <p>Proxmox-Backups sind einfach, aber nur wenn man die Failure-Domains respektiert. Ein <code>vzdump</code> auf denselben ZFS-Pool, aus dem die VMs laufen, ist eine Kopie, aber kein Backup gegen Pool-Ausfall. Ziel:</p>
 <ul>
 <li>Backup-Storage auf anderer Hardware, besser noch anderer Stromversorgung.</li>
 <li>Übertragung zum externen Ziel verschlüsselt – nicht nur Transport-verschlüsselt, sondern Ende-zu Ende verschlüsselt, damit der Empfänger die Daten ohne den Schlüssel nicht lesen kann.</li>
 </ul>
 <p>Ein Minimal-Pfad für das externe Ziel ist ein <code>rclone</code>-Kommando, das den letzten Backup-Ordner verschlüsselt hochlädt, oder ein <code>restic</code>-Repository auf einem S3-kompatiblen Endpoint. Beides lassen sich in den Backup-Cron integrieren.</p>
-<h2>In Containern: Volumes, Datenbanken, Compose-Konfig</h2>
+<h2 id="abschnitt-5">In Containern: Volumes, Datenbanken, Compose-Konfig</h2>
 <p>Container-User laufen Gefahr, die Backup-Strategie an der Virtualisierung festzumachen und die Applikationsdaten zu vergessen. Ein Docker-Setup ohne Datenbank-Backup ist blind. Beispiel:</p>
 <pre><code>
 # Datenbankkonsistente Sicherung vor dem Volume-Backup
@@ -74,7 +74,7 @@ docker exec meinedb pg_dump -U dbuser meinedb &gt; /backup/meinedb-$(date +%F).s
 docker run --rm -v meinedb-data:/src -v /backup:/backup alpine tar czf /backup/meinedb-data-$(date +%F).tar.gz -C /src .
 </code></pre>
 <p>Die Konfigurationsdateien gehören ebenfalls ins Backup: <code>docker-compose.yml</code>, <code>.env</code>, Secrets, Netzwerk-Definitionen.</p>
-<h2>Getestete gegenüber ungetesteter Wiederherstellung</h2>
+<h2 id="abschnitt-6">Getestete gegenüber ungetesteter Wiederherstellung</h2>
 <p>Ein ungetestetes Backup ist ein Versprechen, das niemand eingelöst hat. Wiederherstellungstests werden nicht gemacht, weil sie Arbeit sind und keinen sichtbaren Gewinn bringen – bis sie gebraucht wird.</p>
 <p>Ein getestetes Backup ist eines, bei dem man:</p>
 <ul>
@@ -84,7 +84,7 @@ docker run --rm -v meinedb-data:/src -v /backup:/backup alpine tar czf /backup/m
 </ul>
 <p>Ohne Test bleibt unklar, ob der Backupstrom komplett ist, ob Kompressions- oder Verschlüsselungsfehler die Dateien unbrauchbar machen, ob Applikations-Config-Dateien dabei sind, und ob die Wiederherstellung überhaupt möglich ist.</p>
 <p>Sinnvoller Ablauf: Einmal im Monat eine schematische Wiederherstellung – nicht vollständig alle Daten, aber eine repräsentative Auswahl. Eine VM aus dem letzten Backup, ein Datenbankdump, ein Container-Image mit Volume. Das Ergebnis wird dokumentiert: erfolgreich / fehlgeschlagen, Zeitbedarf, auffälligkeiten.</p>
-<h2>Verschlüsselung des Backups und Key-Management</h2>
+<h2 id="abschnitt-7">Verschlüsselung des Backups und Key-Management</h2>
 <p>Backups enthalten die ganzen Daten – auch Passwörter, Tokens, sensible Konfigurationen. Wenn das externe Backup unverschlüsselt liegt, ist der Verlust dieses Backups genauso schlimm wie ein Einbruch in das aktive System.</p>
 <p>Ein solides Modell:</p>
 <ul>
@@ -98,7 +98,7 @@ vzdump &lt;vmid&gt; --compress zstd --storage backup-nas --encrypt-key /etc/vzdu
 <p>Die Handhabung des Keys ist der kritische Teil: Der Key muss auf einem Ort liegen, der nicht durch denselben Ausfall betroffen ist wie das Backup. Ein Key, der auf derselben NAS liegt wie das Backup, macht die Verschlüsselung wertlos.</p>
 <p>Für Container-Backups gilt dasselbe: Der Backup-Pfad, der das Passwort zum Entschlüsseln enthält, ist kein Backup, sondern ein Risiko.</p>
 <p>Key-Management heißt hier nicht Only-Key-Here-selbst, sondern: wer kann im Notfall den Schlüssel finden, ohne dass er mit dem Backup zusammenfällt? Wenigstens: Schlüssel an anderer Stelle, dokumentiert, von einer zweiten Person zugänglich, wenn nötig.</p>
-<h2>Monatlicher Wiederherstellungstest als Routine</h2>
+<h2 id="abschnitt-8">Monatlicher Wiederherstellungstest als Routine</h2>
 <p>Routine ist nötig, weil sich Systeme ändern. Eine Backup-Strategie, die vor einem Jahr funktionierte, kann nach drei Kubernetes-Updates, einer Datenbank-Migration oder einem Storage-Wechsel defekt sein, ohne dass es auffällt.</p>
 <p>Monatlich sollten:</p>
 <ul>
@@ -107,7 +107,7 @@ vzdump &lt;vmid&gt; --compress zstd --storage backup-nas --encrypt-key /etc/vzdu
 <li>Ein Container-Backup ausgelesen, der Container gestartet und die App verifiziert werden.</li>
 </ul>
 <p>Eine einfache Checklisten-Dokumentation reicht: Datum, was wiederhergestellt wurde, Erfolg / Misserfolg, Zeitbedarf, Bemerkungen. Ohne Dokumentation wird der Test nicht wiederholt.</p>
-<h2>Typische Fehler von Self-Hostern</h2>
+<h2 id="abschnitt-9">Typische Fehler von Self-Hostern</h2>
 <p>Die häufigsten Fehler sind nicht technisch komplex, sondern strukturell:</p>
 <ul>
 <li><strong>Ein Backup, das denselben Ort teilt</strong> – Snapshot auf derselben Platte, Backup auf demselben NAS wie das Produktivsystem, Sync in denselben Cloud-Account.</li>
@@ -118,16 +118,16 @@ vzdump &lt;vmid&gt; --compress zstd --storage backup-nas --encrypt-key /etc/vzdu
 <li><strong>Konfiguration nicht mitgesichert</strong> – Nur Daten, keine Container-Definitionen, keine Netzwerk-Skripte, keine Umgebungsvariablen.</li>
 </ul>
 <p>All diese Fehler haben dieselbe Wurzel: Die Illusion, dass die Kopie die Arbeit erledigt, ohne die Wiederherstellung zu prüfen.</p>
-<h2>BsN: Backup-Konfigurationen als Dienstleistung</h2>
+<h2 id="abschnitt-10">BsN: Backup-Konfigurationen als Dienstleistung</h2>
 <p>Eine funktionierende Backup-Strategie für eigene Clouds ist wenig Aufwand, wenn sie einmal richtig aufgesetzt ist – aber die Details sind langweilig und fehleranfällig. BsN, Benjamin Nickl, richtet für Self-Hoster und kleine Betriebe Backup-Konfigurationen ein: Proxmox-Backup-Jobs, externe Kopien, encrypted Storage, wiederherstellungstests in Kombination mit dem jeweiligen Umfeld.</p>
 <p>Was dabei varriert: ob der Kunde bereits eine Infrastruktur hat, ein völlig neuer Aufbau gewünscht wird, welchen Schutzgrad die Daten haben – private Cloud, kleine Firma, sensibler Betrieb. Der konkrete Ort für Fragen: homelab.brillianze.de.</p>
-<h2>Fazit: Was zählt, wird getestet</h2>
+<h2 id="abschnitt-11">Fazit: Was zählt, wird getestet</h2>
 <p>Die 3-2-1-Regel ist ein Minimalstandard, kein Luxus. Ohne sie läuft jeder Self-Host auf einem zweifelhaften Untergrund. Getestete Wiederherstellung ist der einzige Beweis, dass ein Backup existiert. Verschlüsselung + getrenntes Key-Management ist der Mindeststandard für externe Backups. Und der monatliche Test ist die Routine, die aus einer guten Absicht etwas macht, das funktioniert, wenn es zählt.</p>
 <p class="disclosure"><em>Hinweis: Dieser Artikel ist redaktioneller Inhalt und enthält keine Affiliate- oder Partner-Links. Alle Angaben entsprechen dem Stand 2026 und können sich ändern.</em></p>
-</article>
+</article></div>
 </main>
 <footer>
 <div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
 </footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

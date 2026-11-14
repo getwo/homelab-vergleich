@@ -7,14 +7,14 @@
 <title>Nextcloud + OnlyOffice: Online-Office selbst gehostet</title>
 <meta content="Nextcloud + OnlyOffice: Online-Office selbst gehostet  Google Docs und Microsoft 365 sind bequem – aber deine Dokumente liegen dabei auf fremden Serve" name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/nextcloud-onlyoffice.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/nextcloud-onlyoffice.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<div class="content">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Warum eine selbst gehostete Office-Lösung?</a><a href="#abschnitt-2">Die Architektur: Nextcloud + OnlyOffice</a><a href="#abschnitt-3">OnlyOffice Document Server per Docker installieren</a><a href="#abschnitt-4">Integration in Nextcloud</a><a href="#abschnitt-5">Funktionen im Überblick</a><a href="#abschnitt-6">Ressourcen und Empfehlungen</a><a href="#abschnitt-7">Fazit</a></aside><div class="content"><div class="reading-crumb"><a href="../index.html#dienste">Bibliothek / Self-Hosted Dienste</a></div>
 <h1>Nextcloud + OnlyOffice: Online-Office selbst gehostet</h1>
 <p>Google Docs und Microsoft 365 sind bequem – aber deine Dokumente liegen dabei auf fremden Servern. Mit Nextcloud und OnlyOffice betreibst du deine eigene, vollwertige Online-Office-Lösung im Homelab: Textverarbeitung, Tabellenkalkulation und Präsentationen direkt im Browser, gehostet auf deiner eigenen Hardware. In diesem Guide zeigen wir, warum sich das lohnt und wie du OnlyOffice per Docker installierst und in Nextcloud integrierst.</p>
-<h2>Warum eine selbst gehostete Office-Lösung?</h2>
+<h2 id="abschnitt-1">Warum eine selbst gehostete Office-Lösung?</h2>
 <p>Der wichtigste Grund ist Datenhoheit. Dokumente, Tabellen und Präsentationen gehören zu deinen sensibelsten Dateien – bei Google oder Microsoft entscheidest du nicht allein darüber, wo sie gespeichert und verarbeitet werden. Im eigenen Homelab bleiben alle Inhalte in deinem Netzwerk.</p>
 <p>Dazu kommen weitere Vorteile:</p>
 <ul>
@@ -24,10 +24,10 @@
 <li><strong>Unabhängigkeit:</strong> Auch ohne Internetzugang funktioniert die Bearbeitung weiter, solange dein Server erreichbar ist.</li>
 </ul>
 <p>Den Preis dafür zahlst du in Verantwortung: Du musst Updates einspielen und Backups pflegen. Wer sein Homelab ohnehin betreibt, hat diese Routine längst etabliert.</p>
-<h2>Die Architektur: Nextcloud + OnlyOffice</h2>
+<h2 id="abschnitt-2">Die Architektur: Nextcloud + OnlyOffice</h2>
 <p>Nextcloud ist die Dateiablage – vergleichbar mit Google Drive. OnlyOffice Document Server übernimmt die eigentliche Bearbeitung der Dokumente im Browser. Beide Dienste laufen getrennt als Container und werden über eine Schnittstelle verbunden. Das Ergebnis: Öffnest du eine Datei in Nextcloud, rendert der OnlyOffice-Server sie in einem Editor, der Google Docs verblüffend ähnlich sieht.</p>
 <p>Die OnlyOffice-Editoren unterstützen die gängigen Office-Formate: DOCX, XLSX, PPTX sowie die OpenDocument-Formate. Die Darstellung bleibt dabei nahe am Original – ein entscheidender Unterschied zu manch anderer Open-Source-Lösung.</p>
-<h2>OnlyOffice Document Server per Docker installieren</h2>
+<h2 id="abschnitt-3">OnlyOffice Document Server per Docker installieren</h2>
 <p>Der schnellste Weg führt über Docker. Eine <code>docker-compose.yml</code> genügt, um den Document Server zu starten:</p>
 <pre><code>
 version: "3.9"
@@ -51,10 +51,10 @@ services:
 docker compose up -d
 </code></pre>
 <p>Wie Docker grundsätzlich funktioniert, erklärt unser [Docker-Einsteiger-Guide](docker-einsteiger.md). Beachte zwei Punkte: Der OnlyOffice-Container benötigt verhältnismäßig viel Arbeitsspeicher – plane mindestens 2 bis 4 GB RAM ein. Und der geheime JWT-Schlüssel schützt die Kommunikation zwischen Nextcloud und Document Server; ersetze ihn unbedingt durch einen eigenen, zufälligen Wert.</p>
-<h2>Integration in Nextcloud</h2>
+<h2 id="abschnitt-4">Integration in Nextcloud</h2>
 <p>Damit Nextcloud mit dem Document Server sprechen kann, installierst du in der Nextcloud-Oberfläche die offizielle App <strong>ONLYOFFICE</strong>. Anschließend trägst du unter Einstellungen die Adresse deines Document Servers ein – in unserem Beispiel <code>http://deine-ip:8081</code> – sowie denselben JWT-Schlüssel, den du im Docker-Compose gesetzt hast.</p>
 <p>Danach kannst du in den Dateien festlegen, welche Dateitypen mit OnlyOffice geöffnet werden sollen. Ab sofort öffnet ein Doppelklick auf ein Dokument den Editor direkt im Browser, ohne dass eine lokale Office-Installation nötig ist.</p>
-<h2>Funktionen im Überblick</h2>
+<h2 id="abschnitt-5">Funktionen im Überblick</h2>
 <p>Die Community Edition bringt alles mit, was du für den Alltag brauchst:</p>
 <ul>
 <li><strong>Kollaboratives Arbeiten:</strong> Mehrere Personen bearbeiten ein Dokument gleichzeitig, Änderungen erscheinen in Echtzeit.</li>
@@ -63,7 +63,7 @@ docker compose up -d
 <li><strong>Mobil nutzbar:</strong> Die Bearbeitung funktioniert im Browser auf Tablet und Smartphone.</li>
 </ul>
 <p>Für fortgeschrittene Funktionen wie Makros oder benutzerdefinierte Plugins existiert eine kostenpflichtige Lizenz – für die meisten Homelab-Nutzer reicht die Community Edition völlig aus.</p>
-<h2>Ressourcen und Empfehlungen</h2>
+<h2 id="abschnitt-6">Ressourcen und Empfehlungen</h2>
 <p>Der OnlyOffice Document Server ist der ressourcenhungrigste Dienst in diesem Setup. Als Richtwert gilt: <strong>mindestens 2 GB RAM</strong>, komfortabel wird es mit 4 GB. Auf einem Raspberry Pi mit 4 GB läuft das Setup, auf einem Mini-PC oder Server deutlich flüssiger.</p>
 <p>Weitere Hinweise für den sicheren Betrieb:</p>
 <ul>
@@ -72,10 +72,10 @@ docker compose up -d
 <li><strong>Backups nicht vergessen:</strong> Sichere sowohl die Nextcloud-Daten als auch die OnlyOffice-Volumes regelmäßig.</li>
 </ul>
 <p>Grundlegende Maßnahmen zur Absicherung deines Homelabs findest du in unserem [Homelab-Sicherheitsguide](homelab-sicherheit-guide.md).</p>
-<h2>Fazit</h2>
+<h2 id="abschnitt-7">Fazit</h2>
 <p>Nextcloud mit OnlyOffice ist die überzeugendste Open-Source-Alternative zu Google Docs und Microsoft 365 im Homelab: kostenlos, vollständig selbst gehostet und mit exzellenter Format-Kompatibilität. Der Installationsaufwand hält sich dank Docker in Grenzen – wer bereits eine Nextcloud betreibt, bekommt mit dem OnlyOffice Document Server in wenigen Schritten ein vollwertiges Online-Office. Die einzige echte Voraussetzung ist ausreichend Arbeitsspeicher und die Bereitschaft, Updates und Backups selbst zu übernehmen.</p>
-</div>
+</div></div>
 </main>
 <footer><div class="wrap"><p>© 2026 BsN · <a href="../datenschutz.html">Datenschutz</a> · <a href="../impressum.html">Impressum</a></p></div></footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>

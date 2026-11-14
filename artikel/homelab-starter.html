@@ -7,16 +7,16 @@
 <title>Homelab von Null: Der komplette Start-Guide 2026</title>
 <meta content="NAS, die 5 besten ersten Dienste, Budget-Stufen und die häufigsten Anfängerfehler — der Start-Guide 2026." name="description"/>
 <link href="../style.css?v=journal2" rel="stylesheet"/>
-<link href="https://homelab.brillianze.de/artikel/homelab-starter.html" rel="canonical"/></head>
-<body>
+<link href="https://homelab.brillianze.de/artikel/homelab-starter.html" rel="canonical"/><link href="../polish.css?v=20261114" rel="stylesheet"/></head>
+<body><div aria-hidden="true" class="reading-progress"></div>
 <header><div class="wrap"><a aria-label="Homelab Vergleich Startseite" class="journal-brand" href="../index.html"><img alt="Brillianze" src="../assets/brillianze-logo-v2-horizontal.png"/><span>Homelab<br/>Vergleich</span><img alt="BsN-Ochsenkopf in Schwarz-Rot-Gold mit goldenem C" src="../assets/bsn-ochsenkopf-c.png"/></a><nav><a href="../index.html#bibliothek">Bibliothek</a><a href="../vergleich.html">Hardware</a><a href="../dienstleistungen.html">Beratung</a></nav></div></header>
 <main class="wrap">
-<article class="content" style="max-width:800px;">
+<div class="reading-layout"><aside aria-label="Inhaltsverzeichnis" class="reading-toc"><p>IN DIESEM ARTIKEL</p><a href="#abschnitt-1">Was ist ein Homelab — und brauchst du überhaupt eins?</a><a href="#abschnitt-2">Womit anfangen: Mini-PC, Server oder NAS?</a><a href="#abschnitt-3">Die 5 sinnvollsten ersten Dienste</a><a href="#abschnitt-4">Budget-Stufen: Was kostet der Start?</a><a href="#abschnitt-5">Häufige Anfängerfehler</a><a href="#abschnitt-6">Fazit: Der beste erste Schritt</a></aside><article class="content" style="max-width:800px;"><div class="reading-crumb"><a href="../index.html#start">Bibliothek / Einstieg &amp; Planung</a></div>
 <h1>Homelab von Null: Der komplette Start-Guide 2026</h1>
 <p>Ein Homelab klingt nach Bastelkeller, ist aber im Kern schlicht ein eigener kleiner Server zu Hause: ein Rechner, der rund um die Uhr läuft und Dienste für dich, deine Familie oder dein Netzwerk bereitstellt — Datenspeicher, Medienserver, Werbeblocker, Smart-Home-Zentrale oder ein eigenes KI-Setup. Der Reiz: volle Kontrolle über deine Daten, keine Abo-Kosten und jede Menge Lernwert. Dieser Guide zeigt dir, womit du anfängst, welche Hardware sich lohnt und welche Fehler du dir von Anfang an sparen kannst.</p>
-<h2>Was ist ein Homelab — und brauchst du überhaupt eins?</h2>
+<h2 id="abschnitt-1">Was ist ein Homelab — und brauchst du überhaupt eins?</h2>
 <p>Technisch gesehen ist ein Homelab nichts anderes als ein Computer, der dauerhaft Dienste anbietet. Das kann ein alter Laptop im Schrank sein oder ein ausgewachsener Server mit Virtualisierung. Du brauchst keins, wenn du nur Dateien sichern willst — dafür reicht ein <a href="nas-2026.html">fertiges NAS</a>. Sinnvoll wird es, sobald du mehrere Dienste parallel betreiben, mit Virtualisierung experimentieren oder IT-Wissen für Beruf und Hobby aufbauen willst. Die meisten starten klein und wachsen organisch.</p>
-<h2>Womit anfangen: Mini-PC, Server oder NAS?</h2>
+<h2 id="abschnitt-2">Womit anfangen: Mini-PC, Server oder NAS?</h2>
 <p>Die erste Entscheidung bestimmt alles Weitere. Die drei sinnvollen Einstiegspunkte:</p>
 <ul>
 <li><strong>Mini-PC</strong> (z. B. gebrauchte Business-Geräte): günstig, sparsam, leise — der beste Startpunkt für die meisten. Mehr dazu im <a href="minipc-homelab.html">Mini-PC-Vergleich</a>.</li>
@@ -24,7 +24,7 @@
 <li><strong>NAS</strong>: bequem und wartungsarm, aber bei CPU und Container-Flexibilität begrenzt. Welches Gerät 2026 das beste Preis-Leistungs-Verhältnis hat, klärt der <a href="nas-2026.html">NAS-Vergleich</a>.</li>
 </ul>
 <p>Faustregel: Wer noch unsicher ist, beginnt mit einem Mini-PC. Wer von Anfang an mehrere VMs und Container plant, nimmt einen Server. Und wer vor allem Speicher will, greift zum NAS.</p>
-<h2>Die 5 sinnvollsten ersten Dienste</h2>
+<h2 id="abschnitt-3">Die 5 sinnvollsten ersten Dienste</h2>
 <p>Der klassische Anfängerfehler ist, alles gleichzeitig aufzusetzen. Starte mit diesen fünf — sie bringen sofort sichtbaren Nutzen:</p>
 <ol>
 <li><strong>Pi-hole oder AdGuard Home</strong> — netzwerkweiter Werbeblocker, läuft auf jeder noch so kleinen Kiste und zeigt dir innerhalb von Minuten Erfolge.</li>
@@ -34,7 +34,7 @@
 <li><strong>Paperless-ngx</strong> — Dokumentenverwaltung mit OCR: Briefe scannen, ablegen, nie wieder suchen.</li>
 </ol>
 <p>All diese Dienste lassen sich am saubersten als Container betreiben. Der Einstieg in die <a href="docker-homelab.html">Docker-Welt</a> lohnt sich daher von Anfang an — auf einem einzelnen Mini-PC genügt dafür schlichtes Docker mit Docker-Compose. Sobald du mehrere Maschinen oder echte Virtualisierung willst, wird <a href="proxmox-einstieg.html">Proxmox</a> zur richtigen Plattform.</p>
-<h2>Budget-Stufen: Was kostet der Start?</h2>
+<h2 id="abschnitt-4">Budget-Stufen: Was kostet der Start?</h2>
 <p>Ein Homelab muss nicht teuer sein. Drei realistische Stufen:</p>
 <ul>
 <li><strong>Bis 150 €</strong> — gebrauchter Mini-PC mit 8–16 GB RAM reicht für Pi-hole, Nextcloud und einen Medienserver mit Direct Play.</li>
@@ -42,7 +42,7 @@
 <li><strong>Über 400 €</strong> — richtiger Server oder NAS mit 10GbE und 64 GB RAM: Raum für Virtualisierung, lokale LLMs und alles Weitere.</li>
 </ul>
 <p>Wer auf <a href="lokale-llms-einstieg.html">lokale KI-Modelle</a> schielt, plant von vornherein mehr RAM und am besten eine halbwegs aktuelle GPU ein. Und unterschätze die laufenden Kosten nicht: Ein Server, der 24/7 läuft, verursacht messbare <a href="stromkosten.html">Stromkosten</a> — oft mehr als die Anschaffung selbst.</p>
-<h2>Häufige Anfängerfehler</h2>
+<h2 id="abschnitt-5">Häufige Anfängerfehler</h2>
 <ul>
 <li><strong>Zu viel auf einmal.</strong> Fünf Dienste parallel aufsetzen führt zu Frust. Einer nach dem anderen.</li>
 <li><strong>Keine Backups.</strong> Ein Homelab ist kein Backup, nur weil Daten darauf liegen. Die 3-2-1-Regel gilt auch hier.</li>
@@ -50,13 +50,13 @@
 <li><strong>Alles direkt auf dem Betriebssystem installiert.</strong> Ohne Container oder VMs wird jeder Umbau zum Reinfall. Fang mit Docker an.</li>
 <li><strong>Dokumentation vergessen.</strong> Notiere, was wo läuft — in sechs Monaten dankst du dir selbst.</li>
 </ul>
-<h2>Fazit: Der beste erste Schritt</h2>
+<h2 id="abschnitt-6">Fazit: Der beste erste Schritt</h2>
 <p>Kauf dir einen gebrauchten Mini-PC, installiere Docker und setze Pi-hole als ersten Dienst auf. Damit hast du in einem Nachmittag ein funktionierendes Homelab, das dir jeden Tag etwas bringt — und einen klaren Pfad für alles, was danach kommt: mehr Dienste, ein <a href="nas-2026.html">NAS für den Speicher</a>, ein <a href="server-homelab.html">Server für Virtualisierung</a> oder <a href="proxmox-einstieg.html">Proxmox als Basis</a>. Der wichtigste Rat zum Schluss: anfangen, klein bleiben, wachsen lassen.</p>
 <p class="disclosure"><em>Hinweis: Dieser Artikel enthält keine Affiliate-Links. Alle Angaben entsprechen dem Stand September 2026 und können sich ändern. Preise sind Richtwerte und verstehen sich, sofern nicht anders angegeben, ohne Festplatten. Weiterführende Vergleiche und Anleitungen findest du in den verlinkten Artikeln sowie auf unserer <a href="../vergleich.html">Hardware-Vergleichsseite</a>.</em></p>
-</article>
+</article></div>
 </main>
 <footer>
 <div class="wrap"><p>© 2026 Homelab Vergleich · <a href="../impressum.html">Impressum</a> · <a href="../datenschutz.html">Datenschutz</a></p></div>
 </footer>
-</body>
+<script defer="" src="../reading.js?v=20261114"></script></body>
 </html>
